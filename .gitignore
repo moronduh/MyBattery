@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+functions/node_modules/
+
+# Build output
+dist/
+
+# Firebase
+.firebase/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+ios/App/Pods/
+ios/App/App.xcworkspace/
+*.xcuserdata/
+DerivedData/
+*.ipa
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Misc
+npm

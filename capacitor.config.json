@@ -1,0 +1,16 @@
+{
+  "appId": "app.web.mindfulstillflow",
+  "appName": "MyBattery",
+  "webDir": "dist",
+  "server": {
+    "hostname": "mindfulstillflow.web.app",
+    "iosScheme": "https"
+  },
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "iosClientId": "401752681008-mugpcas2o263ujcrv54icjsp5en5clr8.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
+    }
+  }
+}

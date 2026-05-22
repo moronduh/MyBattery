@@ -3,14 +3,13 @@
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js");
 
-// PLACEHOLDER — replace with your real firebaseConfig values
 firebase.initializeApp({
-  apiKey:            "REPLACE_API_KEY",
-  authDomain:        "REPLACE_AUTH_DOMAIN",
-  projectId:         "REPLACE_PROJECT_ID",
-  storageBucket:     "REPLACE_STORAGE_BUCKET",
-  messagingSenderId: "REPLACE_MESSAGING_SENDER_ID",
-  appId:             "REPLACE_APP_ID",
+  apiKey:            "AIzaSyCDGjf4VK9yeIoLxcg6-nSSoc0wCC4h4Nc",
+  authDomain:        "mindfulstillflow.firebaseapp.com",
+  projectId:         "mindfulstillflow",
+  storageBucket:     "mindfulstillflow.firebasestorage.app",
+  messagingSenderId: "401752681008",
+  appId:             "1:401752681008:web:b76648bffed19d7cf4dbf5",
 });
 
 const messaging = firebase.messaging();
@@ -18,7 +17,7 @@ const messaging = firebase.messaging();
 // Background message handler — shown when app is not in foreground
 messaging.onBackgroundMessage(payload => {
   const { title, body, icon } = payload.notification ?? {};
-  self.registration.showNotification(title ?? "Reflow", {
+  self.registration.showNotification(title ?? "MyBattery", {
     body:  body  ?? "",
     icon:  icon  ?? "/icons/icon-192.png",
     badge: "/icons/icon-192.png",

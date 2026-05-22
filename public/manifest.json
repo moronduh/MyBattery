@@ -1,7 +1,7 @@
 {
-  "name": "Reflow",
-  "short_name": "Reflow",
-  "description": "Mindful productivity, built around you.",
+  "name": "MyBattery",
+  "short_name": "MyBattery",
+  "description": "Your energy, your day.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#faf7f2",

@@ -11,11 +11,47 @@ const geminiApiKey = defineSecret("GEMINI_API_KEY");
 initializeApp();
 const db = getFirestore();
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Returns [hh, mm] in the user's local timezone, or null if tz is invalid.
+// Cloud Functions run in UTC — all time comparisons must go through this.
+function localHourMinute(tz) {
+  if (!tz || typeof tz !== "string") return null;
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(new Date());
+    const hh = parseInt(parts.find(p => p.type === "hour").value,   10);
+    const mm = parseInt(parts.find(p => p.type === "minute").value, 10);
+    return (isNaN(hh) || isNaN(mm)) ? null : [hh, mm];
+  } catch { return null; }
+}
+
+// Per-user daily AI call limiter stored in aiUsage/{uid}:{date}.
+// Returns true if the call is allowed, false if the limit is exceeded.
+// Fails open — if Firestore is unavailable, the call proceeds.
+async function checkRateLimit(uid, limit) {
+  const today = new Date().toISOString().slice(0, 10);
+  const ref   = db.collection("aiUsage").doc(`${uid}:${today}`);
+  try {
+    return await db.runTransaction(async tx => {
+      const snap  = await tx.get(ref);
+      const count = snap.exists ? snap.data().count : 0;
+      if (count >= limit) return false;
+      tx.set(ref, { count: count + 1, uid, date: today }, { merge: true });
+      return true;
+    });
+  } catch { return true; }
+}
+
 // ─── aiCoach ──────────────────────────────────────────────────────────────────
 // Callable: { message, context: { battery, tasks, energyMap, date } }
 // Returns: { reply }
 exports.aiCoach = onCall({ secrets: [geminiApiKey], cors: true }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Authentication required.");
+
+  const allowed = await checkRateLimit(request.auth.uid, 30);
+  if (!allowed) throw new HttpsError("resource-exhausted", "Daily AI limit reached. Try again tomorrow.");
 
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const { message, context = {}, history = [] } = request.data || {};
@@ -28,8 +64,12 @@ exports.aiCoach = onCall({ secrets: [geminiApiKey], cors: true }, async (request
   const genAI = new GoogleGenerativeAI(geminiApiKey.value());
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const taskList = Array.isArray(context.tasks) && context.tasks.length
-    ? context.tasks.map(t => `${t.done ? "✓" : "○"} ${t.name}${t.priority ? ` [${t.priority}]` : ""}`).join("\n")
+  const rawTasks = Array.isArray(context.tasks) ? context.tasks : [];
+  const safeTasks = rawTasks
+    .filter(t => t && typeof t.name === "string" && t.name.trim().length > 0 && t.name.length <= 200)
+    .slice(0, 50);
+  const taskList = safeTasks.length
+    ? safeTasks.map(t => `${t.done === true ? "✓" : "○"} ${t.name.trim().slice(0, 200)}${typeof t.priority === "string" ? ` [${t.priority.slice(0, 20)}]` : ""}`).join("\n")
     : "No tasks listed.";
 
   const systemPrompt = `You are an energy-aware productivity coach inside MyBattery, a mindful productivity app.
@@ -69,6 +109,9 @@ Guiding principles:
 // Returns: { tasks[], summary, energyProjection } | { error }
 exports.generateSchedule = onCall({ secrets: [geminiApiKey], cors: true }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Authentication required.");
+
+  const allowed = await checkRateLimit(request.auth.uid, 10);
+  if (!allowed) throw new HttpsError("resource-exhausted", "Daily schedule limit reached. Try again tomorrow.");
 
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const { input, context = {} } = request.data || {};
@@ -180,15 +223,17 @@ Battery < 40%: cap any single draining task at -15. Flag heavy tasks as "could".
 
 // ─── savePrefs ────────────────────────────────────────────────────────────────
 // Called by the app when the user saves their notification preferences.
-// Stores the FCM token + prefs in Firestore under a fixed single-user doc.
+// Stores the FCM token + prefs in notifPrefs/{uid} — one doc per user.
 exports.savePrefs = onRequest({ cors: true }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).send("Method Not Allowed"); return; }
 
   const authHeader = req.headers.authorization || "";
   const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
   if (!idToken) { res.status(401).json({ error: "Unauthorized" }); return; }
+  let uid;
   try {
-    await getAuth().verifyIdToken(idToken);
+    const decoded = await getAuth().verifyIdToken(idToken);
+    uid = decoded.uid;
   } catch {
     res.status(401).json({ error: "Unauthorized" }); return;
   }
@@ -197,53 +242,46 @@ exports.savePrefs = onRequest({ cors: true }, async (req, res) => {
   if (!token || typeof token !== "string" || token.length > 500) {
     res.status(400).json({ error: "Invalid token" }); return;
   }
-  if (!prefs || typeof prefs !== "object") {
+  if (!prefs || typeof prefs !== "object" || Array.isArray(prefs)) {
     res.status(400).json({ error: "Invalid prefs" }); return;
   }
 
-  await db.collection("users").doc("default").set({ token, prefs, updatedAt: new Date() });
+  await db.collection("notifPrefs").doc(uid).set({ token, prefs, updatedAt: new Date() });
   res.json({ ok: true });
 });
 
 // ─── sendCheckin ──────────────────────────────────────────────────────────────
 // Runs every minute, checks if it's time to send the morning check-in notification.
 exports.sendCheckin = onSchedule("every 1 minutes", async () => {
-  const doc = await db.collection("users").doc("default").get();
-  if (!doc.exists) return;
+  const snap = await db.collection("notifPrefs").get();
+  if (snap.empty) return;
 
-  const { token, prefs } = doc.data();
-  if (!prefs.checkinEnabled || !token) return;
-
-  const [hh, mm] = prefs.checkinTime.split(":").map(Number);
-  const now = new Date();
-  if (now.getHours() !== hh || now.getMinutes() !== mm) return;
-
-  await getMessaging().send({
-    token,
-    notification: {
-      title: "🌿 Good morning — how are you arriving?",
-      body:  "Take 30 seconds to set your energy level for the day.",
-    },
-    webpush: { fcmOptions: { link: "/" } },
-  });
+  const sends = [];
+  for (const doc of snap.docs) {
+    const { token, prefs } = doc.data();
+    if (!prefs?.checkinEnabled || !token) continue;
+    if (typeof prefs.checkinTime !== "string" || !/^\d{1,2}:\d{2}$/.test(prefs.checkinTime)) continue;
+    const [hh, mm] = prefs.checkinTime.split(":").map(Number);
+    if (isNaN(hh) || isNaN(mm)) continue;
+    const local = localHourMinute(prefs.timezone || "UTC");
+    if (!local || local[0] !== hh || local[1] !== mm) continue;
+    sends.push(getMessaging().send({
+      token,
+      notification: {
+        title: "🌿 Good morning — how are you arriving?",
+        body:  "Take 30 seconds to set your energy level for the day.",
+      },
+      webpush: { fcmOptions: { link: "/" } },
+    }));
+  }
+  await Promise.allSettled(sends);
 });
 
 // ─── sendStillness ────────────────────────────────────────────────────────────
 // Runs every minute, fires a stillness reminder based on the user's interval.
 exports.sendStillness = onSchedule("every 1 minutes", async () => {
-  const doc = await db.collection("users").doc("default").get();
-  if (!doc.exists) return;
-
-  const { token, prefs } = doc.data();
-  if (!prefs.stillnessEnabled || !token) return;
-
-  const intervalMins = parseInt(prefs.stillnessEvery, 10) || 25;
-  const now = new Date();
-  // Only fire during work hours (8am–6pm) and when minute aligns to interval
-  const totalMins = now.getHours() * 60 + now.getMinutes();
-  const withinWorkHours = now.getHours() >= 8 && now.getHours() < 18;
-  if (!withinWorkHours) return;
-  if (totalMins % intervalMins !== 0) return;
+  const snap = await db.collection("notifPrefs").get();
+  if (snap.empty) return;
 
   const msgs = [
     "Step away. Let your mind wander.",
@@ -251,34 +289,52 @@ exports.sendStillness = onSchedule("every 1 minutes", async () => {
     "One minute of quiet. Nothing to do.",
     "Rest your eyes. You've earned this pause.",
   ];
-  const body = msgs[Math.floor(Math.random() * msgs.length)];
 
-  await getMessaging().send({
-    token,
-    notification: { title: "🌿 Stillness break", body },
-    webpush: { fcmOptions: { link: "/" } },
-  });
+  const sends = [];
+  for (const doc of snap.docs) {
+    const { token, prefs } = doc.data();
+    if (!prefs?.stillnessEnabled || !token) continue;
+    const local = localHourMinute(prefs.timezone || "UTC");
+    if (!local) continue;
+    const [localHH, localMM] = local;
+    const withinWindow = localHH >= 8 && localHH < 18;
+    if (!withinWindow) continue;
+    const intervalMins = parseInt(prefs.stillnessEvery, 10) || 25;
+    const totalMins = localHH * 60 + localMM;
+    if (totalMins % intervalMins !== 0) continue;
+    const body = msgs[Math.floor(Math.random() * msgs.length)];
+    sends.push(getMessaging().send({
+      token,
+      notification: { title: "🌿 Stillness break", body },
+      webpush: { fcmOptions: { link: "/" } },
+    }));
+  }
+  await Promise.allSettled(sends);
 });
 
 // ─── sendWinddown ─────────────────────────────────────────────────────────────
 // Runs every minute, checks if it's time to send the wind-down reminder.
 exports.sendWinddown = onSchedule("every 1 minutes", async () => {
-  const doc = await db.collection("users").doc("default").get();
-  if (!doc.exists) return;
+  const snap = await db.collection("notifPrefs").get();
+  if (snap.empty) return;
 
-  const { token, prefs } = doc.data();
-  if (!prefs.winddownEnabled || !token) return;
-
-  const [hh, mm] = prefs.winddownTime.split(":").map(Number);
-  const now = new Date();
-  if (now.getHours() !== hh || now.getMinutes() !== mm) return;
-
-  await getMessaging().send({
-    token,
-    notification: {
-      title: "🌙 Time to wind down.",
-      body:  "Begin your end-of-day ritual. You showed up — that's the whole thing.",
-    },
-    webpush: { fcmOptions: { link: "/" } },
-  });
+  const sends = [];
+  for (const doc of snap.docs) {
+    const { token, prefs } = doc.data();
+    if (!prefs?.winddownEnabled || !token) continue;
+    if (typeof prefs.winddownTime !== "string" || !/^\d{1,2}:\d{2}$/.test(prefs.winddownTime)) continue;
+    const [hh, mm] = prefs.winddownTime.split(":").map(Number);
+    if (isNaN(hh) || isNaN(mm)) continue;
+    const local = localHourMinute(prefs.timezone || "UTC");
+    if (!local || local[0] !== hh || local[1] !== mm) continue;
+    sends.push(getMessaging().send({
+      token,
+      notification: {
+        title: "🌙 Time to wind down.",
+        body:  "Begin your end-of-day ritual. You showed up — that's the whole thing.",
+      },
+      webpush: { fcmOptions: { link: "/" } },
+    }));
+  }
+  await Promise.allSettled(sends);
 });

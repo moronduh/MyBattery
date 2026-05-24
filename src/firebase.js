@@ -1,9 +1,10 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, signInWithPopup, GoogleAuthProvider,
-  sendPasswordResetEmail, deleteUser,
+  signOut, onAuthStateChanged, signInWithPopup, getRedirectResult,
+  GoogleAuthProvider, sendPasswordResetEmail, deleteUser,
 } from "firebase/auth";
 import { Capacitor } from "@capacitor/core";
 import {
@@ -13,7 +14,7 @@ import {
 
 const firebaseConfig = {
   apiKey:            "AIzaSyCDGjf4VK9yeIoLxcg6-nSSoc0wCC4h4Nc",
-  authDomain:        "mindfulstillflow.firebaseapp.com",
+  authDomain:        "mybatteryapp.com",
   projectId:         "mindfulstillflow",
   storageBucket:     "mindfulstillflow.firebasestorage.app",
   messagingSenderId: "401752681008",
@@ -23,9 +24,22 @@ const firebaseConfig = {
 
 export const VAPID_KEY = "BBtu6NK8QcqAJtdFJeKpPsrrWaousw2Zj7nL2vcB6wj-H5ZZfjt-1T4_IeugdjAt5N3wtwiwTSfqC1d5fmuDPzg";
 
-export const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db   = getFirestore(app);
+export const app       = getApps().length ? getApp() : initializeApp(firebaseConfig);
+export const auth      = getAuth(app);
+export const db        = getFirestore(app);
+export const functions = getFunctions(app);
+
+export async function callAICoach(data) {
+  const fn = httpsCallable(functions, "aiCoach");
+  const result = await fn(data);
+  return result.data;
+}
+
+export async function callScheduleGenerator(data) {
+  const fn = httpsCallable(functions, "generateSchedule", { timeout: 60000 });
+  const result = await fn(data);
+  return result.data;
+}
 
 export const messaging = (typeof window !== "undefined" && "serviceWorker" in navigator)
   ? (() => { try { return getMessaging(app); } catch { return null; } })()
@@ -37,6 +51,7 @@ export const signIn        = (email, pw) => signInWithEmailAndPassword(auth, ema
 export const signInGoogle  = Capacitor.isNativePlatform()
   ? null
   : () => signInWithPopup(auth, new GoogleAuthProvider());
+export const handleGoogleRedirect = () => getRedirectResult(auth);
 export const signOutUser   = ()       => signOut(auth);
 export const resetPassword = (email)  => sendPasswordResetEmail(auth, email);
 export const onAuthChange  = (cb)     => onAuthStateChanged(auth, cb);
@@ -49,14 +64,34 @@ function friendlyAuthError(code) {
     "auth/user-not-found":        "No account found with that email.",
     "auth/wrong-password":        "Incorrect password.",
     "auth/invalid-credential":    "Incorrect email or password.",
-    "auth/too-many-requests":     "Too many attempts. Please try again later.",
+    "auth/too-many-requests":       "Too many attempts. Please try again later.",
+    "auth/popup-blocked":           "Sign-in popup was blocked. Please allow popups or try again.",
+    "auth/popup-closed-by-user":    null, // silently ignored
+    "auth/unauthorized-domain":     "This domain isn't authorized for Google sign-in. Check Firebase Console → Authentication → Settings → Authorized domains.",
+    "auth/operation-not-allowed":   "Google sign-in isn't enabled. Enable it in Firebase Console → Authentication → Sign-in method.",
+    "auth/cancelled-popup-request": null, // silently ignored
   };
-  return map[code] || "Something went wrong. Please try again.";
+  return map[code] || `Something went wrong (${code || "unknown"}). Please try again.`;
 }
 export { friendlyAuthError };
 
 // ─── Client-side encryption (Web Crypto / AES-GCM) ───────────────────────────
-// Keys are derived from the user's uid via PBKDF2 and cached for the session.
+//
+// Threat model: protects task names and health notes at rest in Firestore from
+// Anthropic/Google employees, database dumps, and misconfigured rules — NOT from
+// the authenticated user themselves (they hold the key material).
+//
+// Key derivation: PBKDF2(uid, salt="reflow-enc-v1", 100k iterations, SHA-256) → AES-GCM-256.
+// The uid is the Firebase Auth UID, available only after sign-in.
+// Derived keys are cached in _keyCache for the lifetime of the browser session.
+//
+// Wire format: base64( iv[12 bytes] || ciphertext ).
+// Both encryptField and decryptField are safe to call on already-plaintext values:
+//   encryptField: encrypts and returns base64.
+//   decryptField: on failure (e.g. legacy plaintext), returns the input unchanged.
+//
+// Callers: loadUserData() decrypts task names on load; saveTasks() encrypts them on save.
+// Do NOT call encryptField on already-encrypted values — there is no double-encrypt guard.
 const _keyCache = {};
 
 async function deriveKey(uid) {
@@ -99,7 +134,7 @@ export async function decryptField(encoded, uid) {
     const key = await deriveKey(uid);
     const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipherBuf);
     return new TextDecoder().decode(plain);
-  } catch { return encoded; } // fallback: return raw value for unencrypted legacy data
+  } catch { return encoded; } // legacy plaintext or wrong key → return as-is
 }
 
 // ─── Firestore: User profile ──────────────────────────────────────────────────
@@ -269,4 +304,21 @@ export async function getIdToken() {
     const user = auth.currentUser;
     return user ? user.getIdToken() : null;
   } catch { return null; }
+}
+
+// ─── Client error reporting ───────────────────────────────────────────────────
+// Writes caught errors to Firestore so failures surface without a paid monitoring service.
+// Never throws — must be safe to call from catch blocks and ErrorBoundary.
+export async function logClientError(error, context = {}) {
+  try {
+    const uid = auth.currentUser?.uid ?? null;
+    await addDoc(collection(db, "errors"), {
+      msg:   String(error?.message ?? error).slice(0, 500),
+      stack: String(error?.stack   ?? "").slice(0, 2000),
+      uid,
+      context: JSON.stringify(context).slice(0, 1000),
+      ua:  navigator.userAgent.slice(0, 200),
+      ts:  serverTimestamp(),
+    });
+  } catch { /* never throw from error reporter */ }
 }

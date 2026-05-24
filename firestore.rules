@@ -58,6 +58,28 @@ service cloud.firestore {
       }
     }
 
+    // ── notifPrefs (FCM token + prefs; written by savePrefs Cloud Function) ───
+    // Admin SDK writes bypass these rules. These rules allow users to read and
+    // delete their own prefs doc from the client (e.g. on sign-out/unsubscribe).
+    match /notifPrefs/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // written only via savePrefs Cloud Function (Admin SDK)
+    }
+
+    // ── errors (client error reports; authenticated write-only) ─────────────
+    match /errors/{docId} {
+      allow create: if request.auth != null
+                    && request.resource.data.keys().size() <= 8
+                    && request.resource.data.msg is string
+                    && request.resource.data.msg.size() <= 500;
+      allow read, update, delete: if false;
+    }
+
+    // ── aiUsage (rate-limit counters; written only by Cloud Functions) ────────
+    match /aiUsage/{docId} {
+      allow read, write: if false;
+    }
+
     // ── feedback (write-only; authenticated users only) ──────────────────────
     match /feedback/{docId} {
       allow create: if request.auth != null

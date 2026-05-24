@@ -9,34 +9,63 @@ service cloud.firestore {
     }
 
     // ── users (profile, tasks, and all subcollections) ───────────────────────
-    // All user data lives under /users/{uid}/…  The uid in the path must match
-    // the authenticated caller — no cross-user access possible.
     match /users/{uid} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == uid;
+      allow read: if request.auth != null
+                  && request.auth.uid == uid;
+
+      allow write: if request.auth != null
+                   && request.auth.uid == uid
+                   && request.resource.data.keys().size() < 30
+                   && request.resource.size() < 102400; // 100 KB
 
       // Daily mood / energy records
       match /days/{dateKey} {
-        allow read, write: if request.auth != null
-                           && request.auth.uid == uid;
+        allow read: if request.auth != null
+                    && request.auth.uid == uid;
+
+        allow write: if request.auth != null
+                     && request.auth.uid == uid
+                     && request.resource.data.keys().size() < 20
+                     && request.resource.size() < 51200 // 50 KB
+                     && (!request.resource.data.keys().hasAny(['battery'])
+                         || (request.resource.data.battery is number
+                             && request.resource.data.battery >= 0
+                             && request.resource.data.battery <= 100));
       }
 
       // Journal entries
       match /journal/{entryId} {
-        allow read, write, delete: if request.auth != null
-                                   && request.auth.uid == uid;
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == uid;
+
+        allow write: if request.auth != null
+                     && request.auth.uid == uid
+                     && request.resource.data.keys().size() < 10
+                     && request.resource.size() < 51200 // 50 KB
+                     && (!request.resource.data.keys().hasAny(['text'])
+                         || request.resource.data.text is string);
       }
 
       // Calendar: one document per day, keyed by ISO date string (YYYY-MM-DD)
       match /calendar/{dateKey} {
-        allow read, write: if request.auth != null
-                           && request.auth.uid == uid;
+        allow read: if request.auth != null
+                    && request.auth.uid == uid;
+
+        allow write: if request.auth != null
+                     && request.auth.uid == uid
+                     && request.resource.data.keys().size() < 20
+                     && request.resource.size() < 51200; // 50 KB
       }
     }
 
     // ── feedback (write-only; authenticated users only) ──────────────────────
     match /feedback/{docId} {
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasOnly(['uid', 'text', 'ts', 'type', 'appVersion'])
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 2000
+                    && request.resource.data.uid == request.auth.uid;
       allow read, update, delete: if false;
     }
 

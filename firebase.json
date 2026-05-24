@@ -1,27 +1,29 @@
 {
   "firestore": {
-    "rules": "firestore.rules"
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "hosting": {
     "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "**", "destination": "/index.html" }],
-    "headers": [
-      {
-        "source": "/firebase-messaging-sw.js",
-        "headers": [{ "key": "Service-Worker-Allowed", "value": "/" }]
-      },
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
       {
         "source": "**",
-        "headers": [
-          { "key": "X-Frame-Options", "value": "ALLOWALL" },
-          { "key": "Content-Security-Policy", "value": "frame-ancestors *" }
-        ]
+        "destination": "/index.html"
       }
     ]
   },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20"
-  }
+  "functions": [
+    {
+      "codebase": "default",
+      "source": "functions",
+      "runtime": "nodejs22"
+    }
+  ]
 }

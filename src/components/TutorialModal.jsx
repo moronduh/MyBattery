@@ -131,11 +131,11 @@ export default function TutorialModal({ onClose }) {
     {
       label: "When you're stuck",
       title: "Three ways to get unstuck.",
-      desc: "SOS button (top right) gives an instant grounding exercise — no decisions required. Jumpstart mode walks you through four gentle micro-movements when you're physically stuck or can't get out of bed. Task Paralysis modal (\"Break the freeze\" on any task) names what's in the way, picks one micro-action, and turns it into a focused sprint with a countdown timer.",
+      desc: "SOS button (top right) opens crisis support lines — 988, Crisis Text Line, and others — all free, confidential, and available right now. Jumpstart mode walks you through four gentle micro-movements when you're physically stuck or can't get out of bed. Task Paralysis modal (\"Break the freeze\" on any task) names what's in the way, picks one micro-action, and turns it into a focused sprint with a countdown timer.",
       visual: (
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           {[
-            { icon:"shield",  label:"SOS",                  sub:"Instant grounding — tap, breathe, reset.", color:"var(--error)",      bg:"rgba(196,114,106,0.08)" },
+            { icon:"shield",  label:"SOS",                  sub:"Crisis lines — 988, Crisis Text Line, more.", color:"var(--error)",      bg:"rgba(196,114,106,0.08)" },
             { icon:"leaf",    label:"Jumpstart mode",        sub:"4 micro-movements to get out of bed.",    color:"var(--sage-dark)",  bg:"rgba(90,122,90,0.08)" },
             { icon:"timer",   label:"Break the freeze",      sub:"Name the block · pick an action · sprint.", color:"var(--earth-dark)", bg:"rgba(196,168,130,0.08)" },
           ].map(r => (

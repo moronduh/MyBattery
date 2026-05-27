@@ -17,7 +17,7 @@ export default function WeekStrip({ selectedDate, onSelectDate, taskDates = new 
   const todayStr  = isoStr(new Date());
   const weekStart = addDays(mondayOf(new Date()), offset * 7);
 
-  const days = Array.from({ length: 5 }, (_, i) => {
+  const days = Array.from({ length: 7 }, (_, i) => {
     const d  = addDays(weekStart, i);
     const ds = isoStr(d);
     return {

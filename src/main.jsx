@@ -3,9 +3,9 @@ import ReactDOM from "react-dom/client";
 import App from "../../mindful-productivity.jsx";
 import {
   requestNotificationPermission, onForegroundMessage, getIdToken,
-  createAccount, signIn, signInGoogle, signOutUser, resetPassword, onAuthChange, friendlyAuthError,
+  createAccount, signIn, signInGoogle, handleGoogleRedirect, signOutUser, resetPassword, onAuthChange, friendlyAuthError,
   saveUserProfile, loadUserData, loadRecentDays,
-  saveDailyRecord, saveTasks,
+  saveDailyRecord,
   saveJournalEntry, deleteJournalEntry,
   loadHistory,
   saveFeedback,
@@ -14,13 +14,27 @@ import {
   clearUserData,
   deleteAccount,
   saveRecurringEvents,
+  subscribeActiveTasks,
+  addTaskDoc,
+  updateTaskDoc,
+  deleteTaskDoc,
+  callAICoach,
+  callScheduleGenerator,
 } from "./firebase.js";
 
 function Root() {
   const [user, setUser] = useState(undefined); // undefined = checking, null = signed out, object = signed in
+  const [redirectError, setRedirectError] = useState(null);
 
   useEffect(() => {
     const unsub = onAuthChange(setUser);
+    // Handle Google redirect sign-in result (signInWithRedirect flow).
+    // getRedirectResult resolves null when there's no pending redirect,
+    // or rejects with a Firebase error (e.g. auth/unauthorized-domain).
+    handleGoogleRedirect().catch(err => {
+      console.error("[Auth] Google redirect error:", err.code, err.message);
+      setRedirectError(friendlyAuthError(err.code) || err.message);
+    });
     // Fallback: if auth state hasn't resolved in 5s, treat as signed out
     const timeout = setTimeout(() => setUser(u => u === undefined ? null : u), 5000);
     return () => { unsub(); clearTimeout(timeout); };
@@ -33,6 +47,7 @@ function Root() {
     createAccount,
     signIn,
     signInGoogle,
+    redirectError,
     signOutUser,
     resetPassword,
     friendlyAuthError,
@@ -40,7 +55,6 @@ function Root() {
     loadUserData,
     loadRecentDays,
     saveDailyRecord,
-    saveTasks,
     saveJournalEntry,
     deleteJournalEntry,
     loadHistory,
@@ -50,6 +64,12 @@ function Root() {
     clearUserData,
     deleteAccount,
     saveRecurringEvents,
+    subscribeActiveTasks,
+    addTaskDoc,
+    updateTaskDoc,
+    deleteTaskDoc,
+    callAI: callAICoach,
+    callScheduleGenerator,
   };
 
   if (user === undefined) {

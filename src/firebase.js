@@ -9,7 +9,8 @@ import {
 import { Capacitor } from "@capacitor/core";
 import {
   getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc,
-  query, orderBy, limit, getDocs, serverTimestamp, onSnapshot, Timestamp,
+  query, where, orderBy, limit, getDocs, serverTimestamp, onSnapshot,
+  Timestamp, writeBatch,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -229,7 +230,7 @@ export async function deleteJournalEntry(uid, entryId) {
 
 // ─── Firestore: Clear all user data ──────────────────────────────────────────
 export async function clearUserData(uid) {
-  const subcollections = ["days", "journal", "calendar"];
+  const subcollections = ["days", "journal", "calendar", "tasks"];
   const snaps = await Promise.all(
     subcollections.map(sub => getDocs(collection(db, "users", uid, sub)))
   );
@@ -243,7 +244,7 @@ export async function clearUserData(uid) {
 // Throws auth/requires-recent-login if the session is too old — callers should
 // prompt the user to re-authenticate before retrying.
 export async function deleteAccount(uid) {
-  const subcollections = ["days", "journal", "calendar"];
+  const subcollections = ["days", "journal", "calendar", "tasks"];
   const snaps = await Promise.all(
     subcollections.map(sub => getDocs(collection(db, "users", uid, sub)))
   );
@@ -277,6 +278,61 @@ export async function loadHistory(uid) {
     days:    daysSnap.docs.map(d => ({ id: d.id, ...d.data() })),
     journal: journalSnap.docs.map(d => ({ id: d.id, ...d.data() })),
   };
+}
+
+// ─── Tasks subcollection ─────────────────────────────────────────────────────
+// Schema: users/{uid}/tasks/{taskId}  — each task is its own Firestore document
+// status: 'active' | 'completed'
+// Incomplete tasks automatically carry over because the query filters by status.
+
+export function subscribeActiveTasks(uid, onChange) {
+  const q = query(
+    collection(db, "users", uid, "tasks"),
+    where("status", "==", "active")
+  );
+  return onSnapshot(q, async snap => {
+    const tasks = await Promise.all(snap.docs.map(async d => {
+      const data = d.data();
+      return {
+        ...data,
+        id: d.id,
+        done: false,
+        name: data._enc ? await decryptField(data.name, uid) : data.name,
+      };
+    }));
+    onChange(tasks);
+  }, () => onChange([]));
+}
+
+export async function addTaskDoc(uid, task) {
+  const { id: _id, done: _done, ...fields } = task;
+  const payload = {
+    ...fields,
+    name: fields.name ? await encryptField(fields.name, uid) : fields.name,
+    _enc: true,
+    status: "active",
+    done: false,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const ref = await addDoc(collection(db, "users", uid, "tasks"), payload);
+  return ref.id;
+}
+
+export async function updateTaskDoc(uid, taskId, updates) {
+  const payload = { ...updates, updatedAt: serverTimestamp() };
+  if (typeof updates.name === "string") {
+    payload.name = await encryptField(updates.name, uid);
+    payload._enc = true;
+  }
+  if (updates.done !== undefined) {
+    payload.status = updates.done ? "completed" : "active";
+  }
+  await setDoc(doc(db, "users", uid, "tasks", taskId), payload, { merge: true });
+}
+
+export async function deleteTaskDoc(uid, taskId) {
+  await deleteDoc(doc(db, "users", uid, "tasks", taskId));
 }
 
 // ─── FCM ──────────────────────────────────────────────────────────────────────

@@ -96,21 +96,20 @@ export default function CoachMarks({ onDone }) {
       <div style={{
         position:"fixed", top:ttTop, left:ttLeft, width:TOOLTIP_W,
         background:"white", borderRadius:13, padding:"16px 18px",
-        boxShadow:"0 12px 40px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)",
-        border:"1.5px solid #e8e0d0",
+        filter:"drop-shadow(0 8px 28px rgba(0,0,0,0.18)) drop-shadow(0 2px 6px rgba(0,0,0,0.10))",
         pointerEvents:"all", zIndex:9001,
       }}>
         {useBelow && (
           <div style={{
-            position:"absolute", top:-7, left:arrowOffset,
-            width:13, height:7, background:"white",
+            position:"absolute", top:-8, left:arrowOffset,
+            width:14, height:9, background:"white",
             clipPath:"polygon(50% 0%, 0% 100%, 100% 100%)",
           }} />
         )}
         {!useBelow && (
           <div style={{
-            position:"absolute", bottom:-7, left:arrowOffset,
-            width:13, height:7, background:"white",
+            position:"absolute", bottom:-8, left:arrowOffset,
+            width:14, height:9, background:"white",
             clipPath:"polygon(0% 0%, 100% 0%, 50% 100%)",
           }} />
         )}

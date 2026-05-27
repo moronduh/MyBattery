@@ -46,6 +46,19 @@ service cloud.firestore {
                          || request.resource.data.text is string);
       }
 
+      // Tasks subcollection — each task is its own document
+      // status must be 'active' or 'completed'; name is AES-GCM encrypted base64
+      match /tasks/{taskId} {
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == uid;
+
+        allow write: if request.auth != null
+                     && request.auth.uid == uid
+                     && request.resource.data.keys().size() < 20
+                     && request.resource.size() < 10240  // 10 KB per task
+                     && request.resource.data.status in ['active', 'completed'];
+      }
+
       // Calendar: one document per day, keyed by ISO date string (YYYY-MM-DD)
       match /calendar/{dateKey} {
         allow read: if request.auth != null

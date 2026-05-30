@@ -11,6 +11,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="MyBattery" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <!-- Apply dark mode before first paint to prevent layout flash on load/restore -->
+    <script>
+      try {
+        var dark = localStorage.getItem('reflow-dark-mode') === 'true';
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      } catch(e) {}
+    </script>
+    <style>
+      /* Prevent iOS Safari horizontal momentum scroll causing centering issues */
+      html, body { overflow-x: hidden; touch-action: pan-y; max-width: 100%; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

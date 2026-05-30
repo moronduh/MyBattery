@@ -234,7 +234,8 @@ export default function TutorialModal({ onClose }) {
 
   return (
     <div className="tutorial-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="tutorial-card">
+      <div className="tutorial-card" style={{ position:"relative" }}>
+        <button onClick={onClose} aria-label="Close" style={{ position:"absolute", top:12, right:12, background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", fontSize:18, lineHeight:1, padding:4 }}>✕</button>
         <div className="tutorial-dots">
           {SLIDES.map((_, i) => (
             <div key={i} className={`tutorial-dot ${i===step?"active":i<step?"done":""}`} onClick={() => setStep(i)} style={{ cursor:"pointer" }} />
@@ -244,15 +245,12 @@ export default function TutorialModal({ onClose }) {
         <div className="tutorial-step">{slide.label} · {step+1} of {SLIDES.length}</div>
         <div className="tutorial-title">{slide.title}</div>
         <div className="tutorial-desc">{slide.desc}</div>
-        <div className="tutorial-actions">
-          <button className="btn-skip" onClick={onClose}>Close</button>
-          <div style={{ display:"flex", gap:10 }}>
-            {step > 0 && <button className="btn-back" onClick={() => setStep(s => s-1)}>← Back</button>}
-            {isLast
-              ? <button className="btn-primary" onClick={onClose}>Understood →</button>
-              : <button className="btn-primary" onClick={() => setStep(s => s+1)}>Sounds good →</button>
-            }
-          </div>
+        <div className="tutorial-actions" style={{ justifyContent:"flex-end" }}>
+          {step > 0 && <button className="btn-back" onClick={() => setStep(s => s-1)}>← Back</button>}
+          {isLast
+            ? <button className="btn-primary" onClick={onClose}>Understood →</button>
+            : <button className="btn-primary" onClick={() => setStep(s => s+1)}>Sounds good →</button>
+          }
         </div>
       </div>
     </div>

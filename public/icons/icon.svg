@@ -1,4 +1,27 @@
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>
+  <!-- Sage background -->
   <rect width='512' height='512' rx='114' fill='#5a7a5a'/>
-  <text x='256' y='340' font-size='280' text-anchor='middle' font-family='serif'>🌿</text>
+
+  <!-- Cream battery + checklist -->
+  <g stroke='#faf7f2' stroke-linecap='round' stroke-linejoin='round' fill='none'>
+
+    <!-- Battery nub -->
+    <rect x='221' y='96' width='70' height='34' rx='9' stroke-width='8'/>
+
+    <!-- Battery body outline -->
+    <rect x='162' y='129' width='188' height='294' rx='22' stroke-width='9'/>
+
+    <!-- Row 1: completed ✓ + bar -->
+    <polyline points='189,183 201,197 220,167' stroke-width='7'/>
+    <line x1='234' y1='186' x2='326' y2='186' stroke-width='10'/>
+
+    <!-- Row 2: completed ✓ + bar -->
+    <polyline points='189,273 201,287 220,257' stroke-width='7'/>
+    <line x1='234' y1='276' x2='326' y2='276' stroke-width='10'/>
+
+    <!-- Row 3: incomplete ○ + bar -->
+    <circle cx='203' cy='366' r='10' stroke-width='6'/>
+    <line x1='234' y1='366' x2='326' y2='366' stroke-width='10'/>
+
+  </g>
 </svg>

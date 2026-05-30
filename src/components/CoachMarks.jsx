@@ -23,7 +23,7 @@ const STEPS = [
   },
 ];
 
-const PAD = 8;
+const PAD = 5;
 const TOOLTIP_W = 252;
 
 export default function CoachMarks({ onDone }) {
@@ -35,9 +35,37 @@ export default function CoachMarks({ onDone }) {
     const el = document.querySelector(STEPS[step].selector);
     if (!el) { advance(); return; }
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    const t = setTimeout(() => setRect(el.getBoundingClientRect()), 380);
+
+    // Wait for scroll to fully settle before measuring position
+    let attempts = 0;
+    let lastTop = null;
+    const measure = () => {
+      const domRect = el.getBoundingClientRect();
+      // Keep polling until position stabilises or we've waited long enough
+      if (attempts < 12 && domRect.top !== lastTop) {
+        lastTop = domRect.top;
+        attempts++;
+        setTimeout(measure, 80);
+        return;
+      }
+      // Skip if element is outside the visible viewport
+      const H = window.innerHeight;
+      if (domRect.bottom < 0 || domRect.top > H || domRect.width === 0) {
+        advance();
+        return;
+      }
+      const computed = getComputedStyle(el);
+      const br = parseFloat(computed.borderTopLeftRadius) || 8;
+      setRect({
+        top: domRect.top, left: domRect.left,
+        right: domRect.right, bottom: domRect.bottom,
+        width: domRect.width, height: domRect.height,
+        borderRadius: br,
+      });
+    };
+    const t = setTimeout(measure, 120);
     return () => clearTimeout(t);
-  }, [step]);
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function advance() {
     if (step >= STEPS.length - 1) { finish(); }
@@ -59,8 +87,11 @@ export default function CoachMarks({ onDone }) {
   const spotLeft   = Math.max(0, rect.left   - PAD);
   const spotBottom = Math.min(H, rect.bottom + PAD);
   const spotRight  = Math.min(W, rect.right  + PAD);
+  const spotW      = spotRight - spotLeft;
+  const spotH      = spotBottom - spotTop;
+  // Scale the border-radius proportionally with padding, clamped to a true pill
+  const spotRadius = Math.min(rect.borderRadius + PAD * 0.5, spotH / 2);
 
-  // Position tooltip above or below based on available space
   const belowRoom = H - spotBottom;
   const aboveRoom = spotTop;
   const useBelow  = belowRoom >= 160 || belowRoom >= aboveRoom;
@@ -69,26 +100,42 @@ export default function CoachMarks({ onDone }) {
   const ttLeft = Math.max(12, Math.min(W - TOOLTIP_W - 12, tooltipCenterX - TOOLTIP_W / 2));
   const ttTop  = useBelow ? spotBottom + 10 : spotTop - 10 - 158;
 
-  // Arrow position relative to tooltip
   const arrowOffset = Math.max(12, Math.min(TOOLTIP_W - 24, tooltipCenterX - ttLeft - 6));
 
   const dim = "rgba(28,26,20,0.58)";
-  const panel = (style) => (
-    <div onClick={finish} style={{ position:"fixed", background:dim, pointerEvents:"all", ...style }} />
-  );
+  // Unique mask ID per step prevents stale mask references during transitions
+  const maskId = `coach-mask-${step}`;
 
   return (
     <div style={{ position:"fixed", inset:0, zIndex:9000, pointerEvents:"none" }}>
-      {panel({ top:0,         left:0,        right:0,                height:spotTop                  })}
-      {panel({ top:spotBottom,left:0,        right:0,                bottom:0                        })}
-      {panel({ top:spotTop,   left:0,        width:spotLeft,         height:spotBottom - spotTop     })}
-      {panel({ top:spotTop,   left:spotRight,right:0,                height:spotBottom - spotTop     })}
 
-      {/* Highlight ring */}
+      {/* Single SVG overlay with a rounded-rect cutout — no corner bleed */}
+      <svg
+        style={{ position:"fixed", inset:0, width:"100%", height:"100%", pointerEvents:"all" }}
+        onClick={finish}
+      >
+        <defs>
+          <mask id={maskId}>
+            {/* White = show dim; black = cut out (transparent) */}
+            <rect width="100%" height="100%" fill="white" />
+            <rect
+              x={spotLeft} y={spotTop}
+              width={spotW} height={spotH}
+              rx={spotRadius} ry={spotRadius}
+              fill="black"
+            />
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill={dim} mask={`url(#${maskId})`} />
+      </svg>
+
+      {/* Highlight ring — border-radius matches the cutout exactly */}
       <div style={{
         position:"fixed", top:spotTop, left:spotLeft,
-        width:spotRight - spotLeft, height:spotBottom - spotTop,
-        borderRadius:9, boxShadow:"0 0 0 2.5px #5a7a5a, 0 0 0 5px rgba(90,122,90,0.18)",
+        width:spotW, height:spotH,
+        borderRadius:spotRadius,
+        boxShadow:"0 0 0 2.5px #5a7a5a, 0 0 0 5px rgba(90,122,90,0.18)",
+        overflow:"hidden",
         pointerEvents:"none",
       }} />
 

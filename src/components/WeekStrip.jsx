@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const DAY_LETTERS = ["S","M","T","W","T","F","S"];
+const DAY_ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 function mondayOf(date) {
   const d = new Date(date); d.setHours(0,0,0,0);
@@ -23,7 +23,7 @@ export default function WeekStrip({ selectedDate, onSelectDate, taskDates = new 
     return {
       ds,
       num:        d.getDate(),
-      letter:     DAY_LETTERS[d.getDay()],
+      abbr:       DAY_ABBR[d.getDay()],
       isToday:    ds === todayStr,
       isSelected: ds === selectedDate,
       hasTasks:   taskDates.has(ds),
@@ -43,12 +43,13 @@ export default function WeekStrip({ selectedDate, onSelectDate, taskDates = new 
             className={`week-day-pill${day.isSelected ? " selected" : ""}${day.isToday ? " today" : ""}`}
             onClick={() => onSelectDate(day.ds)}
           >
-            <span className="week-day-letter">{day.letter}</span>
-            <span className="week-day-num">{day.num}</span>
-            {(day.isToday || day.hasTasks) && (
+            <span className="week-day-letter">{day.abbr}</span>
+            <span className="week-day-num-circle">
+              <span className="week-day-num">{day.num}</span>
+            </span>
+            {(day.hasTasks) && (
               <span className="week-day-dot-row">
-                {day.isToday  && <span className="week-dot today-dot" />}
-                {day.hasTasks && <span className="week-dot task-dot"  />}
+                {day.hasTasks && <span className="week-dot task-dot" />}
               </span>
             )}
           </button>

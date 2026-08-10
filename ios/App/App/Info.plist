@@ -28,9 +28,11 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
@@ -45,10 +47,30 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCalendarsUsageDescription</key>
+	<string>reflow shows your calendar events alongside your tasks so you can plan your day with a full picture of your time.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>reflow shows your calendar events alongside your tasks so you can plan your day with a full picture of your time.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>reflow can add tasks with due dates to your calendar so you never miss a deadline.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>reflow can create reminders for your tasks so nothing slips through the cracks.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>MyBattery uses your camera to let you attach a photo when submitting feedback or reporting a bug.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MyBattery uses your photo library to let you attach a screenshot when submitting feedback or reporting a bug.</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>CFBundleURLTypes</key>
 	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>app.web.mindfulstillflow.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mybattery</string>
+			</array>
+		</dict>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>

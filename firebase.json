@@ -14,6 +14,26 @@
     ],
     "rewrites": [
       {
+        "source": "/home",
+        "destination": "/landing.html"
+      },
+      {
+        "source": "/research",
+        "destination": "/research.html"
+      },
+      {
+        "source": "/privacy",
+        "destination": "/privacy.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/terms.html"
+      },
+      {
+        "source": "/support",
+        "destination": "/support.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

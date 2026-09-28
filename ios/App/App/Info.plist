@@ -48,13 +48,13 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCalendarsUsageDescription</key>
-	<string>reflow shows your calendar events alongside your tasks so you can plan your day with a full picture of your time.</string>
+	<string>MyBattery shows your calendar events alongside your tasks so you can plan your day with a full picture of your time.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>reflow shows your calendar events alongside your tasks so you can plan your day with a full picture of your time.</string>
+	<string>MyBattery shows your calendar events alongside your tasks so you can plan your day with a full picture of your time.</string>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
-	<string>reflow can add tasks with due dates to your calendar so you never miss a deadline.</string>
+	<string>MyBattery can add tasks with due dates to your calendar so you never miss a deadline.</string>
 	<key>NSRemindersUsageDescription</key>
-	<string>reflow can create reminders for your tasks so nothing slips through the cracks.</string>
+	<string>MyBattery can create reminders for your tasks so nothing slips through the cracks.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>MyBattery uses your camera to let you attach a photo when submitting feedback or reporting a bug.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

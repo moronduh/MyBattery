@@ -14,12 +14,7 @@ const STEPS = [
   {
     selector: ".nav-sos-btn",
     title: "Overwhelmed? Hit SOS",
-    desc: "Get an instant grounding exercise or breathing tool — no decisions required.",
-  },
-  {
-    selector: ".tutorial-help-btn",
-    title: "Full walkthrough here",
-    desc: "Tap ? anytime to replay the feature guide at your own pace. Takes about 2 minutes.",
+    desc: "Free, confidential support lines, any time. You can replay the full tour from Control → Settings.",
   },
 ];
 

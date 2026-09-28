@@ -21,6 +21,7 @@
     <style>
       /* Prevent iOS Safari horizontal momentum scroll causing centering issues */
       html, body { overflow-x: hidden; touch-action: pan-y; max-width: 100%; }
+      body { overflow-x: clip; } /* clip, not hidden: hidden makes body a scroll container and breaks the sticky header */
     </style>
   </head>
   <body>

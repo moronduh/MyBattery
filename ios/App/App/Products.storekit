@@ -1,0 +1,78 @@
+{
+  "identifier": "44A1B2C3-D4E5-6789-ABCD-EF0123456789",
+  "nonConsumableIAP": [],
+  "nonRenewingSubscriptions": [],
+  "products": [],
+  "settings": {
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [
+    {
+      "id": "A1B2C3D4-E5F6-7890-ABCD-EF0123456789",
+      "localizations": [],
+      "name": "MyBattery Pro",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "39.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "B1C2D3E4-F5A6-7890-BCDE-F01234567890",
+          "introductoryOffer": {
+            "displayPrice": "0.00",
+            "paymentMode": "FREE_TRIAL",
+            "period": "P2W",
+            "periodCount": 1,
+            "type": "INTRODUCTORY_OFFER"
+          },
+          "localizations": [
+            {
+              "description": "Full access to all MyBattery Pro features, billed annually.",
+              "displayName": "Yearly",
+              "locale": "en_US"
+            }
+          ],
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Yearly",
+          "subscriptionGroupID": "A1B2C3D4-E5F6-7890-ABCD-EF0123456789",
+          "type": "RecurringSubscription",
+          "winBackOffers": [],
+          "productID": "mybattery_yearly"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "6.99",
+          "familyShareable": false,
+          "groupNumber": 2,
+          "internalID": "C1D2E3F4-A5B6-7890-CDEF-012345678901",
+          "introductoryOffer": {
+            "displayPrice": "0.00",
+            "paymentMode": "FREE_TRIAL",
+            "period": "P2W",
+            "periodCount": 1,
+            "type": "INTRODUCTORY_OFFER"
+          },
+          "localizations": [
+            {
+              "description": "Full access to all MyBattery Pro features, billed monthly.",
+              "displayName": "Monthly",
+              "locale": "en_US"
+            }
+          ],
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Monthly",
+          "subscriptionGroupID": "A1B2C3D4-E5F6-7890-ABCD-EF0123456789",
+          "type": "RecurringSubscription",
+          "winBackOffers": [],
+          "productID": "mybattery_monthly"
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 2,
+    "minor": 0
+  }
+}

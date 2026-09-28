@@ -1,10 +1,12 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+// firebase/messaging requires service workers — dynamically imported on web only (see below)
 import {
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  getAuth, initializeAuth, inMemoryPersistence, indexedDBLocalPersistence,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, signInWithPopup, getRedirectResult,
   GoogleAuthProvider, sendPasswordResetEmail, deleteUser,
+  EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
 } from "firebase/auth";
 import { Capacitor } from "@capacitor/core";
 import {
@@ -15,7 +17,9 @@ import {
 
 const firebaseConfig = {
   apiKey:            "AIzaSyCDGjf4VK9yeIoLxcg6-nSSoc0wCC4h4Nc",
-  authDomain:        "mybatteryapp.com",
+  // On native, omit authDomain — Firebase Auth uses it to load Google's gapi scripts
+  // for popup/redirect OAuth, which crashes WKWebView on iOS 18 due to CORS on capacitor:// origin.
+  authDomain:        Capacitor.isNativePlatform() ? undefined : "mindfulstillflow.firebaseapp.com",
   projectId:         "mindfulstillflow",
   storageBucket:     "mindfulstillflow.firebasestorage.app",
   messagingSenderId: "401752681008",
@@ -25,8 +29,13 @@ const firebaseConfig = {
 
 export const VAPID_KEY = "BBtu6NK8QcqAJtdFJeKpPsrrWaousw2Zj7nL2vcB6wj-H5ZZfjt-1T4_IeugdjAt5N3wtwiwTSfqC1d5fmuDPzg";
 
-export const app       = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const auth      = getAuth(app);
+export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// On native, use initializeAuth with inMemoryPersistence to prevent Firebase from
+// loading Google's popup/redirect infrastructure (gapi), which crashes in WKWebView
+// because capacitor:// origin is blocked by Google's CORS policy.
+export const auth = Capacitor.isNativePlatform()
+  ? initializeAuth(app, { persistence: [indexedDBLocalPersistence, inMemoryPersistence] })
+  : getAuth(app);
 export const db        = getFirestore(app);
 export const functions = getFunctions(app);
 
@@ -42,9 +51,29 @@ export async function callScheduleGenerator(data) {
   return result.data;
 }
 
-export const messaging = (typeof window !== "undefined" && "serviceWorker" in navigator)
-  ? (() => { try { return getMessaging(app); } catch { return null; } })()
-  : null;
+export async function callJoinWaitlist(data) {
+  const fn = httpsCallable(functions, "joinWaitlist");
+  const result = await fn(data);
+  return result.data;
+}
+
+// Firebase Messaging is web-only — service workers don't exist in WKWebView (Capacitor iOS).
+// The static import was removed to prevent the module from loading on native at all.
+// getMessagingInstance() lazily initializes on web only.
+let _messaging = undefined;
+async function getMessagingInstance() {
+  if (Capacitor.isNativePlatform() || typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
+  if (_messaging === undefined) {
+    try {
+      const { getMessaging } = await import("firebase/messaging");
+      _messaging = getMessaging(app);
+    } catch {
+      _messaging = null;
+    }
+  }
+  return _messaging;
+}
+export const messaging = null; // kept for any legacy references — use getMessagingInstance() internally
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const createAccount = (email, pw) => createUserWithEmailAndPassword(auth, email, pw);
@@ -240,10 +269,19 @@ export async function clearUserData(uid) {
 }
 
 // ─── Auth: Delete account (Firestore docs + Auth profile) ────────────────────
-// Deletes all Firestore subcollections then removes the Firebase Auth user.
-// Throws auth/requires-recent-login if the session is too old — callers should
-// prompt the user to re-authenticate before retrying.
-export async function deleteAccount(uid) {
+// Re-authenticates first, then deletes all Firestore subcollections, then removes
+// the Firebase Auth user. Re-auth must happen before any data is touched: if it
+// fails (wrong password, cancelled Google popup, stale session), we bail out with
+// the account's data still intact instead of wiping it and only then discovering
+// deleteUser() needs a fresher login.
+export async function deleteAccount(uid, password) {
+  const user = auth.currentUser;
+  if (password) {
+    const cred = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, cred);
+  } else {
+    await reauthenticateWithPopup(user, new GoogleAuthProvider());
+  }
   const subcollections = ["days", "journal", "calendar", "tasks"];
   const snaps = await Promise.all(
     subcollections.map(sub => getDocs(collection(db, "users", uid, sub)))
@@ -251,13 +289,18 @@ export async function deleteAccount(uid) {
   const deletes = snaps.flatMap(snap => snap.docs.map(d => deleteDoc(d.ref)));
   await Promise.all(deletes);
   await deleteDoc(doc(db, "users", uid));
+  await deleteDoc(doc(db, "notifPrefs", uid)).catch(() => {});
   await deleteUser(auth.currentUser);
 }
 
 // ─── Firestore: Feedback ─────────────────────────────────────────────────────
 export async function saveFeedback(entry) {
   await addDoc(collection(db, "feedback"), {
-    ...entry, createdAt: serverTimestamp(),
+    uid:        entry.uid        ?? null,
+    text:       String(entry.message ?? entry.text ?? "").slice(0, 2000),
+    ts:         entry.ts         ?? new Date().toISOString(),
+    type:       entry.type       ?? "general",
+    appVersion: entry.appVersion ?? "1.0",
   });
 }
 
@@ -296,7 +339,12 @@ export function subscribeActiveTasks(uid, onChange) {
       return {
         ...data,
         id: d.id,
-        done: false,
+        // Recurring tasks stay status:"active" even once completed for today (see
+        // updateTaskDoc) so they carry over to the next day, so their real `done`
+        // value has to come through here. Non-recurring active tasks are always
+        // done:false since completing one flips status to "completed", dropping
+        // it out of this query entirely.
+        done: !!data.done,
         name: data._enc ? await decryptField(data.name, uid) : data.name,
       };
     }));
@@ -325,7 +373,10 @@ export async function updateTaskDoc(uid, taskId, updates) {
     payload.name = await encryptField(updates.name, uid);
     payload._enc = true;
   }
-  if (updates.done !== undefined) {
+  // Callers that need to keep a task in the "active" query despite done:true
+  // (recurring tasks completed for today) pass status explicitly — respect that
+  // instead of deriving it from `done`.
+  if (updates.done !== undefined && updates.status === undefined) {
     payload.status = updates.done ? "completed" : "active";
   }
   await setDoc(doc(db, "users", uid, "tasks", taskId), payload, { merge: true });
@@ -337,10 +388,13 @@ export async function deleteTaskDoc(uid, taskId) {
 
 // ─── FCM ──────────────────────────────────────────────────────────────────────
 export async function requestNotificationPermission() {
+  const m = await getMessagingInstance();
+  if (!m) return null;
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return null;
-    const token = await getToken(messaging, {
+    const { getToken } = await import("firebase/messaging");
+    const token = await getToken(m, {
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: await navigator.serviceWorker.getRegistration("/firebase-messaging-sw.js"),
     });
@@ -351,8 +405,11 @@ export async function requestNotificationPermission() {
   }
 }
 
-export function onForegroundMessage(callback) {
-  return onMessage(messaging, callback);
+export async function onForegroundMessage(callback) {
+  const m = await getMessagingInstance();
+  if (!m) return () => {};
+  const { onMessage } = await import("firebase/messaging");
+  return onMessage(m, callback);
 }
 
 export async function getIdToken() {
@@ -367,11 +424,11 @@ export async function getIdToken() {
 // Never throws — must be safe to call from catch blocks and ErrorBoundary.
 export async function logClientError(error, context = {}) {
   try {
-    const uid = auth.currentUser?.uid ?? null;
+    if (!auth.currentUser) return;
     await addDoc(collection(db, "errors"), {
       msg:   String(error?.message ?? error).slice(0, 500),
       stack: String(error?.stack   ?? "").slice(0, 2000),
-      uid,
+      uid:   auth.currentUser.uid,
       context: JSON.stringify(context).slice(0, 1000),
       ua:  navigator.userAgent.slice(0, 200),
       ts:  serverTimestamp(),

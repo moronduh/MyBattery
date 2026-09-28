@@ -25,13 +25,21 @@ messaging.onBackgroundMessage(payload => {
   });
 });
 
-// Notification click — bring the app to focus
+// Only follow same-origin paths (e.g. "/?tab=wellness") from notification data.
+function safeLink(link) {
+  return typeof link === "string" && link.startsWith("/") && !link.startsWith("//") ? link : "/";
+}
+
+// Notification click — bring the app to focus, opening the notification's link
 self.addEventListener("notificationclick", event => {
   event.notification.close();
+  const link = safeLink(event.notification.data?.link);
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
       const existing = list.find(c => c.url.includes(self.location.origin) && "focus" in c);
-      return existing ? existing.focus() : clients.openWindow("/");
+      if (!existing) return clients.openWindow(link);
+      if (link !== "/") existing.postMessage({ type: "open-link", link });
+      return existing.focus();
     })
   );
 });

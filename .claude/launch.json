@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "reflow-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5179,
+      "autoPort": false
+    },
+    {
+      "name": "paywall-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "5190", "/Users/mirandajohnson/Downloads/MyBattery-RevenueCat/paywall-preview"],
+      "port": 5190
+    },
+    {
+      "name": "buckbang-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "buckbang-app",
+      "port": 5174,
+      "autoPort": true
+    }
+  ]
+}

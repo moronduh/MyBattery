@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const STEPS = [
   {
@@ -101,7 +102,7 @@ export default function CoachMarks({ onDone }) {
   // Unique mask ID per step prevents stale mask references during transitions
   const maskId = `coach-mask-${step}`;
 
-  return (
+  return createPortal(
     <div style={{ position:"fixed", inset:0, zIndex:9000, pointerEvents:"none" }}>
 
       {/* Single SVG overlay with a rounded-rect cutout — no corner bleed */}
@@ -174,6 +175,7 @@ export default function CoachMarks({ onDone }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

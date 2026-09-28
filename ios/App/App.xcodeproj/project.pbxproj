@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,9 +15,64 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		AA11BB22CC33DD44EE55FF66 /* StoreKitIAPPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF60 /* StoreKitIAPPlugin.swift */; };
+		AA11BB22CC33DD44EE55FF67 /* StoreKitIAP.m in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF61 /* StoreKitIAP.m */; };
+		AA11BB22CC33DD44EE55FF68 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF62 /* ViewController.swift */; };
+		DD1A2B3C4D5E6F7C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DD1A2B3C4D5E6F7B /* PrivacyInfo.xcprivacy */; };
+		FEAA72032FDFBCC8001EE66C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E52FDFBCAB001EE66C /* WidgetKit.framework */; };
+		FEAA72042FDFBCC8001EE66C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E72FDFBCAC001EE66C /* SwiftUI.framework */; };
+		FEAA72152FDFBCC9001EE66C /* TaskPreviewWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FEAA72022FDFBCC8001EE66C /* TaskPreviewWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FEAA721F2FDFBCE0001EE66C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E52FDFBCAB001EE66C /* WidgetKit.framework */; };
+		FEAA72202FDFBCE0001EE66C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E72FDFBCAC001EE66C /* SwiftUI.framework */; };
+		FEAA72312FDFBCE2001EE66C /* QuickAddWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FEAA721E2FDFBCE0001EE66C /* QuickAddWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FEAA72422FE06586001EE66C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E52FDFBCAB001EE66C /* WidgetKit.framework */; };
+		FEAA72432FE06586001EE66C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E72FDFBCAC001EE66C /* SwiftUI.framework */; };
+		FEAA72542FE06588001EE66C /* EnergyDisplayWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FEAA72412FE06586001EE66C /* EnergyDisplayWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FEAA725B2FE06804001EE66C /* SharedDataPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAA725A2FE06804001EE66C /* SharedDataPlugin.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		FEAA72132FDFBCC9001EE66C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FEAA72012FDFBCC8001EE66C;
+			remoteInfo = TaskPreviewWidgetExtension;
+		};
+		FEAA722F2FDFBCE2001EE66C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FEAA721D2FDFBCE0001EE66C;
+			remoteInfo = QuickAddWidgetExtension;
+		};
+		FEAA72522FE06588001EE66C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FEAA72402FE06586001EE66C;
+			remoteInfo = EnergyDisplayWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4E751C5F129E021CEC670DDE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FEAA72542FE06588001EE66C /* EnergyDisplayWidgetExtension.appex in Embed Foundation Extensions */,
+				FEAA72152FDFBCC9001EE66C /* TaskPreviewWidgetExtension.appex in Embed Foundation Extensions */,
+				FEAA72312FDFBCE2001EE66C /* QuickAddWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		15B238C788D0292C0CE82821 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -28,7 +83,51 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		AA11BB22CC33DD44EE55FF60 /* StoreKitIAPPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StoreKitIAPPlugin.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF61 /* StoreKitIAP.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = StoreKitIAP.m; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF62 /* ViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		BB1A2B3C4D5E6F7A /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = file.storekit; path = Products.storekit; sourceTree = "<group>"; };
+		DD1A2B3C4D5E6F7B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		FEAA71E52FDFBCAB001EE66C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		FEAA71E72FDFBCAC001EE66C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		FEAA72022FDFBCC8001EE66C /* TaskPreviewWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TaskPreviewWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEAA721E2FDFBCE0001EE66C /* QuickAddWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickAddWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEAA72372FDFBDA7001EE66C /* TaskPreviewWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TaskPreviewWidgetExtension.entitlements; sourceTree = "<group>"; };
+		FEAA72382FDFBDB8001EE66C /* QuickAddWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickAddWidgetExtension.entitlements; sourceTree = "<group>"; };
+		FEAA72412FE06586001EE66C /* EnergyDisplayWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EnergyDisplayWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEAA72592FE0659A001EE66C /* EnergyDisplayWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EnergyDisplayWidgetExtension.entitlements; sourceTree = "<group>"; };
+		FEAA725A2FE06804001EE66C /* SharedDataPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDataPlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FEAA72162FDFBCC9001EE66C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FEAA72012FDFBCC8001EE66C /* TaskPreviewWidgetExtension */;
+		};
+		FEAA72322FDFBCE2001EE66C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FEAA721D2FDFBCE0001EE66C /* QuickAddWidgetExtension */;
+		};
+		FEAA72552FE06588001EE66C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FEAA72402FE06586001EE66C /* EnergyDisplayWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		FEAA72052FDFBCC8001EE66C /* TaskPreviewWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FEAA72162FDFBCC9001EE66C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = TaskPreviewWidget; sourceTree = "<group>"; };
+		FEAA72212FDFBCE0001EE66C /* QuickAddWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FEAA72322FDFBCE2001EE66C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = QuickAddWidget; sourceTree = "<group>"; };
+		FEAA72442FE06586001EE66C /* EnergyDisplayWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FEAA72552FE06588001EE66C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = EnergyDisplayWidget; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		504EC3011FED79650016851F /* Frameworks */ = {
@@ -39,15 +138,50 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FEAA71FF2FDFBCC8001EE66C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEAA72042FDFBCC8001EE66C /* SwiftUI.framework in Frameworks */,
+				FEAA72032FDFBCC8001EE66C /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA721B2FDFBCE0001EE66C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEAA72202FDFBCE0001EE66C /* SwiftUI.framework in Frameworks */,
+				FEAA721F2FDFBCE0001EE66C /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA723E2FE06586001EE66C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEAA72432FE06586001EE66C /* SwiftUI.framework in Frameworks */,
+				FEAA72422FE06586001EE66C /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
+				FEAA725A2FE06804001EE66C /* SharedDataPlugin.swift */,
+				FEAA72592FE0659A001EE66C /* EnergyDisplayWidgetExtension.entitlements */,
+				FEAA72382FDFBDB8001EE66C /* QuickAddWidgetExtension.entitlements */,
+				FEAA72372FDFBDA7001EE66C /* TaskPreviewWidgetExtension.entitlements */,
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
+				FEAA72052FDFBCC8001EE66C /* TaskPreviewWidget */,
+				FEAA72212FDFBCE0001EE66C /* QuickAddWidget */,
+				FEAA72442FE06586001EE66C /* EnergyDisplayWidget */,
 				504EC3051FED79650016851F /* Products */,
+				E89E9A254A8FBF3052291A52 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -55,6 +189,9 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				FEAA72022FDFBCC8001EE66C /* TaskPreviewWidgetExtension.appex */,
+				FEAA721E2FDFBCE0001EE66C /* QuickAddWidgetExtension.appex */,
+				FEAA72412FE06586001EE66C /* EnergyDisplayWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,8 +207,31 @@
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				BB1A2B3C4D5E6F7A /* Products.storekit */,
+				DD1A2B3C4D5E6F7B /* PrivacyInfo.xcprivacy */,
+				AA11BB22CC33DD44EE55FF60 /* StoreKitIAPPlugin.swift */,
+				AA11BB22CC33DD44EE55FF61 /* StoreKitIAP.m */,
+				AA11BB22CC33DD44EE55FF62 /* ViewController.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		E89E9A254A8FBF3052291A52 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EBA4D737487305397E6CC7BF /* iOS */,
+				FEAA71E52FDFBCAB001EE66C /* WidgetKit.framework */,
+				FEAA71E72FDFBCAC001EE66C /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EBA4D737487305397E6CC7BF /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				15B238C788D0292C0CE82821 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -84,10 +244,14 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				4E751C5F129E021CEC670DDE /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				FEAA72142FDFBCC9001EE66C /* PBXTargetDependency */,
+				FEAA72302FDFBCE2001EE66C /* PBXTargetDependency */,
+				FEAA72532FE06588001EE66C /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -97,19 +261,95 @@
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
 		};
+		FEAA72012FDFBCC8001EE66C /* TaskPreviewWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FEAA72172FDFBCC9001EE66C /* Build configuration list for PBXNativeTarget "TaskPreviewWidgetExtension" */;
+			buildPhases = (
+				FEAA71FE2FDFBCC8001EE66C /* Sources */,
+				FEAA71FF2FDFBCC8001EE66C /* Frameworks */,
+				FEAA72002FDFBCC8001EE66C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				FEAA72052FDFBCC8001EE66C /* TaskPreviewWidget */,
+			);
+			name = TaskPreviewWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = TaskPreviewWidgetExtension;
+			productReference = FEAA72022FDFBCC8001EE66C /* TaskPreviewWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		FEAA721D2FDFBCE0001EE66C /* QuickAddWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FEAA72332FDFBCE2001EE66C /* Build configuration list for PBXNativeTarget "QuickAddWidgetExtension" */;
+			buildPhases = (
+				FEAA721A2FDFBCE0001EE66C /* Sources */,
+				FEAA721B2FDFBCE0001EE66C /* Frameworks */,
+				FEAA721C2FDFBCE0001EE66C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				FEAA72212FDFBCE0001EE66C /* QuickAddWidget */,
+			);
+			name = QuickAddWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = QuickAddWidgetExtension;
+			productReference = FEAA721E2FDFBCE0001EE66C /* QuickAddWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		FEAA72402FE06586001EE66C /* EnergyDisplayWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FEAA72562FE06588001EE66C /* Build configuration list for PBXNativeTarget "EnergyDisplayWidgetExtension" */;
+			buildPhases = (
+				FEAA723D2FE06586001EE66C /* Sources */,
+				FEAA723E2FE06586001EE66C /* Frameworks */,
+				FEAA723F2FE06586001EE66C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				FEAA72442FE06586001EE66C /* EnergyDisplayWidget */,
+			);
+			name = EnergyDisplayWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = EnergyDisplayWidgetExtension;
+			productReference = FEAA72412FE06586001EE66C /* EnergyDisplayWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		504EC2FC1FED79650016851F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 2640;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
 						ProvisioningStyle = Automatic;
+					};
+					FEAA72012FDFBCC8001EE66C = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					FEAA721D2FDFBCE0001EE66C = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					FEAA72402FE06586001EE66C = {
+						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
 			};
@@ -130,6 +370,9 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				FEAA72012FDFBCC8001EE66C /* TaskPreviewWidgetExtension */,
+				FEAA721D2FDFBCE0001EE66C /* QuickAddWidgetExtension */,
+				FEAA72402FE06586001EE66C /* EnergyDisplayWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -145,6 +388,28 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				DD1A2B3C4D5E6F7C /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA72002FDFBCC8001EE66C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA721C2FDFBCE0001EE66C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA723F2FE06586001EE66C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -156,10 +421,53 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				AA11BB22CC33DD44EE55FF66 /* StoreKitIAPPlugin.swift in Sources */,
+				FEAA725B2FE06804001EE66C /* SharedDataPlugin.swift in Sources */,
+				AA11BB22CC33DD44EE55FF67 /* StoreKitIAP.m in Sources */,
+				AA11BB22CC33DD44EE55FF68 /* ViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA71FE2FDFBCC8001EE66C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA721A2FDFBCE0001EE66C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEAA723D2FE06586001EE66C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FEAA72142FDFBCC9001EE66C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FEAA72012FDFBCC8001EE66C /* TaskPreviewWidgetExtension */;
+			targetProxy = FEAA72132FDFBCC9001EE66C /* PBXContainerItemProxy */;
+		};
+		FEAA72302FDFBCE2001EE66C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FEAA721D2FDFBCE0001EE66C /* QuickAddWidgetExtension */;
+			targetProxy = FEAA722F2FDFBCE2001EE66C /* PBXContainerItemProxy */;
+		};
+		FEAA72532FE06588001EE66C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FEAA72402FE06586001EE66C /* EnergyDisplayWidgetExtension */;
+			targetProxy = FEAA72522FE06588001EE66C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -196,6 +504,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -203,8 +512,10 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -214,8 +525,10 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = WFL3LZ7633;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -234,6 +547,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -253,6 +567,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -260,8 +575,10 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -271,8 +588,10 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = WFL3LZ7633;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -284,6 +603,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -295,9 +615,9 @@
 			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = WFL3LZ7633;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -318,9 +638,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = WFL3LZ7633;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -331,6 +651,234 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.web.mindfulstillflow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FEAA72182FDFBCC9001EE66C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = TaskPreviewWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TaskPreviewWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TaskPreviewWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.web.mindfulstillflow.TaskPreviewWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FEAA72192FDFBCC9001EE66C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = TaskPreviewWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TaskPreviewWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TaskPreviewWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.web.mindfulstillflow.TaskPreviewWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FEAA72342FDFBCE2001EE66C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = QuickAddWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickAddWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickAddWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.web.mindfulstillflow.QuickAddWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FEAA72352FDFBCE2001EE66C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = QuickAddWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickAddWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickAddWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.web.mindfulstillflow.QuickAddWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FEAA72572FE06588001EE66C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = EnergyDisplayWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EnergyDisplayWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = EnergyDisplayWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.web.mindfulstillflow.EnergyDisplayWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FEAA72582FE06588001EE66C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = EnergyDisplayWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EnergyDisplayWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = EnergyDisplayWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.web.mindfulstillflow.EnergyDisplayWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -353,6 +901,33 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FEAA72172FDFBCC9001EE66C /* Build configuration list for PBXNativeTarget "TaskPreviewWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEAA72182FDFBCC9001EE66C /* Debug */,
+				FEAA72192FDFBCC9001EE66C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FEAA72332FDFBCE2001EE66C /* Build configuration list for PBXNativeTarget "QuickAddWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEAA72342FDFBCE2001EE66C /* Debug */,
+				FEAA72352FDFBCE2001EE66C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FEAA72562FE06588001EE66C /* Build configuration list for PBXNativeTarget "EnergyDisplayWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEAA72572FE06588001EE66C /* Debug */,
+				FEAA72582FE06588001EE66C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
 import ReactDOM from "react-dom/client";
-import App from "../../mindful-productivity.jsx";
+import App from "./mindful-productivity.jsx";
+import { useSubscription } from "./hooks/useSubscription.js";
 import {
   requestNotificationPermission, onForegroundMessage, getIdToken,
   createAccount, signIn, signInGoogle, handleGoogleRedirect, signOutUser, resetPassword, onAuthChange, friendlyAuthError,
@@ -20,21 +22,36 @@ import {
   deleteTaskDoc,
   callAICoach,
   callScheduleGenerator,
+  callJoinWaitlist,
 } from "./firebase.js";
 
 function Root() {
   const [user, setUser] = useState(undefined); // undefined = checking, null = signed out, object = signed in
   const [redirectError, setRedirectError] = useState(null);
+  const { isPro, packages, offeringsError, purchasePackage, restorePurchases, presentCustomerCenter, signOut: rcSignOut } = useSubscription(user?.uid);
 
   useEffect(() => {
     const unsub = onAuthChange(setUser);
     // Handle Google redirect sign-in result (signInWithRedirect flow).
     // getRedirectResult resolves null when there's no pending redirect,
     // or rejects with a Firebase error (e.g. auth/unauthorized-domain).
-    handleGoogleRedirect().catch(err => {
-      console.error("[Auth] Google redirect error:", err.code, err.message);
-      setRedirectError(friendlyAuthError(err.code) || err.message);
-    });
+    // Google redirect only applies on web — on native, gapi isn't available and
+    // calling getRedirectResult triggers CORS errors that crash the WebView.
+    if (!Capacitor.isNativePlatform()) {
+      handleGoogleRedirect().catch(err => {
+        // Suppress noise-only codes — these fire on every cold load with no pending redirect
+        const silentCodes = [
+          "auth/unauthorized-domain",   // localhost / dev domains not in Firebase allowlist
+          "auth/cancelled-popup-request",
+          "auth/popup-closed-by-user",
+          null, undefined,
+        ];
+        console.error("[Auth] Google redirect error:", err.code, err.message);
+        if (!silentCodes.includes(err.code)) {
+          setRedirectError(friendlyAuthError(err.code) || err.message);
+        }
+      });
+    }
     // Fallback: if auth state hasn't resolved in 5s, treat as signed out
     const timeout = setTimeout(() => setUser(u => u === undefined ? null : u), 5000);
     return () => { unsub(); clearTimeout(timeout); };
@@ -68,8 +85,16 @@ function Root() {
     addTaskDoc,
     updateTaskDoc,
     deleteTaskDoc,
-    callAI: callAICoach,
-    callScheduleGenerator,
+    callAI: user ? callAICoach : null,
+    callScheduleGenerator: user ? callScheduleGenerator : null,
+    callJoinWaitlist,
+    isPro,
+    packages,
+    offeringsError,
+    purchasePackage,
+    restorePurchases,
+    presentCustomerCenter,
+    rcSignOut,
   };
 
   if (user === undefined) {

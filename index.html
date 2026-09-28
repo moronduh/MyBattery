@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>MyBattery</title>
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#5a7a5a" />
@@ -18,13 +18,58 @@
         document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
       } catch(e) {}
     </script>
+    <!-- Shim window.gapi before Firebase Auth loads. Firebase Auth proactively loads
+         Google's gapi script at startup to check for pending redirect sign-ins. On
+         Capacitor iOS the capacitor:// origin is CORS-blocked by Google, leaving
+         gapi.iframes undefined and crashing the app. This no-op shim prevents the crash;
+         email/password auth and Firestore are unaffected. Google sign-in is web-only. -->
+    <script>
+      if (!window.gapi) {
+        window.gapi = {
+          iframes: {
+            getContext: function() {
+              return { open: function() {}, send: function() {}, register: function() {}, restyle: function() {} };
+            },
+            styles: {}
+          },
+          load: function(mod, cb) { if (typeof cb === 'function') setTimeout(cb, 0); }
+        };
+      }
+    </script>
     <style>
       /* Prevent iOS Safari horizontal momentum scroll causing centering issues */
       html, body { overflow-x: hidden; touch-action: pan-y; max-width: 100%; }
       body { overflow-x: clip; } /* clip, not hidden: hidden makes body a scroll container and breaks the sticky header */
+      #error-overlay { display:none; position:fixed; inset:0; background:#1e1e1e; color:#ff6b6b; font-family:monospace; font-size:13px; padding:24px; overflow:auto; z-index:99999; white-space:pre-wrap; }
     </style>
+    <script>
+      function showError(text) {
+        // Log to native console (visible in Xcode device logs)
+        console.error('[AppError]', text);
+        var el = document.getElementById('error-overlay');
+        if (!el) {
+          // DOM not ready yet — buffer and retry
+          setTimeout(function() { showError(text); }, 50);
+          return;
+        }
+        el.style.display = 'block';
+        el.textContent = text;
+      }
+      window.onerror = function(msg, src, line, col, err) {
+        var detail = err && err.stack ? err.stack : (src ? src + ':' + line + ':' + col : 'source unknown');
+        showError('JS ERROR:\n' + msg + '\n\n' + detail);
+      };
+      window.onunhandledrejection = function(e) {
+        var r = e.reason;
+        // Log to console for debugging (visible in Xcode device logs and Safari devtools)
+        // but do NOT show the blocking overlay — unhandled rejections from Firebase SDK
+        // internals (IndexedDB, Auth persistence) are non-fatal and must not crash the UI.
+        console.error('[UnhandledPromise]', r && r.stack ? r.stack : String(r));
+      };
+    </script>
   </head>
   <body>
+    <div id="error-overlay"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

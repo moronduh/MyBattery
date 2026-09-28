@@ -6,12 +6,22 @@ const { getFirestore }                  = require("firebase-admin/firestore");
 const { getMessaging }                  = require("firebase-admin/messaging");
 const { getAuth }                       = require("firebase-admin/auth");
 
-const geminiApiKey = defineSecret("GEMINI_API_KEY");
+const geminiApiKey     = defineSecret("GEMINI_API_KEY");
+// Waitlist email notifications — set these secrets before deploying:
+//   firebase functions:secrets:set GMAIL_USER        (e.g. yourname@gmail.com)
+//   firebase functions:secrets:set GMAIL_APP_PASSWORD (Google account → Security → App passwords)
+const gmailUser        = defineSecret("GMAIL_USER");
+const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 
 initializeApp();
 const db = getFirestore();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const HTML_ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => HTML_ESCAPES[c]);
+}
 
 // Returns [hh, mm] in the user's local timezone, or null if tz is invalid.
 // Cloud Functions run in UTC — all time comparisons must go through this.
@@ -21,8 +31,9 @@ function localHourMinute(tz) {
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false,
     }).formatToParts(new Date());
-    const hh = parseInt(parts.find(p => p.type === "hour").value,   10);
+    let hh = parseInt(parts.find(p => p.type === "hour").value,   10);
     const mm = parseInt(parts.find(p => p.type === "minute").value, 10);
+    if (hh === 24) hh = 0; // Node.js Intl quirk: midnight can return 24 instead of 0
     return (isNaN(hh) || isNaN(mm)) ? null : [hh, mm];
   } catch { return null; }
 }
@@ -41,7 +52,7 @@ async function checkRateLimit(uid, limit) {
       tx.set(ref, { count: count + 1, uid, date: today }, { merge: true });
       return true;
     });
-  } catch { return true; }
+  } catch { return false; }
 }
 
 // ─── aiCoach ──────────────────────────────────────────────────────────────────
@@ -50,9 +61,6 @@ async function checkRateLimit(uid, limit) {
 exports.aiCoach = onCall({ secrets: [geminiApiKey], cors: true }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Authentication required.");
 
-  const allowed = await checkRateLimit(request.auth.uid, 30);
-  if (!allowed) throw new HttpsError("resource-exhausted", "Daily AI limit reached. Try again tomorrow.");
-
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const { message, context = {}, history = [] } = request.data || {};
   if (!message) throw new HttpsError("invalid-argument", "No message provided.");
@@ -60,6 +68,9 @@ exports.aiCoach = onCall({ secrets: [geminiApiKey], cors: true }, async (request
     throw new HttpsError("invalid-argument", "Message must be a string under 2000 characters.");
   if (!Array.isArray(history) || history.length > 20)
     throw new HttpsError("invalid-argument", "History must be an array of at most 20 turns.");
+
+  const allowed = await checkRateLimit(request.auth.uid, 30);
+  if (!allowed) throw new HttpsError("resource-exhausted", "Daily AI limit reached. Try again tomorrow.");
 
   const genAI = new GoogleGenerativeAI(geminiApiKey.value());
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -91,6 +102,7 @@ Guiding principles:
   // Build contents array with history
   const contents = [];
   for (const turn of history) {
+    if (typeof turn.text !== "string") continue;
     contents.push({ role: turn.role === "assistant" ? "model" : "user", parts: [{ text: turn.text }] });
   }
   contents.push({ role: "user", parts: [{ text: message }] });
@@ -110,14 +122,14 @@ Guiding principles:
 exports.generateSchedule = onCall({ secrets: [geminiApiKey], cors: true }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Authentication required.");
 
-  const allowed = await checkRateLimit(request.auth.uid, 10);
-  if (!allowed) throw new HttpsError("resource-exhausted", "Daily schedule limit reached. Try again tomorrow.");
-
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const { input, context = {} } = request.data || {};
   if (!input) throw new HttpsError("invalid-argument", "No input provided.");
   if (typeof input !== "string" || input.length > 2000)
     throw new HttpsError("invalid-argument", "Input must be a string under 2000 characters.");
+
+  const allowed = await checkRateLimit(request.auth.uid, 10);
+  if (!allowed) throw new HttpsError("resource-exhausted", "Daily schedule limit reached. Try again tomorrow.");
 
   const genAI = new GoogleGenerativeAI(geminiApiKey.value());
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -128,7 +140,11 @@ exports.generateSchedule = onCall({ secrets: [geminiApiKey], cors: true }, async
   const date    = context.date    || new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
 
   const existingStr = Array.isArray(context.existingTasks) && context.existingTasks.length
-    ? context.existingTasks.map(t => `- ${t.name} (${t.bucket}, ${t.duration || 30}min)`).join("\n")
+    ? context.existingTasks
+        .filter(t => t && typeof t.name === "string" && t.name.trim().length > 0)
+        .slice(0, 20)
+        .map(t => `- ${t.name.replace(/[\r\n]/g, " ").slice(0, 200)} (${String(t.bucket ?? "?").replace(/[\r\n]/g, "")}, ${Number.isFinite(t.duration) ? t.duration : 30}min)`)
+        .join("\n") || "None"
     : "None";
 
   const systemPrompt = `You are the schedule generation engine for MyBattery, an energy-management productivity app.
@@ -263,7 +279,7 @@ exports.sendCheckin = onSchedule("every 1 minutes", async () => {
     if (typeof prefs.checkinTime !== "string" || !/^\d{1,2}:\d{2}$/.test(prefs.checkinTime)) continue;
     const [hh, mm] = prefs.checkinTime.split(":").map(Number);
     if (isNaN(hh) || isNaN(mm)) continue;
-    const local = localHourMinute(prefs.timezone || "UTC");
+    const local = localHourMinute(prefs.timezone);
     if (!local || local[0] !== hh || local[1] !== mm) continue;
     sends.push(getMessaging().send({
       token,
@@ -294,7 +310,7 @@ exports.sendStillness = onSchedule("every 1 minutes", async () => {
   for (const doc of snap.docs) {
     const { token, prefs } = doc.data();
     if (!prefs?.stillnessEnabled || !token) continue;
-    const local = localHourMinute(prefs.timezone || "UTC");
+    const local = localHourMinute(prefs.timezone);
     if (!local) continue;
     const [localHH, localMM] = local;
     const withinWindow = localHH >= 8 && localHH < 18;
@@ -325,7 +341,7 @@ exports.sendWinddown = onSchedule("every 1 minutes", async () => {
     if (typeof prefs.winddownTime !== "string" || !/^\d{1,2}:\d{2}$/.test(prefs.winddownTime)) continue;
     const [hh, mm] = prefs.winddownTime.split(":").map(Number);
     if (isNaN(hh) || isNaN(mm)) continue;
-    const local = localHourMinute(prefs.timezone || "UTC");
+    const local = localHourMinute(prefs.timezone);
     if (!local || local[0] !== hh || local[1] !== mm) continue;
     sends.push(getMessaging().send({
       token,
@@ -338,3 +354,61 @@ exports.sendWinddown = onSchedule("every 1 minutes", async () => {
   }
   await Promise.allSettled(sends);
 });
+
+// ─── joinWaitlist ──────────────────────────────────────────────────────────────
+// Callable: { email, source? }  source = "landing" | "app"
+// Stores the signup in waitlist/{auto-id} and fires a notification email.
+exports.joinWaitlist = onCall(
+  { secrets: [gmailUser, gmailAppPassword], cors: true },
+  async (request) => {
+    const { email, source: rawSource = "app" } = request.data || {};
+
+    // Validate
+    if (!email || typeof email !== "string") {
+      throw new HttpsError("invalid-argument", "Email is required.");
+    }
+    const cleaned = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleaned)) {
+      throw new HttpsError("invalid-argument", "Please enter a valid email address.");
+    }
+    if (cleaned.length > 254) {
+      throw new HttpsError("invalid-argument", "Email address is too long.");
+    }
+    const source = ["landing", "app"].includes(rawSource) ? rawSource : "app";
+
+    // Duplicate check (best-effort — not transactional)
+    const existing = await db.collection("waitlist")
+      .where("email", "==", cleaned).limit(1).get();
+    if (!existing.empty) {
+      return { ok: true, duplicate: true };
+    }
+
+    // Persist
+    await db.collection("waitlist").add({
+      email:     cleaned,
+      source,
+      createdAt: new Date(),
+      uid:       request.auth?.uid ?? null,
+    });
+
+    // Notify — wrapped so a mail failure never blocks the signup
+    try {
+      const nodemailer = require("nodemailer");
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: { user: gmailUser.value(), pass: gmailAppPassword.value() },
+      });
+      await transporter.sendMail({
+        from:    `"MyBattery Waitlist" <${gmailUser.value()}>`,
+        to:      "info@mybatteryapp.com",
+        subject: `🔋 New waitlist signup — ${cleaned}`,
+        text:    `${cleaned} just joined the MyBattery waitlist.\n\nSource: ${source}\nTime: ${new Date().toUTCString()}`,
+        html:    `<p><strong>${escapeHtml(cleaned)}</strong> just joined the MyBattery waitlist.</p><p>Source: <code>${escapeHtml(source)}</code><br>Time: ${new Date().toUTCString()}</p>`,
+      });
+    } catch (mailErr) {
+      console.error("[joinWaitlist] email failed:", mailErr.message);
+    }
+
+    return { ok: true, duplicate: false };
+  }
+);

@@ -35,3 +35,11 @@ DerivedData/
 
 # Misc
 npm
+
+# Local-only
+buckbang-app
+.claude/worktrees/
+.claude/settings.local.json
+.agents/
+skills-lock.json
+.claude/skills/

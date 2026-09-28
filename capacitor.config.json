@@ -7,6 +7,9 @@
     "iosScheme": "https"
   },
   "plugins": {
+    "LocalNotifications": {
+      "presentationOptions": ["badge", "sound", "banner", "list"]
+    },
     "GoogleAuth": {
       "scopes": ["profile", "email"],
       "iosClientId": "401752681008-mugpcas2o263ujcrv54icjsp5en5clr8.apps.googleusercontent.com",

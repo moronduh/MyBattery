@@ -10,8 +10,8 @@ service cloud.firestore {
 
     // ── users (profile, tasks, and all subcollections) ───────────────────────
     match /users/{uid} {
-      allow read: if request.auth != null
-                  && request.auth.uid == uid;
+      allow read, delete: if request.auth != null
+                          && request.auth.uid == uid;
 
       allow write: if request.auth != null
                    && request.auth.uid == uid
@@ -20,8 +20,8 @@ service cloud.firestore {
 
       // Daily mood / energy records
       match /days/{dateKey} {
-        allow read: if request.auth != null
-                    && request.auth.uid == uid;
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == uid;
 
         allow write: if request.auth != null
                      && request.auth.uid == uid
@@ -61,8 +61,8 @@ service cloud.firestore {
 
       // Calendar: one document per day, keyed by ISO date string (YYYY-MM-DD)
       match /calendar/{dateKey} {
-        allow read: if request.auth != null
-                    && request.auth.uid == uid;
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == uid;
 
         allow write: if request.auth != null
                      && request.auth.uid == uid
@@ -90,6 +90,11 @@ service cloud.firestore {
 
     // ── aiUsage (rate-limit counters; written only by Cloud Functions) ────────
     match /aiUsage/{docId} {
+      allow read, write: if false;
+    }
+
+    // ── waitlist (written only via joinWaitlist Cloud Function / Admin SDK) ───
+    match /waitlist/{docId} {
       allow read, write: if false;
     }
 

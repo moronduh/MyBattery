@@ -5,6 +5,7 @@ const { initializeApp }                 = require("firebase-admin/app");
 const { getFirestore }                  = require("firebase-admin/firestore");
 const { getMessaging }                  = require("firebase-admin/messaging");
 const { getAuth }                       = require("firebase-admin/auth");
+const { QUIET_LINK, QUIET_NOTIFICATION, toMillis, shouldSendQuietCheckin } = require("./quietCheckin");
 
 const geminiApiKey     = defineSecret("GEMINI_API_KEY");
 // Waitlist email notifications — set these secrets before deploying:
@@ -412,3 +413,53 @@ exports.joinWaitlist = onCall(
     return { ok: true, duplicate: false };
   }
 );
+
+// ─── sendQuietCheckin ─────────────────────────────────────────────────────────
+// Runs every minute. If someone hasn't logged anything for a few days, sends one
+// gentle "hope you're okay" notification that opens the Wellness tab. Sent at
+// most once per quiet stretch — it resets the next time they log something.
+exports.sendQuietCheckin = onSchedule("every 1 minutes", async () => {
+  const snap = await db.collection("notifPrefs").get();
+  if (snap.empty) return;
+
+  const nowMs = Date.now();
+  const sends = [];
+  for (const doc of snap.docs) {
+    const { token, prefs } = doc.data();
+    if (!token) continue;
+    const local = localHourMinute(prefs?.timezone || "UTC");
+    // Cheap checks first; only users at their send minute cost any reads.
+    if (!shouldSendQuietCheckin({ prefs, local, lastActivityMs: 0, lastNudgeMs: null, nowMs })) continue;
+    sends.push(maybeSendQuietCheckin(doc.id, token, prefs, local, nowMs));
+  }
+  await Promise.allSettled(sends);
+});
+
+async function latestMillis(query, field) {
+  const s = await query.orderBy(field, "desc").limit(1).get();
+  return s.empty ? null : toMillis(s.docs[0].get(field));
+}
+
+async function maybeSendQuietCheckin(uid, token, prefs, local, nowMs) {
+  const user     = db.collection("users").doc(uid);
+  const nudgeRef = db.collection("quietCheckins").doc(uid);
+  const [days, journal, tasksCreated, tasksUpdated, nudgeSnap] = await Promise.all([
+    latestMillis(user.collection("days"),    "updatedAt"),
+    latestMillis(user.collection("journal"), "createdAt"),
+    latestMillis(user.collection("tasks"),   "createdAt"),
+    latestMillis(user.collection("tasks"),   "updatedAt"),
+    nudgeRef.get(),
+  ]);
+  const times = [days, journal, tasksCreated, tasksUpdated].filter(t => t != null);
+  const lastActivityMs = times.length ? Math.max(...times) : null;
+  const lastNudgeMs    = nudgeSnap.exists ? toMillis(nudgeSnap.get("sentAt")) : null;
+  if (!shouldSendQuietCheckin({ prefs, local, lastActivityMs, lastNudgeMs, nowMs })) return;
+
+  await getMessaging().send({
+    token,
+    notification: QUIET_NOTIFICATION,
+    data:    { link: QUIET_LINK },
+    webpush: { fcmOptions: { link: QUIET_LINK } },
+  });
+  await nudgeRef.set({ sentAt: new Date(nowMs) });
+}

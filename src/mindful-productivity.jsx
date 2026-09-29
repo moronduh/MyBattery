@@ -894,6 +894,9 @@ const styles = `
 
   /* TOAST */
   .toast { position:fixed; bottom:28px; right:28px; z-index:999; background:#2a2a25; color:#f5f2eb; border-radius:var(--radius); padding:16px 20px; max-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.4); animation:slideIn 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+  /* WELCOME BACK — in-app only, fades out on its own */
+  .welcome-back-card { position:fixed; top:calc(env(safe-area-inset-top, 0px) + 96px); left:50%; transform:translateX(-50%); z-index:998; background:var(--card); color:var(--ink); border:1.5px solid rgba(90,122,90,0.25); border-radius:var(--radius); padding:12px 20px; font-family:'DM Sans',sans-serif; font-size:14px; box-shadow:0 6px 24px var(--glow); white-space:nowrap; cursor:pointer; animation:welcomeBackFade 5s ease both; }
+  @keyframes welcomeBackFade { 0%{opacity:0} 10%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
   .toast.scheduled { background:linear-gradient(135deg,var(--focus-blue) 0%,#4a6a8a 100%); }
   .toast.warn { background:linear-gradient(135deg,var(--slate-dark) 0%,#9a6a3a 100%); }
   .toast-title { font-weight:500; font-size:14px; margin-bottom:4px; }
@@ -7003,21 +7006,37 @@ async function scheduleIosNotifs(prefs, battery) {
 }
 
 // IDs 3001–4400 reserved for routine reminders: 7 slots (one per weekday) × up to 200 routines
-async function scheduleHabitNotifsIos(routines) {
+const ROUTINE_NOTIF_BODY_SUFFIX = "— time for your routine.";
+// Runs are queued so an older, slower run (e.g. still awaiting the permission check) can't
+// re-schedule stale days after a newer run has already cleared them — that left routines
+// alerting on days they'd just been turned off for. Queued runs that are no longer the latest skip.
+let _habitNotifQueue  = Promise.resolve();
+let _habitNotifLatest = null;
+function scheduleHabitNotifsIos(routines) {
+  _habitNotifLatest = routines;
+  _habitNotifQueue = _habitNotifQueue.then(() =>
+    routines === _habitNotifLatest ? _scheduleHabitNotifsIosNow(routines) : undefined);
+  return _habitNotifQueue;
+}
+
+async function _scheduleHabitNotifsIosNow(routines) {
   const ln = _localNotifs();
   if (!ln || !_isNative()) return;
   try {
     const { display } = await ln.requestPermissions();
     if (display !== "granted") return;
     const cancelIds = Array.from({ length: 1400 }, (_, i) => ({ id: 3001 + i }));
+    // Also clear any routine reminders left pending under an older ID scheme.
+    const { notifications: pending = [] } = await ln.getPending().catch(() => ({}));
+    pending.forEach(n => { if (n.body?.endsWith(ROUTINE_NOTIF_BODY_SUFFIX)) cancelIds.push({ id: n.id }); });
     await ln.cancel({ notifications: cancelIds }).catch(() => {});
     const notifs = [];
     routines.slice(0, 200).forEach((r, idx) => {
       if (!r.reminderTime) return;
       const [hour, minute] = r.reminderTime.split(":").map(Number);
-      const body = `${r.emoji} ${r.name} — time for your routine.`;
+      const body = `${r.emoji} ${r.name} ${ROUTINE_NOTIF_BODY_SUFFIX}`;
       // No days selected = every day. JS getDay() is 0=Sun; Capacitor weekday is 1=Sun.
-      const days = r.days?.length ? r.days : [0,1,2,3,4,5,6];
+      const days = r.days?.length ? r.days.map(Number) : [0,1,2,3,4,5,6];
       for (const dow of days) {
         notifs.push({ id: 3001 + idx * 7 + dow, title:"MyBattery", body,
           schedule:{ on:{ weekday: dow + 1, hour, minute }, repeats:true, allowWhileIdle:true } });
@@ -7061,6 +7080,7 @@ function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggle
     middayEnabled:       false, middayTime:        "15:00",
     winddownEnabled:     false, winddownTime:      "17:30",
     quietHoursEnabled:   true,  quietStart:        "21:00", quietEnd: "08:00",
+    quietCheckinEnabled: true,
   };
 
   const [prefs, setPrefs] = useState(() => {
@@ -7321,6 +7341,20 @@ function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggle
             Example: "{getGentleMessage("shutdown", battery) ?? "The day is done. Your progress is safe. Rest now."}"
           </div>
         )}
+      </div>
+
+      {/* Gentle check-in after a quiet stretch (sent by functions/index.js sendQuietCheckin) */}
+      <div className="notif-section">
+        <div className="notif-section-title">Gentle check-in</div>
+        <div className="notif-section-sub">If you haven't logged anything for a few days, we'll send one quiet note around midday. Just once — nothing to do.</div>
+        <div className="notif-row">
+          <div><div className="notif-row-label">Gentle check-in if I've been quiet for a few days</div></div>
+          <label className="notif-toggle">
+            <input type="checkbox" checked={prefs.quietCheckinEnabled} disabled={!granted}
+              onChange={e => updatePref("quietCheckinEnabled", e.target.checked)} />
+            <span className="notif-toggle-slider" />
+          </label>
+        </div>
       </div>
 
       {/* Quiet Hours */}
@@ -9956,7 +9990,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
       const today = now.toLocaleDateString("en-CA");
       routines.forEach(r => {
         if (!r.reminderTime || r.reminderTime !== timeStr) return;
-        if (r.days?.length && !r.days.includes(now.getDay())) return;
+        if (r.days?.length && !r.days.map(Number).includes(now.getDay())) return;
         if (r.completedDate === today) return;
         _fireGentleNotif("MyBattery", `${r.emoji} ${r.name} — time for your routine.`);
       });
@@ -10592,11 +10626,35 @@ export default function App({ user, firebaseHelpers = {} }) {
   }, [darkMode]);
 
 
+  // "Welcome back" card — shown once, in-app only, the first time someone opens the app
+  // after WELCOME_BACK_DAYS or more without logging. Deliberately says nothing about how long.
+  const WELCOME_BACK_DAYS = 3;
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+  function maybeShowWelcomeBack(days) {
+    const t = days[0]?.updatedAt; // loadRecentDays is ordered by updatedAt desc
+    const lastMs = t == null ? null
+      : typeof t.toMillis === "function" ? t.toMillis()
+      : new Date(t).getTime();
+    if (!lastMs || Number.isNaN(lastMs)) return;
+    if (Date.now() - lastMs < WELCOME_BACK_DAYS * 24 * 60 * 60 * 1000) return;
+    // Remember which quiet stretch we've greeted so it's only shown once per return.
+    const key = "reflow-welcome-back-shown-for";
+    if (localStorage.getItem(key) === String(lastMs)) return;
+    localStorage.setItem(key, String(lastMs));
+    setShowWelcomeBack(true);
+  }
+  useEffect(() => {
+    if (!showWelcomeBack) return;
+    const t = setTimeout(() => setShowWelcomeBack(false), 5000);
+    return () => clearTimeout(t);
+  }, [showWelcomeBack]);
+
   // Backfill shutdownDays from Firestore when user signs in
   // Includes both morning check-in days (has energy field) and end-of-day shutdown days
   useEffect(() => {
     if (!uid || !loadRecentDays) return;
     loadRecentDays(uid, 8).then(days => {
+      maybeShowWelcomeBack(days);
       const allActivityKeys = days.filter(d => d.shutdownComplete || d.energy).map(d => d.id);
       if (allActivityKeys.length === 0) return;
       setShutdownDays(prev => {
@@ -10673,6 +10731,29 @@ export default function App({ user, firebaseHelpers = {} }) {
       }
     } catch {}
   }
+
+  // Notification links like "/?tab=wellness" (see functions/quietCheckin.js). On a cold open
+  // the tab arrives in the URL; if the app is already open, the service worker posts it instead.
+  function openTabFromLink(link) {
+    try {
+      const tab = new URL(link, window.location.origin).searchParams.get("tab");
+      if (tab === "wellness" && localStorage.getItem("reflow-onboarded") === "true") setView("recharge");
+    } catch {}
+  }
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("tab")) {
+      openTabFromLink(window.location.href);
+      params.delete("tab");
+      const qs = params.toString();
+      window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash);
+    }
+    const sw = navigator.serviceWorker;
+    if (!sw) return;
+    const onMessage = e => { if (e.data?.type === "open-link") openTabFromLink(e.data.link); };
+    sw.addEventListener("message", onMessage);
+    return () => sw.removeEventListener("message", onMessage);
+  }, []);
 
   // Cold-start: runs once on mount. Drains any pending widget energy logs and reads
   // the launch deep-link URL (written to UserDefaults by AppDelegate on cold launch).
@@ -12202,6 +12283,11 @@ export default function App({ user, firebaseHelpers = {} }) {
           </ErrorBoundary>
         )}
 
+        {showWelcomeBack && (
+          <div className="welcome-back-card" role="status" onClick={() => setShowWelcomeBack(false)}>
+            Welcome back 🌿 Glad you're here.
+          </div>
+        )}
         {toast && <Toast type={toast.type} title={toast.title} msg={toast.msg} onClose={() => setToast(null)} />}
         {showSOSModal && <SOSModal onDismiss={() => setShowSOSModal(false)} onOpenSafety={() => { setShowSOSModal(false); setControlTab("safety"); setView("control"); }} />}
         {showJumpstart && (

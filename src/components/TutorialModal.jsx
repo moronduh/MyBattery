@@ -93,13 +93,13 @@ export default function TutorialModal({ onClose }) {
     {
       label: "Finding your way",
       title: "Five tabs, one idea each.",
-      desc: "Circuit is today. Node is for capturing — brain dump and routines. Current is your calendar. Recharge has grounding, breathing, Jumpstart and your journal. Control holds settings, your history, and the Safety area.",
+      desc: "Today is your tasks and battery. Routines holds your routines and brain dump. Calendar is your week. Wellness has grounding, breathing, Jumpstart and your journal. More holds settings, your history, and the Safety area.",
       visual: rows([
-        { icon:"bolt",     label:"Circuit",  sub:"Today's tasks and battery" },
-        { icon:"brain",    label:"Node",     sub:"Brain dump · routines" },
-        { icon:"calendar", label:"Current",  sub:"Calendar · coming up this week" },
-        { icon:"leaf",     label:"Recharge", sub:"Grounding · breathing · Jumpstart · journal" },
-        { icon:"gear",     label:"Control",  sub:"Settings · history · safety" },
+        { icon:"bolt",     label:"Today", sub:"Tasks and battery" },
+        { icon:"brain",    label:"Routines", sub:"Routines · brain dump" },
+        { icon:"calendar", label:"Calendar", sub:"Coming up this week" },
+        { icon:"leaf",     label:"Wellness", sub:"Grounding · breathing · Jumpstart · journal" },
+        { icon:"gear",     label:"More", sub:"Settings · history · safety" },
       ]),
     },
     {

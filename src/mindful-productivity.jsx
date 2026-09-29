@@ -204,21 +204,21 @@ const styles = `
   .bucket-tabs-row { display:flex; align-items:center; margin-bottom:18px; }
   .bucket-tabs-line { flex:1; height:1px; background:var(--teal-light); }
   .bucket-tab-labels { display:flex; gap:18px; padding:0 10px; }
-  .bucket-tab-lbl { font-size:11px; font-family:'DM Mono',monospace; letter-spacing:2px; text-transform:uppercase; color:var(--ink-mute); cursor:pointer; padding-bottom:3px; border:none; border-bottom:1.5px solid transparent; background:none; transition:color 0.15s, border-color 0.15s; }
+  .bucket-tab-lbl { font-size:14px; font-family:'DM Sans',sans-serif; font-weight:500; color:var(--ink-mute); cursor:pointer; padding-bottom:3px; border:none; border-bottom:1.5px solid transparent; background:none; transition:color 0.15s, border-color 0.15s; }
   .bucket-tab-lbl.active { color:var(--ink); border-bottom-color:var(--ink); }
   .bucket-view-toggle { display:flex; align-items:center; gap:3px; background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:8px; color:var(--ink-mute); transition:background 0.15s, color 0.15s; margin-left:8px; flex-shrink:0; }
   .bucket-view-toggle:hover { background:var(--teal-light); color:var(--ink); }
   .bucket-view-toggle.active { color:var(--teal-dark); background:var(--teal-light); }
-  .bucket-all-view { display:flex; flex-direction:column; gap:12px; }
-  .bucket-all-section { border:1.5px solid var(--teal-light); border-radius:22px; padding:16px 16px 12px; background:var(--card); transition:border-color 0.15s, background 0.15s; }
-  .bucket-all-section.drag-over { border-color:var(--teal-dark); background:rgba(90,122,90,0.06); }
-  .bucket-all-header { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--teal-dark); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--teal-light); }
+  .bucket-all-view { display:flex; flex-direction:column; gap:20px; }
+  .bucket-all-section { border-radius:16px; padding:4px 0; transition:background 0.15s; }
+  .bucket-all-section.drag-over { background:rgba(90,122,90,0.08); }
+  .bucket-all-header { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:10px; }
   .bucket-task-draggable { display:flex; align-items:center; gap:4px; cursor:default; }
   .bucket-task-draggable.is-dragging { opacity:0.35; }
   .drag-handle { display:flex; align-items:center; padding:4px 2px; cursor:grab; color:var(--ink-mute); flex-shrink:0; touch-action:none; }
   .drag-handle:active { cursor:grabbing; }
   .drag-handle svg { display:block; }
-  .bucket-main-card { border:1.5px solid var(--teal-light); border-radius:22px; padding:18px 16px 14px; background:var(--card); }
+  .bucket-main-card { min-height:120px; }
   .bucket-main-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--ink); margin-bottom:14px; text-align:center; }
   .new-task-row { display:flex; align-items:center; gap:12px; background:var(--card); border-radius:14px; padding:12px 14px; margin-bottom:10px; border:1.5px solid rgba(0,0,0,0.08); box-shadow:0 2px 10px rgba(0,0,0,0.07); cursor:pointer; position:relative; overflow:hidden; }
   [data-theme="dark"] .new-task-row { border-color:rgba(255,255,255,0.09); }
@@ -228,13 +228,13 @@ const styles = `
   .new-task-check { width:30px; height:30px; border-radius:50%; border:2px solid rgba(0,0,0,0.2); background:none; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:var(--transition); }
   .new-task-check.done { border-color:var(--teal-dark); background:var(--teal-dark); }
   .new-task-info { flex:1; min-width:0; position:relative; z-index:1; }
-  .new-task-title-text { font-family:'Playfair Display',serif; font-size:15px; font-weight:600; color:var(--ink); line-height:1.25; }
+  .new-task-title-text { font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; color:var(--ink); line-height:1.25; }
   .new-task-sub-text { font-size:11px; color:var(--teal-dark); margin-top:2px; font-family:'DM Sans',sans-serif; }
   .new-task-badges { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; position:relative; z-index:1; }
   .new-energy-badge { font-size:11px; font-family:'DM Mono',monospace; font-weight:600; background:rgba(196,114,106,0.12); color:#c04a3e; border-radius:20px; padding:2px 8px; white-space:nowrap; }
   .new-energy-badge.recharge { background:rgba(90,122,90,0.12); color:var(--teal-dark); }
   .new-due-pill { font-size:10px; font-family:'DM Mono',monospace; background:var(--teal-dark); color:white; border-radius:20px; padding:2px 8px; white-space:nowrap; }
-  .bucket-empty-label { font-size:14px; font-style:italic; color:var(--ink-mute); text-align:center; padding:28px 0 16px; display:flex; flex-direction:column; align-items:center; }
+  .bucket-empty-label { font-size:14px; color:var(--ink-mute); padding:4px 0 8px; }
   .bucket-dots-row { display:flex; justify-content:center; gap:8px; padding:16px 0 4px; }
   .bucket-dot-pill { height:8px; border-radius:4px; background:var(--teal-dark); transition:all 0.25s; cursor:pointer; border:none; padding:0; }
   .bucket-dot-pill.active { width:24px; opacity:1; }
@@ -563,14 +563,14 @@ const styles = `
   .burnout-warning::before { content:''; display:none; }
 
   /* BATTERY NUDGE */
-  .battery-nudge { background:rgba(90,122,90,0.07); border:1px solid rgba(90,122,90,0.18); border-left:3px solid var(--teal-dark); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px; display:flex; align-items:flex-start; gap:10px; animation:fadeUp 0.35s ease both; }
+  .battery-nudge { background:var(--card); border:1px solid var(--warm); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px; display:flex; align-items:flex-start; gap:10px; animation:fadeUp 0.35s ease both; }
   .battery-nudge-body { flex:1; min-width:0; }
-  .battery-nudge-msg { font-size:13px; color:var(--ink); line-height:1.55; }
+  .battery-nudge-msg { font-size:14px; color:var(--ink); line-height:1.5; }
   .battery-nudge-task { font-size:11px; color:var(--ink-mute); margin-top:3px; font-family:'DM Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .battery-nudge-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
   .battery-nudge-btn { font-size:12px; padding:5px 13px; border-radius:20px; cursor:pointer; border:1.5px solid var(--teal); background:var(--card); color:var(--teal-dark); font-family:'DM Sans',sans-serif; transition:var(--transition); }
   .battery-nudge-btn:hover { background:var(--teal-dark); color:white; }
-  .battery-nudge-dismiss { font-size:11px; color:var(--ink-mute); background:none; border:none; cursor:pointer; padding:5px 4px; font-family:'DM Sans',sans-serif; }
+  .battery-nudge-dismiss { font-size:12px; color:var(--ink-mute); background:none; border:none; cursor:pointer; padding:5px 4px; font-family:'DM Sans',sans-serif; }
 
   /* WINS */
   .win-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--warm); font-size:13px; color:var(--ink-soft); line-height:1.4; }
@@ -1545,14 +1545,17 @@ const styles = `
   .badge-name { font-family:'DM Mono',monospace; font-size:9px; color:var(--ink-mute); text-align:center; letter-spacing:0.3px; }
   .badge-chip.earned .badge-name { color:var(--teal-dark); }
 
+  /* Shared: plain sentence-case section label (replaces tiny spaced-out mono caps) */
+  .plain-label { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:10px; }
+
   /* Node view */
   .node-view { padding:8px 0 24px; }
-  .node-header { margin-bottom:22px; }
+  .node-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; }
+  .node-add-link { background:none; border:none; color:var(--teal-dark); font-size:14px; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500; padding:0; }
   .node-view-title { font-family:'Playfair Display',serif; font-size:26px; font-weight:400; color:var(--ink); letter-spacing:-0.3px; }
   .node-view-sub { font-size:13px; color:var(--ink-mute); margin-top:4px; }
-  .node-capture-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-mute); margin-bottom:14px; }
-  .node-capture { background:var(--card); border-radius:var(--radius); padding:20px; box-shadow:0 2px 16px var(--glow); margin-bottom:24px; }
-  .node-textarea { width:100%; border:1.5px solid var(--warm); border-radius:12px; padding:14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); background:var(--cream); resize:none; outline:none; line-height:1.65; }
+  .node-capture { margin-bottom:24px; }
+  .node-textarea { width:100%; border:1.5px solid var(--warm); border-radius:12px; padding:14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); background:var(--card); resize:none; outline:none; line-height:1.65; }
   .node-textarea:focus { border-color:var(--teal-light); }
   .node-actions { display:flex; gap:10px; margin-top:12px; }
   .node-btn-ai { flex:1; background:var(--teal-dark); color:white; border:none; border-radius:40px; padding:12px; font-size:13px; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
@@ -3943,7 +3946,7 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis }) {
           )}
           <div className="new-task-title-text">{task.name}</div>
         </div>
-        <div className="new-task-sub-text">{subs.length} Subtask{subs.length !== 1 ? "s" : ""}</div>
+        {subs.length > 0 && <div className="new-task-sub-text">{subs.filter(x => x.done).length} of {subs.length} steps</div>}
       </div>
       <div className="new-task-badges">
         <span className={`new-energy-badge${energy > 0 ? " recharge" : ""}`}>{energy > 0 ? `+${energy}` : energy}</span>
@@ -4043,9 +4046,9 @@ function CalendarEventsSection({ calendarPermission, calConnected, onRequestPerm
 
 // ─── BucketCarousel ───────────────────────────────────────────────────────────
 const BUCKET_TABS = [
-  { key:"must",   label:"MUST",   title:"Must Do"   },
-  { key:"should", label:"SHOULD", title:"Should Do" },
-  { key:"could",  label:"COULD",  title:"Could Do"  },
+  { key:"must",   label:"Must",   title:"Must do"   },
+  { key:"should", label:"Should", title:"Should do" },
+  { key:"could",  label:"Could",  title:"Could do"  },
 ];
 
 function WinsCardSection({ wins, onUncomplete }) {
@@ -4154,22 +4157,23 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
                 : tabIdx === TOTAL - 1 ? Math.max(0, rawPx) * 0.25
                 : rawPx;
 
-  const emptyMsg = { must: "Nothing urgent — enjoy the breathing room.", should: "No maintenance tasks. You're ahead.", could: "No extras — just what matters today." };
+  const emptyMsg = { must: "Nothing here.", should: "Nothing here.", could: "Nothing here." };
 
   return (
     <div className="task-columns">
       {/* Tab bar */}
       <div className="bucket-tabs-row">
-        <div className="bucket-tabs-line" />
-        <div className="bucket-tab-labels" style={{ opacity: viewAll ? 0.35 : 1, pointerEvents: viewAll ? "none" : "auto" }}>
-          {BUCKET_TABS.map((t, i) => (
-            <button key={t.key}
-              className={`bucket-tab-lbl${i === tabIdx ? " active" : ""}`}
-              onClick={() => setTabIdx(i)}
-            >{t.label}</button>
-          ))}
-        </div>
-        <div className="bucket-tabs-line" />
+        {viewAll ? <div style={{ flex:1 }} /> : (<>
+          <div className="bucket-tab-labels" style={{ paddingLeft:0 }}>
+            {BUCKET_TABS.map((t, i) => (
+              <button key={t.key}
+                className={`bucket-tab-lbl${i === tabIdx ? " active" : ""}`}
+                onClick={() => setTabIdx(i)}
+              >{t.label}</button>
+            ))}
+          </div>
+          <div style={{ flex:1 }} />
+        </>)}
         <button
           className={`bucket-view-toggle${viewAll ? " active" : ""}`}
           onClick={() => setViewAll(v => !v)}
@@ -4226,10 +4230,7 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
                   </div>
                 ))}
                 {tasks.length === 0 && (
-                  <div className="bucket-empty-label" style={{ padding:"14px 0 8px" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color:"var(--teal-dark)", opacity:0.6, marginBottom:6 }}><polyline points="20 6 9 17 4 12"/></svg>
-                    <div style={{ fontStyle:"normal", fontSize:12, color:"var(--ink-mute)" }}>{emptyMsg[tab.key]}</div>
-                  </div>
+                  <div className="bucket-empty-label">{emptyMsg[tab.key]}</div>
                 )}
               </div>
             );
@@ -4250,24 +4251,13 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
               className="bucket-main-card"
               style={{ transform: `translateX(${slidePx}px)`, transition: drag ? "none" : "transform 0.3s cubic-bezier(0.4,0,0.2,1)" }}
             >
-              <div className="bucket-main-title">{active.title}</div>
               {pending.map(t => (
                 <NewTaskRow key={t.id} task={t} onToggle={onToggle} onOpenEdit={onOpenEdit} onEdit={onEdit} onParalysis={onParalysis} />
               ))}
               {pending.length === 0 && (
-                <div className="bucket-empty-label">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color:"var(--teal-dark)", opacity:0.6, marginBottom:8 }}><polyline points="20 6 9 17 4 12"/></svg>
-                  <div style={{ fontStyle:"normal", fontWeight:500, color:"var(--ink-soft)", fontSize:14, marginBottom:4 }}>Clear.</div>
-                  <div style={{ fontStyle:"normal", fontSize:12, color:"var(--ink-mute)" }}>{emptyMsg[active.key]}</div>
-                </div>
+                <div className="bucket-empty-label">{emptyMsg[active.key]}</div>
               )}
             </div>
-          </div>
-          <div className="bucket-dots-row">
-            {BUCKET_TABS.map((_, i) => (
-              <button key={i} className={`bucket-dot-pill${i === tabIdx ? " active" : ""}`}
-                onClick={() => setTabIdx(i)} aria-label={BUCKET_TABS[i].label} />
-            ))}
           </div>
         </>
       )}
@@ -9326,6 +9316,7 @@ function parseTasksNLP(raw) {
 function NodeView({ tasks, onAddTasks, onToggleTask, onDeleteTask, isPro, onOpenPaywall, callAI, routines, setRoutines, onCompleteRoutine, onUncompleteRoutine }) {
   const [text, setText]       = useState("");
   const [loading, setLoading] = useState(false);
+  const [showAddRoutine, setShowAddRoutine] = useState(false);
 
   const activeTasks = tasks.filter(t => !t.done);
 
@@ -9340,17 +9331,17 @@ function NodeView({ tasks, onAddTasks, onToggleTask, onDeleteTask, isPro, onOpen
   return (
     <div className="node-view">
       <div className="node-header">
-        <div className="node-view-title">Node</div>
-        <div className="node-view-sub">Build routines. Capture the rest.</div>
+        <div className="node-view-title">Routines</div>
+        {routines !== undefined && <button className="node-add-link" onClick={() => setShowAddRoutine(s => !s)}>+ Add</button>}
       </div>
 
-      {routines !== undefined && <RoutineSection routines={routines} setRoutines={setRoutines} onComplete={onCompleteRoutine} onUncomplete={onUncompleteRoutine} />}
+      {routines !== undefined && <RoutineSection routines={routines} setRoutines={setRoutines} onComplete={onCompleteRoutine} onUncomplete={onUncompleteRoutine} showAdd={showAddRoutine} setShowAdd={setShowAddRoutine} />}
 
-      <div className="node-capture-label" style={{ marginBottom:12 }}>Brain Dump</div>
+      <div className="plain-label">Brain dump</div>
       <div className="node-capture">
         <textarea
           className="node-textarea"
-          placeholder={"What's on your mind? Dump it here — one line per task, or just write freely."}
+          placeholder={"What's on your mind? One task per line."}
           value={text}
           onChange={e => setText(e.target.value)}
           rows={5}
@@ -9661,9 +9652,8 @@ function suggestCopingSkill(nervousState, sleep, eaten, hydrated) {
 }
 
 // ─── RoutineSection ───────────────────────────────────────────────────────────
-function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
+function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showAdd, setShowAdd }) {
   const TODAY = new Date().toLocaleDateString("en-CA");
-  const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState("");
   const [newEnergy, setNewEnergy] = useState("medium");
@@ -9825,15 +9815,10 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
 
 
   return (
-    <div style={{ marginBottom:16 }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:1.5, textTransform:"uppercase", color:"var(--ink-mute)" }}>Routines</div>
-        <button onClick={() => setShowAdd(s => !s)} style={{ background:"none", border:"none", color:"var(--teal-dark)", fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>+ Add routine</button>
-      </div>
-
+    <div style={{ marginBottom:28 }}>
       {routines.length === 0 && !showAdd && (
-        <div style={{ background:"var(--warm)", borderRadius:"var(--radius-sm)", padding:"14px 16px", fontSize:13, color:"var(--ink-soft)", fontFamily:"'DM Sans',sans-serif", lineHeight:1.6 }}>
-          Routines are named sequences that reset each day — morning rituals, medications, wind-down. Set a minimum so low-energy days still count as a win.
+        <div style={{ fontSize:14, color:"var(--ink-mute)", fontFamily:"'DM Sans',sans-serif", lineHeight:1.6 }}>
+          Small steps you repeat, like meds or a morning routine.
         </div>
       )}
 
@@ -9865,7 +9850,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
                   style={{ border:"1.5px solid var(--warm)", borderRadius:8, padding:"8px 12px", fontSize:14, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Sans',sans-serif" }} />
 
                 <div>
-                  <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>STEPS</div>
+                  <div className="plain-label">Steps</div>
                   {editSteps.map((s, idx) => (
                     <div key={s.id} style={{ display:"flex", gap:6, marginBottom:6, alignItems:"center" }}>
                       <span style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", width:16, textAlign:"right", flexShrink:0 }}>{idx+1}.</span>
@@ -9881,7 +9866,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>ENERGY COST</div>
+                  <div className="plain-label">Energy cost</div>
                   <div style={{ display:"flex", gap:6 }}>
                     {ENERGY_OPTS.map(opt => (
                       <button key={opt.value} type="button" onClick={() => setEditEnergy(opt.value)}
@@ -9893,8 +9878,8 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>
-                    DAYS <span style={{ color:"var(--teal-dark)" }}>{editDays.length === 0 ? "(every day)" : `(${editDays.length} day${editDays.length !== 1 ? "s" : ""})`}</span>
+                  <div className="plain-label">
+                    Days <span style={{ color:"var(--teal-dark)" }}>{editDays.length === 0 ? "(every day)" : `(${editDays.length} day${editDays.length !== 1 ? "s" : ""})`}</span>
                   </div>
                   <div style={{ display:"flex", gap:6 }}>
                     {DAYS.map(d => {
@@ -9914,8 +9899,8 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
 
                 {editSteps.filter(s => s.text.trim()).length > 1 && (
                   <div>
-                    <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:6, letterSpacing:"0.5px" }}>
-                      MINIMUM TO COUNT AS DONE <span style={{ color:"var(--teal-dark)" }}>({editMinSteps} of {editSteps.filter(s=>s.text.trim()).length} steps)</span>
+                    <div className="plain-label">
+                      Minimum to count as done <span style={{ color:"var(--teal-dark)" }}>({editMinSteps} of {editSteps.filter(s=>s.text.trim()).length} steps)</span>
                     </div>
                     <input type="range" min={1} max={editSteps.filter(s=>s.text.trim()).length} value={editMinSteps}
                       onChange={e => setEditMinSteps(Number(e.target.value))} style={{ width:"100%", accentColor:"var(--teal-dark)" }} />
@@ -9927,7 +9912,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
                 )}
 
                 <div>
-                  <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:6, letterSpacing:"0.5px" }}>REMINDER (optional)</div>
+                  <div className="plain-label">Reminder (optional)</div>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                     <Icon name="bell" size={13} style={{ color:"var(--ink-mute)", flexShrink:0 }} />
                     <input type="time" value={editReminderTime} onChange={e => setEditReminderTime(e.target.value)}
@@ -9937,7 +9922,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>TAGS (optional)</div>
+                  <div className="plain-label">Tags (optional)</div>
                   <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
                     {editTags.map(tag => (
                       <span key={tag} style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontFamily:"'DM Mono',monospace", letterSpacing:0.5, padding:"2px 6px 2px 9px", borderRadius:20, background:"rgba(90,122,90,0.12)", color:"var(--teal-dark)", textTransform:"uppercase" }}>
@@ -10024,7 +10009,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
                   {isActiveToday ? (
                     <>{doneCt} of {r.steps.length}{threshold < r.steps.length && <span style={{ color:"var(--teal-dark)" }}> · min {threshold}{r.minLabel ? ` (${r.minLabel})` : ""}</span>}</>
                   ) : (
-                    <span style={{ fontSize:10, letterSpacing:0.5 }}>not today</span>
+                    <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12 }}>Not today</span>
                   )}
                 </div>
                 <div style={{ display:"flex", gap:3 }}>
@@ -10060,13 +10045,13 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
 
       {showAdd && (
         <div style={{ background:"var(--card)", borderRadius:"var(--radius)", padding:18, marginTop:8, display:"flex", flexDirection:"column", gap:12, boxShadow:"0 2px 16px var(--glow)" }}>
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:1.5, textTransform:"uppercase", color:"var(--ink-mute)" }}>New routine</div>
+          <div className="plain-label" style={{ marginBottom:0 }}>New routine</div>
 
           <input placeholder="Routine name (e.g. Morning Ritual)" value={newName} onChange={e => setNewName(e.target.value)}
             style={{ border:"1.5px solid var(--warm)", borderRadius:8, padding:"8px 12px", fontSize:14, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Sans',sans-serif" }} />
 
           <div>
-            <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>STEPS</div>
+            <div className="plain-label">Steps</div>
             {newSteps.map((s, idx) => (
               <div key={s.id} style={{ display:"flex", gap:6, marginBottom:6, alignItems:"center" }}>
                 <span style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", width:16, textAlign:"right", flexShrink:0 }}>{idx+1}.</span>
@@ -10082,7 +10067,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
           </div>
 
           <div>
-            <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>ENERGY COST</div>
+            <div className="plain-label">Energy cost</div>
             <div style={{ display:"flex", gap:6 }}>
               {ENERGY_OPTS.map(opt => (
                 <button key={opt.value} type="button" onClick={() => setNewEnergy(opt.value)}
@@ -10094,8 +10079,8 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
           </div>
 
           <div>
-            <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>
-              DAYS <span style={{ color:"var(--teal-dark)" }}>{newDays.length === 0 ? "(every day)" : `(${newDays.length} day${newDays.length !== 1 ? "s" : ""})`}</span>
+            <div className="plain-label">
+              Days <span style={{ color:"var(--teal-dark)" }}>{newDays.length === 0 ? "(every day)" : `(${newDays.length} day${newDays.length !== 1 ? "s" : ""})`}</span>
             </div>
             <div style={{ display:"flex", gap:6 }}>
               {DAYS.map(d => {
@@ -10126,8 +10111,8 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
 
           {newSteps.filter(s => s.text.trim()).length > 1 && (
             <div>
-              <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:6, letterSpacing:"0.5px" }}>
-                MINIMUM TO COUNT AS DONE <span style={{ color:"var(--teal-dark)" }}>({newMinSteps} of {newSteps.filter(s=>s.text.trim()).length} steps)</span>
+              <div className="plain-label">
+                Minimum to count as done <span style={{ color:"var(--teal-dark)" }}>({newMinSteps} of {newSteps.filter(s=>s.text.trim()).length} steps)</span>
               </div>
               <input type="range" min={1} max={newSteps.filter(s=>s.text.trim()).length} value={newMinSteps}
                 onChange={e => setNewMinSteps(Number(e.target.value))}
@@ -10141,7 +10126,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
           )}
 
           <div>
-            <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:6, letterSpacing:"0.5px" }}>REMINDER (optional)</div>
+            <div className="plain-label">Reminder (optional)</div>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <Icon name="bell" size={13} style={{ color:"var(--ink-mute)", flexShrink:0 }} />
               <input type="time" value={newReminderTime} onChange={e => setNewReminderTime(e.target.value)}
@@ -10152,7 +10137,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete }) {
           </div>
 
           <div>
-            <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginBottom:8, letterSpacing:"0.5px" }}>TAGS (optional)</div>
+            <div className="plain-label">Tags (optional)</div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
               {newTags.map(tag => (
                 <span key={tag} style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontFamily:"'DM Mono',monospace", letterSpacing:0.5, padding:"2px 6px 2px 9px", borderRadius:20, background:"rgba(90,122,90,0.12)", color:"var(--teal-dark)", textTransform:"uppercase" }}>
@@ -11452,11 +11437,11 @@ export default function App({ user, firebaseHelpers = {} }) {
                 </>
               ) : (
                 <>
-                  <button className={`nav-tab ${view==="node"?"active":""}`}    onClick={() => { haptic.medium();  setView("node"); }}>Node</button>
-                  <button className={`nav-tab ${view==="circuit"?"active":""}`} onClick={() => { haptic.light();   setView("circuit"); }}>Circuit</button>
-                  <button className={`nav-tab ${view==="calendar"?"active":""}`} onClick={() => { haptic.light();   setView("calendar"); }}>Current</button>
-                  <button className={`nav-tab ${view==="recharge"?"active":""}`} onClick={() => { haptic.success(); setView("recharge"); }}>Recharge</button>
-                  <button className={`nav-tab ${view==="control"?"active":""}`} onClick={() => { haptic.heavy();   setControlTab("settings"); setView("control"); }}>Control</button>
+                  <button className={`nav-tab ${view==="node"?"active":""}`}    onClick={() => { haptic.medium();  setView("node"); }}>Routines</button>
+                  <button className={`nav-tab ${view==="circuit"?"active":""}`} onClick={() => { haptic.light();   setView("circuit"); }}>Today</button>
+                  <button className={`nav-tab ${view==="calendar"?"active":""}`} onClick={() => { haptic.light();   setView("calendar"); }}>Calendar</button>
+                  <button className={`nav-tab ${view==="recharge"?"active":""}`} onClick={() => { haptic.success(); setView("recharge"); }}>Wellness</button>
+                  <button className={`nav-tab ${view==="control"?"active":""}`} onClick={() => { haptic.heavy();   setControlTab("settings"); setView("control"); }}>More</button>
                 </>
               )}
             </div>
@@ -11619,7 +11604,7 @@ export default function App({ user, firebaseHelpers = {} }) {
           {view === "circuit" && (
             <>
               <div className="dashboard-header">
-                <div className="greeting">{greeting}{userProfile?.userName ? `, ${userProfile.userName}` : ""}. <span>let's begin.</span></div>
+                <div className="greeting">{greeting}{userProfile?.userName ? <>, <span>{userProfile.userName}</span></> : ""}.</div>
                 <div className="greeting-sub">
                   {(() => {
                     const drainCost = tasks.filter(t => !t.done && typeof t.energyImpact === "number" && t.energyImpact < 0).reduce((s, t) => s + Math.abs(t.energyImpact), 0);
@@ -11669,7 +11654,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                             Move all Could tasks to tomorrow
                           </button>
                         )}
-                        <button className="battery-nudge-dismiss" onClick={() => setNudgeDismissed(true)}>dismiss</button>
+                        <button className="battery-nudge-dismiss" onClick={() => setNudgeDismissed(true)}>Dismiss</button>
                       </div>
                     </div>
                   </div>
@@ -11690,7 +11675,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                       <button className="battery-nudge-btn" style={{ borderColor:"#c8903a", color:"#c8903a" }} onClick={() => { setView("calendar"); setCalDrainDismissed(true); }}>
                         View in Current →
                       </button>
-                      <button className="battery-nudge-dismiss" onClick={() => setCalDrainDismissed(true)}>dismiss</button>
+                      <button className="battery-nudge-dismiss" onClick={() => setCalDrainDismissed(true)}>Dismiss</button>
                     </div>
                   </div>
                 </div>
@@ -11700,13 +11685,13 @@ export default function App({ user, firebaseHelpers = {} }) {
                 <div className="battery-nudge">
                   <Icon name="calendar" size={16} style={{ color:"var(--teal-dark)", flexShrink:0, marginTop:2 }} />
                   <div className="battery-nudge-body">
-                    <div className="battery-nudge-msg">It's the start of your week. Want to take two minutes to plan it?</div>
+                    <div className="battery-nudge-msg">New week. Plan it in two minutes?</div>
                     <div className="battery-nudge-actions">
                       <button className="battery-nudge-btn" onClick={() => setShowWeekPlan(true)}>Plan my week</button>
                       <button className="battery-nudge-dismiss" onClick={() => {
                         localStorage.setItem("reflow-week-plan-dismissed", new Date().toLocaleDateString("en-CA"));
                         setWeekPlanDue(false);
-                      }}>not now</button>
+                      }}>Not now</button>
                     </div>
                   </div>
                 </div>
@@ -11762,9 +11747,9 @@ export default function App({ user, firebaseHelpers = {} }) {
                         )}
                         <div className="wellness-prompt-actions">
                           <button className="wellness-prompt-btn" onClick={() => { setWellnessPromptDismissed(true); setView("recharge"); }}>
-                            {battery < 15 ? "Take a breath →" : "Go to Recharge →"}
+                            {battery < 15 ? "Take a breath →" : "Go to Wellness →"}
                           </button>
-                          <button className="wellness-prompt-dismiss" onClick={() => setWellnessPromptDismissed(true)}>not now</button>
+                          <button className="wellness-prompt-dismiss" onClick={() => setWellnessPromptDismissed(true)}>Not now</button>
                         </div>
                       </div>
                     );
@@ -11975,23 +11960,23 @@ export default function App({ user, firebaseHelpers = {} }) {
               <>
                 <button className={`bottom-nav-item ${view==="node"?"active":""}`} onClick={() => { haptic.medium(); setView("node"); }}>
                   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="4" cy="7" r="2"/><circle cx="20" cy="7" r="2"/><circle cx="4" cy="17" r="2"/><circle cx="20" cy="17" r="2"/><line x1="6.3" y1="8.7" x2="10.3" y2="10.7"/><line x1="13.7" y1="10.7" x2="17.7" y2="8.7"/><line x1="6.3" y1="15.3" x2="10.3" y2="13.3"/><line x1="13.7" y1="13.3" x2="17.7" y2="15.3"/></svg>
-                  <span className="bottom-nav-label">Node</span>
+                  <span className="bottom-nav-label">Routines</span>
                 </button>
                 <button className={`bottom-nav-item ${view==="circuit"?"active":""}`} onClick={() => { haptic.light(); setView("circuit"); }}>
                   <svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><line x1="7" y1="9.5" x2="3" y2="9.5"/><line x1="7" y1="14.5" x2="3" y2="14.5"/><line x1="17" y1="9.5" x2="21" y2="9.5"/><line x1="17" y1="14.5" x2="21" y2="14.5"/><line x1="10" y1="7" x2="10" y2="3"/><line x1="14" y1="7" x2="14" y2="3"/><line x1="10" y1="17" x2="10" y2="21"/><line x1="14" y1="17" x2="14" y2="21"/></svg>
-                  <span className="bottom-nav-label">Circuit</span>
+                  <span className="bottom-nav-label">Today</span>
                 </button>
                 <button className={`bottom-nav-item ${view==="calendar"?"active":""}`} onClick={() => { haptic.light(); setView("calendar"); }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <span className="bottom-nav-label">Current</span>
+                  <span className="bottom-nav-label">Calendar</span>
                 </button>
                 <button className={`bottom-nav-item ${view==="recharge"?"active":""}`} onClick={() => { haptic.success(); setView("recharge"); }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" stroke="none"/></svg>
-                  <span className="bottom-nav-label">Recharge</span>
+                  <span className="bottom-nav-label">Wellness</span>
                 </button>
                 <button className={`bottom-nav-item ${view==="control"?"active":""}`} onClick={() => { haptic.heavy(); setControlTab("settings"); setView("control"); }}>
                   <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                  <span className="bottom-nav-label">Control</span>
+                  <span className="bottom-nav-label">More</span>
                 </button>
               </>
             )}

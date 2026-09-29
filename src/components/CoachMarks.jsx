@@ -15,7 +15,7 @@ const STEPS = [
   {
     selector: ".nav-sos-btn",
     title: "Overwhelmed? Hit SOS",
-    desc: "Free, confidential support lines, any time. You can replay the full tour from Control → Settings.",
+    desc: "Free, confidential support lines, any time. You can replay the full tour from More → Settings.",
   },
 ];
 

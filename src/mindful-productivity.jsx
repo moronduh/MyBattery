@@ -895,7 +895,7 @@ const styles = `
   /* TOAST */
   .toast { position:fixed; bottom:28px; right:28px; z-index:999; background:#2a2a25; color:#f5f2eb; border-radius:var(--radius); padding:16px 20px; max-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.4); animation:slideIn 0.4s cubic-bezier(0.4,0,0.2,1) both; }
   /* WELCOME BACK — in-app only, fades out on its own */
-  .welcome-back-card { position:fixed; top:calc(env(safe-area-inset-top, 0px) + 96px); left:50%; transform:translateX(-50%); z-index:998; background:var(--card); color:var(--ink); border:1.5px solid rgba(90,122,90,0.25); border-radius:var(--radius); padding:12px 20px; font-family:'DM Sans',sans-serif; font-size:14px; box-shadow:0 6px 24px var(--glow); white-space:nowrap; cursor:pointer; animation:welcomeBackFade 5s ease both; }
+  .welcome-back-card { position:fixed; top:calc(env(safe-area-inset-top, 0px) + 96px); left:50%; transform:translateX(-50%); z-index:998; background:var(--surface); color:var(--ink); border:1.5px solid rgba(90,122,90,0.25); border-radius:var(--radius); padding:12px 20px; font-family:'DM Sans',sans-serif; font-size:14px; box-shadow:0 6px 24px var(--glow); white-space:nowrap; cursor:pointer; animation:welcomeBackFade 5s ease both; }
   @keyframes welcomeBackFade { 0%{opacity:0} 10%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
   .toast.scheduled { background:linear-gradient(135deg,var(--focus-blue) 0%,#4a6a8a 100%); }
   .toast.warn { background:linear-gradient(135deg,var(--slate-dark) 0%,#9a6a3a 100%); }

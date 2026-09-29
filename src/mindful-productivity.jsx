@@ -23,23 +23,29 @@ document.head.appendChild(fontLink);
 const styles = `
   :root {
     --teal: #4a9e8e; --teal-light: #b8ddd8; --teal-dark: #1f7a68;
-    --cream: #f4f7f7; --warm: #e6efee; --card: #ffffff;
+    --cream: #f4f7f7; --warm: #e6efee;
+    /* Minimal: sections sit flat on the page (--card), only true surfaces are raised */
+    --card: var(--cream); --surface: #ffffff; --line: rgba(20,30,30,0.10);
+    --control-line: rgba(20,30,30,0.30); /* outline of empty checkboxes */
     --slate: #4a7a9b; --slate-dark: #2a5a7a;
     --ink: #141e1e; --ink-soft: #2e4040; --ink-mute: #5a7070;
     --error: #a84040;
     --focus-blue: #2a6a8a; --focus-blue-light: rgba(42,106,138,0.12);
-    --glow: rgba(31,122,104,0.13);
-    --radius: 16px; --radius-sm: 10px;
+    --glow: transparent;
+    --radius: 8px; --radius-sm: 6px;
     --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
   }
   [data-theme="dark"] {
-    --cream: #0e1818; --warm: #162222; --card: #1c2c2c;
-    --ink: #ddeae8; --ink-soft: #a8c4c0; --ink-mute: #6a9090;
-    --teal-light: #1f4040; --teal-dark: #3ecfb0;
+    /* Soft near-black with a hint of green (not pure black, which smears on OLED); text ≈ 14:1,
+       gentle enough not to glow at night, muted text ≈ 6.5:1 */
+    --cream: #121514; --warm: #1a1e1c; --card: var(--cream); --surface: #1b1f1d; --line: rgba(223,230,228,0.14);
+    --control-line: rgba(223,230,228,0.45);
+    --ink: #dfe6e4; --ink-soft: #bccac7; --ink-mute: #93a6a2;
+    --teal-light: #1d3a34; --teal-dark: #3ecfb0;
     --slate-dark: #4a9aba;
     --error: #e07070;
     --focus-blue: #5aaaca; --focus-blue-light: rgba(90,170,202,0.2);
-    --glow: rgba(62,207,176,0.08);
+    --glow: transparent;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { width: 100%; overflow-x: hidden; }
@@ -50,14 +56,12 @@ const styles = `
   .app[data-view="shutdown"] .nav { background: #111612; }
   .app[data-view="shutdown"] .main { background: #111612; }
   [data-theme="dark"] .app[data-view="shutdown"] {
-    --cream:#faf7f2; --warm:#f0ebe0; --card:white;
+    --cream:#faf7f2; --warm:#f0ebe0; --card:var(--cream); --surface:white; --line:rgba(42,42,37,0.12);
     --ink:#2a2a25; --ink-soft:#5a5a52; --ink-mute:#9a9a8a;
     --teal-light:#c4d4c4; --teal-dark:#5a7a5a; --slate-dark:#9a7c5a;
     --error:#c4726a; --focus-blue:#6a8aaa; --focus-blue-light:rgba(106,138,170,0.12);
-    --glow:rgba(138,158,138,0.15);
+    --glow:transparent;
   }
-  .app::before { content:''; position:fixed; top:-20%; right:-10%; width:60vw; height:60vw; border-radius:50%; background:radial-gradient(circle,rgba(138,158,138,0.12) 0%,transparent 70%); pointer-events:none; z-index:0; }
-  .app::after  { content:''; position:fixed; bottom:-10%; left:-10%; width:50vw; height:50vw; border-radius:50%; background:radial-gradient(circle,rgba(196,168,130,0.1) 0%,transparent 70%); pointer-events:none; z-index:0; }
 
   /* NAV */
   .nav { display:flex; align-items:center; justify-content:space-between; padding:20px 36px; padding-top:max(20px,env(safe-area-inset-top)); position:sticky; top:0; z-index:20; background:var(--cream); }
@@ -289,7 +293,7 @@ const styles = `
   .subtask-del:hover { color:var(--error) !important; }
   .subtask-add-row { display:flex; gap:6px; align-items:center; margin-top:6px; }
   .subtask-add-input { flex:1; background:var(--warm); border:1px solid transparent; border-radius:8px; padding:5px 10px; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--ink); outline:none; transition:var(--transition); }
-  .subtask-add-input:focus { border-color:rgba(90,122,90,0.4); background:var(--card); }
+  .subtask-add-input:focus { border-color:rgba(90,122,90,0.4); background:var(--surface); }
   .subtask-add-input::placeholder { color:var(--ink-mute); }
   .subtask-add-confirm { background:var(--teal-dark); border:none; color:white; border-radius:6px; padding:4px 10px; font-size:11px; font-family:'DM Sans',sans-serif; cursor:pointer; flex-shrink:0; transition:var(--transition); }
   .subtask-add-confirm:hover { background:#4a6a4a; }
@@ -326,7 +330,7 @@ const styles = `
 
   /* CONFIRM MODAL */
   .modal-overlay { position:fixed; inset:0; background:rgba(42,42,37,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding:24px; backdrop-filter:blur(4px); animation:fadeIn 0.15s ease; }
-  .modal-box { background:var(--card); border-radius:24px; padding:36px 32px; max-width:420px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:fadeUp 0.2s ease; }
+  .modal-box { background:var(--surface); border-radius:24px; padding:36px 32px; max-width:420px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:fadeUp 0.2s ease; }
   .modal-title { font-family:'Playfair Display',serif; font-size:20px; color:var(--ink); margin-bottom:8px; }
   .modal-body { font-size:14px; color:var(--ink-soft); line-height:1.7; margin-bottom:24px; }
   .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
@@ -350,8 +354,8 @@ const styles = `
 
   /* ── Week Plan Modal ────────────────────────────────────────────────────── */
   .wplan-overlay { position:fixed; inset:0; z-index:900; background:rgba(248,246,242,0.92); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:24px; animation:fadeIn 0.3s ease both; }
-  [data-theme="dark"] .wplan-overlay { background:rgba(14,24,24,0.94); }
-  .wplan-card { background:var(--card); border-radius:var(--radius); padding:32px 28px; max-width:480px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,0.10); position:relative; }
+  [data-theme="dark"] .wplan-overlay { background:rgba(18,21,20,0.94); }
+  .wplan-card { background:var(--surface); border-radius:var(--radius); padding:32px 28px; max-width:480px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,0.10); position:relative; }
   .wplan-eyebrow { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--teal-dark); margin-bottom:8px; }
   .wplan-title { font-family:'Playfair Display',serif; font-size:24px; color:var(--ink); line-height:1.25; margin-bottom:8px; }
   .wplan-sub { font-size:13px; color:var(--ink-mute); line-height:1.6; margin-bottom:24px; }
@@ -402,20 +406,20 @@ const styles = `
   .tag-due     { background:rgba(90,122,90,0.08); color:var(--teal-dark); }
   .tag-overdue { background:rgba(196,114,106,0.1); color:var(--error); }
   .reschedule-prompt { margin-top:6px; font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .reschedule-prompt input[type=date] { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:4px 8px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink); background:var(--card); outline:none; }
+  .reschedule-prompt input[type=date] { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:4px 8px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink); background:var(--surface); outline:none; }
   .reschedule-prompt input[type=date]:focus { border-color:var(--teal-light); }
   .reschedule-btn { font-size:11px; padding:3px 10px; border-radius:20px; border:1.5px solid var(--teal-light); background:var(--card); color:var(--teal-dark); cursor:pointer; font-family:'DM Sans',sans-serif; }
   .reschedule-btn.cancel { border-color:var(--warm); color:var(--ink-mute); }
-  .add-task-date { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:6px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-soft); background:var(--card); outline:none; transition:var(--transition); }
+  .add-task-date { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:6px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-soft); background:var(--surface); outline:none; transition:var(--transition); }
   .add-task-date:focus { border-color:var(--teal-light); }
   .gauge-debt-section { margin-top:8px; padding-top:8px; border-top:1px solid var(--warm); display:flex; align-items:center; gap:8px; }
   .gauge-pip.done { background:var(--teal-light); opacity:0.7; }
   .gauge-debt-badge { font-size:10px; font-family:'DM Mono',monospace; color:var(--error); background:rgba(196,114,106,0.08); border:1px solid rgba(196,114,106,0.2); border-radius:20px; padding:1px 7px; white-space:nowrap; }
   .add-task-row { display:flex; gap:8px; margin-top:4px; }
-  .add-task-input { flex:1; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:10px 14px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); background:var(--card); outline:none; transition:var(--transition); }
+  .add-task-input { flex:1; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:10px 14px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); background:var(--surface); outline:none; transition:var(--transition); }
   .add-task-input:focus { border-color:var(--teal-light); box-shadow:0 0 0 3px var(--glow); }
   .add-task-input::placeholder { color:var(--ink-mute); }
-  .add-task-select { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:10px 24px 10px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-soft); background:var(--card); outline:none; cursor:pointer; transition:var(--transition); appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; }
+  .add-task-select { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:10px 24px 10px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-soft); background:var(--surface); outline:none; cursor:pointer; transition:var(--transition); appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; }
   .add-task-select:focus { border-color:var(--teal-light); }
   .btn-add { background:var(--teal-dark); color:white; border:none; border-radius:var(--radius-sm); padding:10px 16px; font-size:18px; cursor:pointer; transition:var(--transition); line-height:1; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(90,122,90,0.25); }
   .btn-add:hover { background:var(--teal); box-shadow:0 4px 12px rgba(90,122,90,0.35); }
@@ -440,16 +444,16 @@ const styles = `
   .atm-hbtn:hover { background:var(--teal-light); color:var(--teal-dark); }
   .atm-body { padding:8px 20px 0; display:flex; flex-direction:column; gap:16px; }
   .atm-field-label { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:var(--ink); margin-bottom:6px; }
-  .atm-input { width:100%; border:none; border-radius:14px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--ink); background:var(--card); outline:none; transition:var(--transition); box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+  .atm-input { width:100%; border:none; border-radius:14px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--ink); background:var(--surface); outline:none; transition:var(--transition); box-shadow:0 1px 4px rgba(0,0,0,0.06); }
   .atm-input:focus { box-shadow:0 0 0 2px var(--teal-light); }
   .atm-input::placeholder { color:var(--ink-mute); }
   .atm-textarea { resize:none; min-height:90px; }
   .atm-datetime-row { display:flex; gap:10px; }
-  .atm-datetime-field { flex:1; background:var(--card); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+  .atm-datetime-field { flex:1; background:var(--surface); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
   .atm-datetime-field input { border:none; background:transparent; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); outline:none; width:100%; }
   .atm-datetime-field input::placeholder { color:var(--ink-mute); }
   .atm-priority-row { display:flex; gap:10px; }
-  .atm-priority-btn { flex:1; border:1.5px solid transparent; border-radius:24px; padding:10px 8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:var(--transition); background:var(--card); }
+  .atm-priority-btn { flex:1; border:1.5px solid transparent; border-radius:24px; padding:10px 8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:var(--transition); background:var(--surface); }
   .atm-priority-btn.low   { color:#4a8a4a; border-color:rgba(74,138,74,0.3); }
   .atm-priority-btn.low.active   { background:rgba(74,138,74,0.12); border-color:#4a8a4a; }
   .atm-priority-btn.medium { color:#b87028; border-color:rgba(184,112,40,0.3); }
@@ -462,12 +466,12 @@ const styles = `
   [data-theme="dark"] .atm-priority-btn.medium.active { background:rgba(212,146,62,0.15); border-color:#d4923e; }
   [data-theme="dark"] .atm-priority-btn.high   { color:var(--error); border-color:rgba(224,112,112,0.35); }
   [data-theme="dark"] .atm-priority-btn.high.active   { background:rgba(224,112,112,0.15); border-color:var(--error); }
-  .atm-project-row { background:var(--card); border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; }
+  .atm-project-row { background:var(--surface); border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; }
   .atm-project-select { border:none; background:transparent; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); outline:none; flex:1; cursor:pointer; appearance:none; }
   .atm-tags-wrap { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-  .atm-tag { display:flex; align-items:center; gap:5px; background:var(--card); border:1.5px solid var(--teal-light); border-radius:20px; padding:5px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--teal-dark); }
+  .atm-tag { display:flex; align-items:center; gap:5px; background:var(--surface); border:1.5px solid var(--teal-light); border-radius:20px; padding:5px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--teal-dark); }
   .atm-tag-remove { background:none; border:none; color:var(--ink-mute); cursor:pointer; padding:0; font-size:14px; line-height:1; display:flex; align-items:center; }
-  .atm-tag-add { background:var(--card); border:1.5px dashed var(--teal-light); border-radius:20px; padding:5px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-mute); cursor:pointer; display:flex; align-items:center; gap:4px; transition:var(--transition); }
+  .atm-tag-add { background:var(--surface); border:1.5px dashed var(--teal-light); border-radius:20px; padding:5px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-mute); cursor:pointer; display:flex; align-items:center; gap:4px; transition:var(--transition); }
   .atm-tag-add:hover { border-color:var(--teal-dark); color:var(--teal-dark); }
   .atm-tag-input { border:none; border-bottom:1.5px solid var(--teal-light); background:transparent; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); outline:none; width:80px; padding:2px 4px; }
   .atm-energy-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -655,7 +659,7 @@ const styles = `
   .ml-time-btn.active { border-bottom-color:var(--teal-dark); color:var(--teal-dark); font-weight:500; }
   .ml-time-btn:hover { color:var(--teal-dark); }
   .ml-nextday { font-size:9px; font-family:'DM Mono',monospace; color:var(--teal-dark); vertical-align:super; margin-left:2px; }
-  .ios-picker-wrap { display:flex; background:var(--card); border-radius:14px; border:1.5px solid var(--warm); overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); margin-top:12px; margin-bottom:0; width:fit-content; }
+  .ios-picker-wrap { display:flex; background:var(--surface); border-radius:14px; border:1.5px solid var(--warm); overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); margin-top:12px; margin-bottom:0; width:fit-content; }
   .ios-picker-col { position:relative; overflow:hidden; flex-shrink:0; }
   .ios-picker-col-scroll { overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none; }
   .ios-picker-col-scroll::-webkit-scrollbar { display:none; }
@@ -722,7 +726,7 @@ const styles = `
   .ml-slider-label { font-size:11px; font-family:'DM Sans',sans-serif; font-weight:500; flex-shrink:0; line-height:1; }
   .ml-slider-label.drain-lbl { color:var(--error); }
   .ml-slider-label.charge-lbl { color:var(--teal-dark); }
-  .ml-notes-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:10px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); background:var(--card); outline:none; margin-bottom:0; }
+  .ml-notes-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:10px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); background:var(--surface); outline:none; margin-bottom:0; }
   .ml-notes-input::placeholder { color:var(--ink-mute); }
   .ml-notes-input:focus { border-color:var(--teal-light); }
   .ml-chk-box { width:14px; height:14px; border:1.5px solid var(--warm); border-radius:3px; flex-shrink:0; display:inline-block; transition:var(--transition); vertical-align:middle; }
@@ -789,10 +793,10 @@ const styles = `
   .focus-adder { background:var(--card); border-radius:var(--radius); padding:20px 22px; box-shadow:0 1px 8px rgba(0,0,0,0.05); }
   .focus-adder-title { font-size:12px; font-weight:500; color:var(--ink-soft); margin-bottom:14px; }
   .focus-time-row { display:flex; gap:8px; margin-bottom:10px; align-items:center; }
-  .focus-time-input { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 10px; font-family:'DM Mono',monospace; font-size:13px; color:var(--ink); background:var(--card); outline:none; width:80px; transition:var(--transition); }
+  .focus-time-input { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 10px; font-family:'DM Mono',monospace; font-size:13px; color:var(--ink); background:var(--surface); outline:none; width:80px; transition:var(--transition); }
   .focus-time-input:focus { border-color:var(--focus-blue); }
   .focus-time-sep { color:var(--ink-mute); font-size:13px; }
-  .focus-duration-select { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 24px 8px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-soft); background:var(--card); outline:none; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; transition:var(--transition); flex:1; }
+  .focus-duration-select { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 24px 8px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-soft); background:var(--surface); outline:none; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; transition:var(--transition); flex:1; }
   .btn-add-focus { background:var(--focus-blue); color:white; border:none; border-radius:var(--radius-sm); padding:8px 14px; font-size:13px; cursor:pointer; transition:var(--transition); white-space:nowrap; }
   .btn-add-focus:hover { background:#5a7a9a; }
 
@@ -855,12 +859,12 @@ const styles = `
   .notif-row:last-of-type { border-bottom:none; }
   .notif-row-label { font-size:14px; color:var(--ink); display:flex; align-items:center; gap:10px; }
   .notif-row-hint { font-size:11px; color:var(--ink-mute); margin-top:2px; font-family:'DM Mono',monospace; }
-  .notif-time-input { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 12px; font-family:'DM Mono',monospace; font-size:13px; color:var(--ink); background:var(--card); outline:none; width:110px; text-align:center; transition:var(--transition); }
+  .notif-time-input { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 12px; font-family:'DM Mono',monospace; font-size:13px; color:var(--ink); background:var(--surface); outline:none; width:110px; text-align:center; transition:var(--transition); }
   .notif-time-input:focus { border-color:var(--teal-light); box-shadow:0 0 0 3px var(--glow); }
   .notif-toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
   .notif-toggle input { opacity:0; width:0; height:0; }
   .notif-toggle-slider { position:absolute; inset:0; background:var(--warm); border-radius:24px; cursor:pointer; transition:var(--transition); }
-  .notif-toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:var(--card); border-radius:50%; transition:var(--transition); box-shadow:0 1px 4px rgba(0,0,0,0.15); }
+  .notif-toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:var(--surface); border-radius:50%; transition:var(--transition); box-shadow:0 1px 4px rgba(0,0,0,0.15); }
   .notif-toggle input:checked + .notif-toggle-slider { background:var(--teal-dark); }
   .notif-toggle input:checked + .notif-toggle-slider::before { transform:translateX(20px); }
   .notif-permission-bar { background:rgba(196,168,130,0.12); border:1px solid rgba(196,168,130,0.3); border-radius:var(--radius-sm); padding:14px 16px; font-size:13px; color:var(--slate-dark); line-height:1.5; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -870,7 +874,7 @@ const styles = `
   /* TUTORIAL */
   .tutorial-overlay { position:fixed; inset:0; background:rgba(20,28,20,0.6); z-index:1100; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease both; }
   @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-  .tutorial-card { background:var(--card); border-radius:24px; padding:40px 44px; max-width:520px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.25); animation:fadeUp 0.4s ease both; max-height:90vh; overflow-y:auto; }
+  .tutorial-card { background:var(--surface); border-radius:24px; padding:40px 44px; max-width:520px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.25); animation:fadeUp 0.4s ease both; max-height:90vh; overflow-y:auto; }
   .tutorial-visual { background:var(--cream); border-radius:var(--radius); padding:20px; margin-bottom:24px; border:1px solid var(--warm); min-height:120px; }
   .tutorial-dots { display:flex; gap:6px; justify-content:center; margin-bottom:24px; }
   .tutorial-dot { width:24px; height:3px; border-radius:2px; background:var(--warm); transition:var(--transition); }
@@ -906,7 +910,7 @@ const styles = `
   .mind-tab { padding:8px 22px; border:none; background:transparent; border-radius:40px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-soft); cursor:pointer; transition:var(--transition); white-space:nowrap; flex-shrink:0; outline:none; }
   .mind-tab:focus-visible { outline:2px solid var(--teal); outline-offset:2px; }
   .mind-tab.active { background:var(--card); color:var(--ink); font-weight:500; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .hold-hint { position:absolute; left:calc(100% + 8px); top:50%; transform:translateY(-50%); white-space:nowrap; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; color:var(--ink); background:var(--card); border:1.5px solid var(--teal-dark); border-radius:20px; padding:4px 12px; pointer-events:none; box-shadow:0 2px 10px rgba(0,0,0,0.15); animation:holdHintIn 0.2s ease both; z-index:3; }
+  .hold-hint { position:absolute; left:calc(100% + 8px); top:50%; transform:translateY(-50%); white-space:nowrap; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; color:var(--ink); background:var(--surface); border:1.5px solid var(--teal-dark); border-radius:20px; padding:4px 12px; pointer-events:none; box-shadow:0 2px 10px rgba(0,0,0,0.15); animation:holdHintIn 0.2s ease both; z-index:3; }
   @keyframes holdHintIn { from { opacity:0; } to { opacity:1; } }
   /* Compact variant: equal-width tabs that fit a phone without scrolling */
   .mind-sub-tabs--compact .mind-tab { flex:1; min-width:0; padding:8px 4px; font-size:12px; display:flex; align-items:center; justify-content:center; }
@@ -936,7 +940,7 @@ const styles = `
   .breath-custom-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:20px; }
   .breath-custom-input-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; }
   .breath-custom-label { font-size:10px; color:var(--ink-mute); font-family:'DM Mono',monospace; letter-spacing:0.5px; }
-  .breath-custom-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 4px; font-family:'DM Mono',monospace; font-size:14px; color:var(--ink); text-align:center; background:var(--card); outline:none; transition:var(--transition); }
+  .breath-custom-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 4px; font-family:'DM Mono',monospace; font-size:14px; color:var(--ink); text-align:center; background:var(--surface); outline:none; transition:var(--transition); }
   .breath-custom-input:focus { border-color:var(--teal-light); }
 
   /* MOOD CHECK-IN */
@@ -957,7 +961,7 @@ const styles = `
 
   /* JOURNAL */
   .journal-wrap { background:var(--card); border-radius:var(--radius); padding:24px; box-shadow:0 1px 8px rgba(0,0,0,0.05); }
-  .journal-textarea { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--card); outline:none; resize:none; overflow-y:auto; transition:border-color 0.2s, box-shadow 0.2s; min-height:80px; max-height:320px; line-height:1.6; }
+  .journal-textarea { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--surface); outline:none; resize:none; overflow-y:auto; transition:border-color 0.2s, box-shadow 0.2s; min-height:80px; max-height:320px; line-height:1.6; }
   .journal-textarea:focus { border-color:var(--teal-light); box-shadow:0 0 0 3px var(--glow); }
   .journal-textarea::placeholder { color:var(--ink-mute); }
   .journal-submit-row { display:flex; justify-content:space-between; align-items:center; margin-top:8px; margin-bottom:20px; }
@@ -989,7 +993,7 @@ const styles = `
   .journal-draft-badge { font-size:11px; color:var(--ink-mute); font-family:'DM Mono',monospace; opacity:0.6; font-style:italic; }
   .settings-tab-content { animation:fadeUp 0.22s ease both; }
   .dirty-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
-  .dirty-modal { background:var(--card); border-radius:20px; padding:32px 28px; max-width:380px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:fadeUp 0.18s ease both; }
+  .dirty-modal { background:var(--surface); border-radius:20px; padding:32px 28px; max-width:380px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:fadeUp 0.18s ease both; }
   .dirty-modal-title { font-family:'Playfair Display',serif; font-size:19px; font-weight:400; color:var(--ink); margin-bottom:8px; }
   .dirty-modal-sub { font-size:13px; color:var(--ink-mute); line-height:1.6; margin-bottom:24px; }
   .dirty-modal-actions { display:flex; flex-direction:column; gap:8px; }
@@ -1156,14 +1160,14 @@ const styles = `
 
   /* AUTH */
   .auth-screen { min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px; }
-  .auth-card { background:var(--card); border-radius:24px; padding:48px; max-width:420px; width:100%; box-shadow:0 4px 40px rgba(0,0,0,0.07); animation:fadeUp 0.5s ease both; }
+  .auth-card { background:var(--surface); border-radius:24px; padding:48px; max-width:420px; width:100%; box-shadow:0 4px 40px rgba(0,0,0,0.07); animation:fadeUp 0.5s ease both; }
   .auth-logo { font-family:'Playfair Display',serif; font-size:28px; font-weight:400; color:var(--ink); text-align:center; margin-bottom:6px; }
   .auth-logo span { color:var(--teal-dark); font-style:italic; }
   .auth-tagline { text-align:center; font-size:13px; color:var(--ink-mute); margin-bottom:32px; }
   .auth-eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--teal-dark); margin-bottom:20px; text-align:center; }
   .auth-field { margin-bottom:14px; }
   .auth-label { display:block; font-size:12px; color:var(--ink-soft); margin-bottom:5px; font-weight:500; }
-  .auth-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:11px 14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--card); outline:none; transition:var(--transition); }
+  .auth-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:11px 14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--surface); outline:none; transition:var(--transition); }
   .auth-input:focus { border-color:var(--teal-light); box-shadow:0 0 0 3px var(--glow); }
   .auth-error { background:rgba(196,114,106,0.1); border:1px solid rgba(196,114,106,0.25); border-radius:var(--radius-sm); padding:10px 14px; font-size:13px; color:var(--error); margin-bottom:14px; line-height:1.4; }
   .auth-submit { width:100%; margin-top:6px; }
@@ -1174,7 +1178,7 @@ const styles = `
   .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--warm); }
   .auth-divider span { font-size:11px; color:var(--ink-mute); font-family:'DM Mono',monospace; letter-spacing:1px; }
   .auth-social { display:flex; flex-direction:column; gap:10px; }
-  .auth-social-btn { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; border:1.5px solid var(--warm); border-radius:40px; padding:11px 20px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--card); cursor:pointer; transition:var(--transition); }
+  .auth-social-btn { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; border:1.5px solid var(--warm); border-radius:40px; padding:11px 20px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--surface); cursor:pointer; transition:var(--transition); }
   .auth-social-btn:hover { border-color:var(--teal-light); background:var(--cream); }
   .auth-social-btn:disabled { opacity:0.5; cursor:not-allowed; }
   .auth-social-btn svg { flex-shrink:0; }
@@ -1207,7 +1211,7 @@ const styles = `
   .pomo-settings-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
   .pomo-setting-item { display:flex; flex-direction:column; gap:5px; }
   .pomo-setting-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-mute); letter-spacing:0.5px; text-transform:uppercase; }
-  .pomo-setting-input { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 10px; font-family:'DM Mono',monospace; font-size:14px; color:var(--ink); background:var(--card); outline:none; transition:var(--transition); text-align:center; width:100%; }
+  .pomo-setting-input { border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:8px 10px; font-family:'DM Mono',monospace; font-size:14px; color:var(--ink); background:var(--surface); outline:none; transition:var(--transition); text-align:center; width:100%; }
   .pomo-setting-input:focus { border-color:var(--teal-light); }
 
   /* FEEDBACK */
@@ -1219,9 +1223,9 @@ const styles = `
   .feedback-type-btn.active { border-color:var(--teal-dark); background:rgba(90,122,90,0.07); color:var(--teal-dark); font-weight:500; }
   .feedback-field { margin-bottom:16px; }
   .feedback-label { display:block; font-size:12px; color:var(--ink-soft); margin-bottom:5px; font-weight:500; }
-  .feedback-textarea { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:12px 14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--card); outline:none; resize:vertical; transition:var(--transition); min-height:110px; line-height:1.6; }
+  .feedback-textarea { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:12px 14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--surface); outline:none; resize:vertical; transition:var(--transition); min-height:110px; line-height:1.6; }
   .feedback-textarea:focus { border-color:var(--teal-light); box-shadow:0 0 0 3px var(--glow); }
-  .feedback-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:11px 14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--card); outline:none; transition:var(--transition); }
+  .feedback-input { width:100%; border:1.5px solid var(--warm); border-radius:var(--radius-sm); padding:11px 14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--surface); outline:none; transition:var(--transition); }
   .feedback-input:focus { border-color:var(--teal-light); box-shadow:0 0 0 3px var(--glow); }
   .feedback-success { background:rgba(90,122,90,0.08); border:1px solid rgba(90,122,90,0.2); border-radius:var(--radius-sm); padding:16px; text-align:center; font-size:14px; color:var(--teal-dark); line-height:1.6; }
   .feedback-img-upload { border:1.5px dashed var(--warm); border-radius:var(--radius-sm); padding:14px 16px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:var(--transition); background:var(--cream); }
@@ -1350,7 +1354,7 @@ const styles = `
 
   /* ── TaskParalysisModal ──────────────────────────────────────────────────── */
   .tpm-overlay { position:fixed; inset:0; background:rgba(20,32,22,0.52); backdrop-filter:blur(6px); z-index:1200; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.25s ease both; }
-  .tpm-card { background:var(--card); border-radius:24px; padding:36px 40px; max-width:540px; width:100%; box-shadow:0 24px 72px rgba(0,0,0,0.14); max-height:90vh; overflow-y:auto; animation:fadeUp 0.3s ease both; }
+  .tpm-card { background:var(--surface); border-radius:24px; padding:36px 40px; max-width:540px; width:100%; box-shadow:0 24px 72px rgba(0,0,0,0.14); max-height:90vh; overflow-y:auto; animation:fadeUp 0.3s ease both; }
   .tpm-eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--focus-blue); margin-bottom:8px; }
   .tpm-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:400; color:var(--ink); line-height:1.35; margin-bottom:8px; }
   .tpm-task-name { font-size:13px; color:var(--ink-soft); margin-bottom:24px; font-family:'DM Mono',monospace; padding:6px 12px; background:rgba(106,138,170,0.08); border-radius:8px; border-left:3px solid var(--focus-blue); }
@@ -1367,7 +1371,7 @@ const styles = `
   .tpm-custom-input { background:transparent; border:none; border-bottom:1.5px solid rgba(106,138,170,0.28); outline:none; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--ink); padding:3px 4px; width:200px; margin-top:6px; }
   .tpm-custom-input::placeholder { color:var(--ink-mute); }
   .tpm-actions { display:flex; gap:10px; margin-top:28px; }
-  .tpm-btn-cancel { flex:1; padding:11px; border-radius:var(--radius-sm); border:1.5px solid var(--warm); background:var(--card); color:var(--ink-mute); font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer; transition:var(--transition); }
+  .tpm-btn-cancel { flex:1; padding:11px; border-radius:var(--radius-sm); border:1.5px solid var(--warm); background:var(--surface); color:var(--ink-mute); font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer; transition:var(--transition); }
   .tpm-btn-cancel:hover { border-color:var(--teal-light); color:var(--ink-soft); }
   .tpm-btn-start { flex:2; padding:11px; border-radius:var(--radius-sm); border:none; background:var(--teal-dark); color:white; font-size:13px; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; transition:var(--transition); display:inline-flex; align-items:center; justify-content:center; gap:7px; }
   .tpm-btn-start:hover { background:#4a6a4a; }
@@ -1412,7 +1416,7 @@ const styles = `
   .fab-menu-item:nth-child(4) { animation-delay:0s; }
   @keyframes fabItemIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
   .fab-menu-label { background:var(--ink); color:var(--cream); font-size:13px; font-family:'DM Sans',sans-serif; font-weight:500; padding:7px 14px; border-radius:20px; white-space:nowrap; box-shadow:0 2px 12px rgba(0,0,0,0.22); cursor:pointer; border:none; }
-  [data-theme="dark"] .fab-menu-label { background:var(--card); color:var(--ink); border:1px solid rgba(255,255,255,0.1); }
+  [data-theme="dark"] .fab-menu-label { background:var(--surface); color:var(--ink); border:1px solid rgba(255,255,255,0.1); }
   .fab-menu-icon { width:42px; height:42px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; background:var(--teal-dark); color:white; box-shadow:0 2px 10px rgba(90,122,90,0.35); flex-shrink:0; }
   /* ── Priority flag ────────────────────────────────────────────────────────── */
   .priority-dot { display:inline-block; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
@@ -1430,7 +1434,7 @@ const styles = `
   [data-theme="dark"] .task-priority-tag.high   { background:rgba(212,146,62,0.15); color:#d4923e; }
   [data-theme="dark"] .task-priority-tag.low    { background:rgba(122,184,224,0.15); color:#7ab8e0; }
   .atm-urgency-row { display:flex; gap:8px; flex-wrap:wrap; }
-  .atm-urgency-btn { flex:1; min-width:60px; padding:8px 4px; border:1.5px solid var(--warm); border-radius:10px; background:var(--card); font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-mute); cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:5px; white-space:nowrap; }
+  .atm-urgency-btn { flex:1; min-width:60px; padding:8px 4px; border:1.5px solid var(--warm); border-radius:10px; background:var(--surface); font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-mute); cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:5px; white-space:nowrap; }
   .atm-urgency-btn.urgent.active { border-color:#d94f4f; background:rgba(217,79,79,0.1); color:#d94f4f; font-weight:600; }
   .atm-urgency-btn.high.active   { border-color:#c8903a; background:rgba(200,144,58,0.1); color:#c8903a; font-weight:600; }
   .atm-urgency-btn.normal.active { border-color:var(--teal-light); background:rgba(90,122,90,0.08); color:var(--teal-dark); font-weight:600; }
@@ -1555,7 +1559,7 @@ const styles = `
   .node-view-title { font-family:'Playfair Display',serif; font-size:26px; font-weight:400; color:var(--ink); letter-spacing:-0.3px; }
   .node-view-sub { font-size:13px; color:var(--ink-mute); margin-top:4px; }
   .node-capture { margin-bottom:24px; }
-  .node-textarea { width:100%; border:1.5px solid var(--warm); border-radius:12px; padding:14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); background:var(--card); resize:none; outline:none; line-height:1.65; }
+  .node-textarea { width:100%; border:1.5px solid var(--warm); border-radius:12px; padding:14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); background:var(--surface); resize:none; outline:none; line-height:1.65; }
   .node-textarea:focus { border-color:var(--teal-light); }
   .node-actions { display:flex; gap:10px; margin-top:12px; }
   .node-btn-ai { flex:1; background:var(--teal-dark); color:white; border:none; border-radius:40px; padding:12px; font-size:13px; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
@@ -1577,7 +1581,7 @@ const styles = `
   .bdump-header { display:flex; align-items:center; justify-content:space-between; }
   .bdump-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--ink); }
   .bdump-sub { font-size:13px; color:var(--ink-mute); line-height:1.5; }
-  .bdump-textarea { flex:1; min-height:160px; max-height:300px; border:1.5px solid var(--warm); border-radius:14px; padding:14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); background:var(--card); resize:none; outline:none; line-height:1.6; }
+  .bdump-textarea { flex:1; min-height:160px; max-height:300px; border:1.5px solid var(--warm); border-radius:14px; padding:14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); background:var(--surface); resize:none; outline:none; line-height:1.6; }
   .bdump-textarea:focus { border-color:var(--teal-light); }
   .bdump-actions { display:flex; gap:10px; }
   .bdump-btn-ai { flex:1; background:var(--teal-dark); color:white; border:none; border-radius:40px; padding:13px; font-size:14px; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
@@ -1602,7 +1606,7 @@ const styles = `
   .ai-chip:hover { background:rgba(90,122,90,0.2); border-color:rgba(90,122,90,0.6); }
   .ai-panel-input-row { display:flex; gap:10px; align-items:center; padding:12px 20px max(18px,env(safe-area-inset-bottom)); border-top:1.5px solid rgba(210,205,192,0.8); flex-shrink:0; }
   .ai-panel-input { flex:1; background:rgba(228,224,212,0.6); border:1.5px solid rgba(190,185,170,0.6); border-radius:40px; padding:10px 16px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); outline:none; transition:var(--transition); }
-  .ai-panel-input:focus { border-color:rgba(90,122,90,0.5); background:var(--card); }
+  .ai-panel-input:focus { border-color:rgba(90,122,90,0.5); background:var(--surface); }
   .ai-panel-input::placeholder { color:var(--ink-mute); }
   .ai-send-btn { width:40px; height:40px; border-radius:50%; background:var(--teal-dark); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:white; flex-shrink:0; transition:var(--transition); }
   .ai-send-btn:hover { background:#4a6a4a; }
@@ -1625,7 +1629,7 @@ const styles = `
   .sched-mode-btn.active { background:var(--card); color:var(--ink); font-weight:500; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .sched-input-area { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:12px; }
   .sched-textarea { width:100%; min-height:110px; background:var(--warm); border:1.5px solid transparent; border-radius:14px; padding:12px 14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); outline:none; resize:none; transition:var(--transition); box-sizing:border-box; line-height:1.6; }
-  .sched-textarea:focus { border-color:rgba(90,122,90,0.4); background:var(--card); }
+  .sched-textarea:focus { border-color:rgba(90,122,90,0.4); background:var(--surface); }
   .sched-textarea::placeholder { color:var(--ink-mute); }
   .sched-hint { font-size:12px; color:var(--ink-mute); font-family:'DM Sans',sans-serif; line-height:1.5; }
   .sched-hint strong { color:var(--ink-soft); font-weight:500; }
@@ -1668,7 +1672,7 @@ const styles = `
 
   /* ── Jumpstart Mode ──────────────────────────────────────────────────── */
   .jumpstart-overlay { position:fixed; inset:0; z-index:500; background:rgba(18,28,18,0.82); display:flex; align-items:center; justify-content:center; padding:24px; animation:fadeIn 0.3s ease; backdrop-filter:blur(4px); }
-  .jumpstart-card { background:var(--card); border-radius:28px; padding:36px 28px 28px; max-width:380px; width:100%; text-align:center; position:relative; box-shadow:0 24px 60px rgba(0,0,0,0.22); }
+  .jumpstart-card { background:var(--surface); border-radius:28px; padding:36px 28px 28px; max-width:380px; width:100%; text-align:center; position:relative; box-shadow:0 24px 60px rgba(0,0,0,0.22); }
   .jumpstart-progress { display:flex; justify-content:center; gap:7px; margin-bottom:28px; }
   .jumpstart-dot { width:7px; height:7px; border-radius:50%; background:rgba(90,122,90,0.18); transition:all 0.35s ease; }
   .jumpstart-dot.done { background:var(--teal-dark); opacity:0.45; }
@@ -1727,7 +1731,7 @@ const styles = `
   .tag-stern-overdue { background:rgba(79,70,229,0.1) !important; color:#4f46e5 !important; border:1px solid rgba(79,70,229,0.25) !important; }
   /* Pre-task & post-task modals */
   .stern-modal-overlay { position:fixed; inset:0; background:rgba(30,27,75,0.55); backdrop-filter:blur(4px); z-index:1200; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.18s ease; }
-  .stern-modal { background:var(--card); border-radius:20px; padding:28px 28px 22px; max-width:400px; width:100%; border:2px solid rgba(79,70,229,0.2); box-shadow:0 20px 60px rgba(30,27,75,0.2),0 4px 16px rgba(30,27,75,0.1); animation:slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1); }
+  .stern-modal { background:var(--surface); border-radius:20px; padding:28px 28px 22px; max-width:400px; width:100%; border:2px solid rgba(79,70,229,0.2); box-shadow:0 20px 60px rgba(30,27,75,0.2),0 4px 16px rgba(30,27,75,0.1); animation:slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1); }
   .stern-modal-eyebrow { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#4f46e5; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
   .stern-modal-title { font-family:'DM Sans',sans-serif; font-size:18px; font-weight:500; color:#1e1b4b; margin-bottom:8px; line-height:1.3; }
   .stern-modal-task { font-family:'DM Mono',monospace; font-size:12px; color:var(--ink-mute); margin-bottom:20px; padding:8px 12px; background:rgba(79,70,229,0.05); border-radius:8px; border-left:3px solid #4f46e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -1740,7 +1744,7 @@ const styles = `
   .stern-modal-dismiss { width:100%; padding:10px; border:none; background:transparent; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-mute); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .stern-modal-dismiss:hover { color:var(--ink); }
   .stern-emotions { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
-  .stern-emotion-tag { padding:8px 16px; border-radius:20px; border:1.5px solid rgba(79,70,229,0.18); background:var(--card); color:#1e1b4b; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all 0.15s ease; }
+  .stern-emotion-tag { padding:8px 16px; border-radius:20px; border:1.5px solid rgba(79,70,229,0.18); background:var(--surface); color:#1e1b4b; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all 0.15s ease; }
   .stern-emotion-tag:hover { border-color:#4f46e5; background:rgba(79,70,229,0.08); }
   .stern-emotion-tag.selected { border-color:#4f46e5; background:rgba(79,70,229,0.12); color:#4f46e5; font-weight:500; }
   .stern-modal-cta { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; cursor:pointer; transition:opacity 0.15s; letter-spacing:0.01em; }
@@ -1749,7 +1753,7 @@ const styles = `
   .stern-win-confetti { font-size:32px; text-align:center; margin-bottom:10px; }
   /* Stern toggle in settings */
   .stern-mode-selector { display:flex; gap:8px; margin-top:12px; }
-  .stern-mode-option { flex:1; padding:10px 8px; border-radius:12px; border:1.5px solid var(--warm); background:var(--card); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all 0.18s ease; text-align:center; color:var(--ink-mute); }
+  .stern-mode-option { flex:1; padding:10px 8px; border-radius:12px; border:1.5px solid var(--warm); background:var(--surface); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all 0.18s ease; text-align:center; color:var(--ink-mute); }
   .stern-mode-option:hover { border-color:var(--teal-light); color:var(--ink); }
   .stern-mode-option.active { font-weight:500; }
   .stern-mode-option.gentle.active { border-color:var(--teal-dark); background:rgba(90,122,90,0.08); color:var(--teal-dark); }
@@ -1771,7 +1775,7 @@ const styles = `
 
   /* ── Daily Check-In Modal ──────────────────────────────────── */
   .checkin-overlay { position:fixed; inset:0; background:rgba(42,42,37,0.62); z-index:1100; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(6px); animation:fadeIn 0.2s ease; }
-  .checkin-box { background:var(--card); border-radius:24px; padding:32px 28px; max-width:400px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:fadeUp 0.25s ease; max-height:90vh; overflow-y:auto; }
+  .checkin-box { background:var(--surface); border-radius:24px; padding:32px 28px; max-width:400px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:fadeUp 0.25s ease; max-height:90vh; overflow-y:auto; }
   .checkin-progress { display:flex; gap:6px; margin-bottom:28px; }
   .checkin-dot { flex:1; height:3px; border-radius:2px; background:var(--warm); transition:background 0.3s ease; }
   .checkin-dot.done { background:var(--teal-dark); }
@@ -1795,7 +1799,7 @@ const styles = `
   .checkin-ns-option.selected.hypo .checkin-ns-label { color:var(--slate-dark); }
   .checkin-ns-option.selected.grounded { border-color:var(--teal-dark); background:rgba(90,122,90,0.08); }
   .checkin-ns-option.selected.grounded .checkin-ns-label { color:var(--teal-dark); }
-  .checkin-textarea { width:100%; min-height:150px; border:1.5px solid var(--warm); border-radius:14px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--card); resize:vertical; outline:none; transition:border-color 0.2s ease; line-height:1.7; box-sizing:border-box; }
+  .checkin-textarea { width:100%; min-height:150px; border:1.5px solid var(--warm); border-radius:14px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--surface); resize:vertical; outline:none; transition:border-color 0.2s ease; line-height:1.7; box-sizing:border-box; }
   .checkin-textarea:focus { border-color:var(--teal-dark); }
   .checkin-textarea::placeholder { color:var(--ink-mute); font-style:italic; font-size:13px; }
   .checkin-actions { margin-top:24px; display:flex; flex-direction:column; gap:10px; }
@@ -1819,7 +1823,7 @@ const styles = `
 
   /* ── Paywall ── */
   .paywall-overlay { position:fixed; inset:0; background:rgba(30,28,24,0.72); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); z-index:200; display:flex; align-items:flex-end; justify-content:center; animation:fadeUp 0.2s ease; }
-  .paywall-sheet { background:var(--card); border-radius:28px 28px 0 0; width:100%; max-width:520px; max-height:92dvh; overflow-y:auto; padding:32px 28px 48px; position:relative; box-shadow:0 -8px 48px rgba(0,0,0,0.18); }
+  .paywall-sheet { background:var(--surface); border-radius:28px 28px 0 0; width:100%; max-width:520px; max-height:92dvh; overflow-y:auto; padding:32px 28px 48px; position:relative; box-shadow:0 -8px 48px rgba(0,0,0,0.18); }
   .paywall-close { position:absolute; top:18px; right:18px; background:var(--warm); border:none; border-radius:50%; width:32px; height:32px; font-size:20px; line-height:1; cursor:pointer; color:var(--ink-mute); display:flex; align-items:center; justify-content:center; }
   .paywall-eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--teal-dark); text-align:center; margin-bottom:6px; }
   .paywall-title { font-family:'Playfair Display',serif; font-size:28px; font-weight:400; color:var(--ink); text-align:center; margin-bottom:8px; }
@@ -1856,6 +1860,185 @@ const styles = `
   .pro-gate-sub { font-size:13px; color:var(--ink-mute); margin-bottom:18px; }
   .pro-gate-btn { background:var(--teal-dark); color:white; border:none; border-radius:24px; padding:10px 24px; font-size:14px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; transition:var(--transition); }
   .pro-gate-btn:hover { background:#4a6a4a; }
+
+  /* ─── MINIMAL ─────────────────────────────────────────────────────────────
+     Calm, flat look: main-screen sections sit on the page and are separated by
+     hairlines instead of rounded, shadowed boxes. Surfaces that float (modals,
+     sheets, toasts, inputs) keep --surface. */
+  .nav, .bottom-nav, [data-theme="dark"] .bottom-nav { box-shadow:none; }
+  .bottom-nav { border-top:1px solid var(--line); }
+  .nav-tab.active { box-shadow:none; }
+  .btn-primary { border-radius:var(--radius); }
+  /* Dark mode: filled buttons use a deep green so white text stays readable (bright mint + white was ~2:1) */
+  [data-theme="dark"] .btn-primary:not(.btn-quiet), [data-theme="dark"] .ml-save-btn, [data-theme="dark"] .btn-autoschedule,
+  [data-theme="dark"] .jumpstart-done-btn, [data-theme="dark"] .jumpstart-close-btn, [data-theme="dark"] .pro-gate-btn,
+  [data-theme="dark"] .atm-create-btn, [data-theme="dark"] .ai-fab,
+  [data-theme="dark"] .ground-complete-btn:not(:disabled) { background:#1f7a68 !important; color:#fff !important; }
+
+  .readiness-card, .onboard-card, .panel-card, .battery-panel, .notif-section, .wins-card,
+  .safety-card, .analytics-chart-wrap, .day-view, .ml-event-form, .el-insights,
+  .shutdown-history, .focus-adder, .unscheduled-panel, .breathing-wrap, .journal-wrap,
+  .suggest-card, .wellness-intro-banner, .ground-card, .screening-q, .screening-result,
+  .pomo-timer-wrap, .pomo-settings-card, .feedback-card, .history-day-card, .history-journal-entry,
+  .cal-section, .meds-card, .goals-section, .ml-time-card, .sched-task-card,
+  .ai-add-tasks-card, .frec-wrap {
+    background:transparent; box-shadow:none; border:none; border-radius:0;
+    border-bottom:1px solid var(--line);
+  }
+  .panel-card, .battery-panel, .notif-section, .safety-card, .ground-card, .suggest-card,
+  .wellness-intro-banner, .feedback-card, .history-day-card, .cal-section,
+  .meds-card, .goals-section, .el-insights, .journal-wrap, .breathing-wrap {
+    padding-left:0; padding-right:0;
+  }
+  .safety-card:hover, .ground-card:hover, .task-item:hover { box-shadow:none; transform:none; }
+
+  /* Task rows: a quiet list, not a stack of cards */
+  .new-task-row, [data-theme="dark"] .new-task-row {
+    background:transparent; box-shadow:none; border:none; border-radius:0;
+    border-bottom:1px solid var(--line); margin-bottom:0; padding:14px 2px;
+  }
+  .new-task-row.urgency-urgent, .new-task-row.urgency-high { border-left:none; }
+  .new-task-check { width:24px; height:24px; border-width:1.5px; }
+  .new-task-check:not(.done), .task-check, .node-task-check { border-color:var(--control-line); }
+  .new-energy-badge { display:none; }
+
+  /* Nudges: text between hairlines, no box */
+  .battery-nudge {
+    background:transparent; border:none; border-radius:0;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:14px 0;
+  }
+  .battery-nudge-btn { border:none; background:none; padding:4px 0; margin-right:12px; font-size:14px; font-weight:500; color:var(--teal-dark); }
+  .battery-nudge-btn:hover { background:none; color:var(--ink); }
+  .battery-nudge-dismiss { font-size:14px; padding:4px 0; }
+
+  /* Week strip: plain letters and numbers, selected day is a small filled circle */
+  .week-day-pill, [data-theme="dark"] .week-day-pill,
+  .week-day-pill.selected, [data-theme="dark"] .week-day-pill.selected {
+    background:transparent; box-shadow:none; border:none; border-radius:0; padding:6px 0;
+  }
+  .week-day-pill:hover:not(.selected), [data-theme="dark"] .week-day-pill:hover:not(.selected) { box-shadow:none; transform:none; }
+  .week-day-num-circle, .week-day-pill.today .week-day-num-circle { background:transparent; }
+  .week-day-pill.selected .week-day-num-circle { background:var(--ink); }
+  .week-day-pill.selected .week-day-num { color:var(--cream); }
+  .week-day-pill.selected .week-day-letter, [data-theme="dark"] .week-day-pill.selected .week-day-letter { color:var(--ink); }
+  .week-day-pill.selected .today-dot, .week-day-pill.selected .task-dot { background:var(--ink-mute); }
+
+  /* Header battery: just the mascot */
+  .nav-battery { display:flex; align-items:center; background:none; border:none; cursor:pointer; padding:4px; }
+
+  /* Check-in battery: the mascot is the focus; the bar is a slim track */
+  .battery-panel-pct { font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; }
+  .battery-body { height:8px; border:none; box-shadow:none; background:var(--line); border-radius:4px; overflow:hidden; }
+  .battery-nub { display:none; }
+  .battery-shape-outer { padding:14px 0; margin:0; }
+
+  /* Wellness: bare line icons, thin chevrons, one accent colour */
+  .ground-card-icon { width:24px; height:24px; background:none !important; border-radius:0; color:var(--ink-mute); }
+  .ground-card-left { gap:16px; }
+  .ground-card-title { font-family:'DM Sans',sans-serif; font-size:16px; font-weight:500; }
+  .ground-card-meta { font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; margin-top:2px; }
+  .ground-card-chevron { color:var(--ink-mute); flex-shrink:0; }
+  .ground-card-inner { border-top:none; margin-top:12px; padding-top:8px; padding-left:40px; }
+  .ground-step-num { width:20px; height:auto; border-radius:0; background:none; color:var(--teal-dark); font-size:15px; font-weight:500; justify-content:flex-start; padding-top:1px; }
+  .ground-tip { background:none; border-left:none; border-radius:0; padding:0; font-size:14px; }
+  .ground-complete-btn { border-radius:var(--radius); }
+  .ground-quick { background:none; border:none; border-radius:0; border-bottom:1px solid var(--line); padding:20px 0; }
+  .ground-quick-title { font-family:'DM Sans',sans-serif; font-size:16px; font-weight:500; }
+  .ground-box-cell { background:none; border:1px solid var(--line); }
+  .ground-box-label { font-family:'DM Sans',sans-serif; font-size:12px; letter-spacing:0; }
+
+  /* Grounding / Journal: text tabs with an underline, like Must / Should / Could */
+  .mind-sub-tabs--split { gap:32px; justify-content:center; border-bottom:1px solid var(--line); margin-bottom:8px; }
+  .mind-sub-tabs--split .mind-tab, .mind-sub-tabs--split .mind-tab.active {
+    flex:none; background:none; border:none; border-radius:0; padding:10px 0; margin-bottom:-1px;
+    border-bottom:2px solid transparent; color:var(--ink-mute); box-shadow:none;
+  }
+  .mind-sub-tabs--split .mind-tab.active { color:var(--ink); border-bottom-color:var(--ink); }
+
+  /* Calendar: one scroll, hour lines, quiet energy zones */
+  .cal-events-wrap { margin-top:8px; padding-bottom:96px; }  /* last thing on the tab: room for the + button */
+  .cal-header { margin-bottom:16px; }
+  .cal-title { font-size:26px; }
+  .cal-add-link { display:block; background:none; border:none; padding:10px 0 18px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; color:var(--teal-dark); cursor:pointer; }
+  .cal-earlier-btn { display:block; width:100%; background:none; border:none; border-top:1px solid var(--line); padding:12px 0; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-mute); cursor:pointer; text-align:left; }
+  .zone-legend { gap:16px; padding:0 0 10px; }
+  .zone-badge { font-family:'DM Sans',sans-serif; font-size:12px; gap:6px; }
+  .zone-swatch { width:2px; height:12px; border-radius:1px; }
+  .zone-swatch.peak { background:rgba(90,122,90,0.6); }
+  .zone-swatch.dip  { background:rgba(196,168,130,0.8); }
+  .zone-swatch.wind { background:rgba(106,138,170,0.6); }
+  .hour-grid { max-height:none; overflow:visible; }
+  .hour-row, .hour-row.half-hour { border-bottom:none; opacity:1; }
+  .hour-row:not(.half-hour) { border-top:1px solid var(--line); }
+  .hour-row.peak-zone, .hour-row.dip-zone, .hour-row.wind-zone { background:none; }
+  .hour-row.peak-zone { border-left:2px solid rgba(90,122,90,0.6); }
+  .hour-row.dip-zone  { border-left:2px solid rgba(196,168,130,0.8); }
+  .hour-row.wind-zone { border-left:2px solid rgba(106,138,170,0.6); }
+  .hour-label { font-family:'DM Sans',sans-serif; font-size:12px; padding-top:8px; width:58px; white-space:nowrap; }
+  .now-line { left:58px; }
+  .cal-event { left:66px; }
+  .cal-event { border-radius:6px; }
+  .cal-event-meta, .cal-event-impact { font-family:'DM Sans',sans-serif; font-size:11px; }
+  .ml-impact-label-text { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; text-transform:none; letter-spacing:0; color:var(--ink-soft); }
+  .ml-save-btn { border-radius:var(--radius); padding:12px 0; font-size:14px; }
+  .ml-cancel-btn { font-family:'DM Sans',sans-serif; font-size:14px; padding:8px 0; }
+  .ml-repeat-label { font-family:'DM Sans',sans-serif; font-size:14px; letter-spacing:0; }
+  /* Today's calendar: plain label, left-aligned text, time + name rows */
+  .cal-section-header { margin-bottom:8px; }
+  .cal-section-title { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; letter-spacing:0; text-transform:none; color:var(--ink-soft); }
+  .cal-permission-prompt { text-align:left; padding:0; }
+  .cal-permission-sub { font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink-mute); margin-top:0; line-height:1.5; }
+  .cal-permission-btn { background:none; color:var(--teal-dark); border-radius:0; padding:8px 0 0; font-size:14px; }
+  .cal-empty { font-family:'DM Sans',sans-serif; font-size:14px; text-align:left; padding:4px 0; }
+  .cal-event-row { gap:14px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .cal-event-time { font-family:'DM Sans',sans-serif; font-size:13px; min-width:56px; margin-top:0; }
+  .cal-event-allday { font-family:'DM Sans',sans-serif; }
+
+  /* Days you checked in: letters with a small dot, nothing marked as missed */
+  .shutdown-history { padding:20px 0; }
+  .shutdown-history-title { font-size:13px; font-weight:600; margin-bottom:14px; }
+  .checkin-week { display:flex; justify-content:space-between; max-width:320px; }
+  .checkin-day { display:flex; flex-direction:column; align-items:center; gap:8px; width:28px; }
+  .checkin-day-letter { font-size:12px; color:var(--ink-mute); }
+  .checkin-day.today .checkin-day-letter { color:var(--ink); font-weight:600; }
+  .checkin-day-dot { width:8px; height:8px; border-radius:50%; background:var(--line); }
+  .checkin-day.today .checkin-day-dot { background:none; box-shadow:inset 0 0 0 1.5px var(--teal-dark); }
+  .checkin-day-dot.done, .checkin-day.today .checkin-day-dot.done { background:var(--teal-dark); box-shadow:none; }
+  .checkin-week-note { font-size:13px; color:var(--ink-mute); margin-top:14px; line-height:1.5; }
+
+  /* Did you know: a plain section, not a tinted box */
+  .wellness-fact-card { background:none; border:none; border-radius:0; padding:20px 0 0; margin-top:8px; }
+  .wellness-fact-eyebrow { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; letter-spacing:0; text-transform:none; color:var(--ink-soft); }
+  .wellness-fact-text { font-size:15px; font-style:normal; color:var(--ink); line-height:1.6; margin-top:6px; }
+  .wellness-fact-source { font-family:'DM Sans',sans-serif; font-size:12px; margin-top:10px; }
+  /* keeps a finger-sized drag area around the slim bar */
+  .readiness-card .battery-panel-pct { font-size:15px; }
+
+  /* Small controls: plain icons and text, no chips or outlines */
+  .nav-privacy-btn { border:none; }
+  .nav-privacy-btn.active { border:none; background:none; }
+  .task-btn-stuck, .task-btn-stuck:hover { background:none; border:none; padding:2px 0; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-mute); }
+  .bucket-view-toggle.active, .bucket-view-toggle:hover { background:none; }
+  .bucket-tabs-row { margin-bottom:6px; }
+  .drag-handle { opacity:0.35; }
+  .node-textarea { background:transparent; border:1px solid var(--line); border-radius:var(--radius); }
+  .node-btn-add { background:none; padding:8px 0; font-size:14px; font-weight:500; color:var(--teal-dark); }
+
+  /* Check-in screen */
+  .readiness-card { border-bottom:none; }
+  .readiness-eyebrow { font-family:'DM Sans',sans-serif; font-size:14px; letter-spacing:0; text-transform:none; color:var(--ink-mute); }
+  .readiness-card .battery-panel { display:block; border-bottom:none; padding:0; }
+  .readiness-card .battery-panel-label, .readiness-card .battery-panel-status { display:none; }
+  .readiness-card .battery-panel-wrap { flex-direction:column-reverse; align-items:center !important; gap:10px; padding-right:0; }
+  .readiness-card .battery-panel-wrap > svg, .readiness-card .battery-panel-wrap > * > svg { position:static; transform:none; }
+  .readiness-card .battery-panel-pct { font-size:15px; color:var(--ink-soft) !important; }
+  .readiness-quickcheck { border-top:1px solid var(--line); }
+  .readiness-quickcheck-title { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; letter-spacing:0; text-transform:none; color:var(--ink-soft); }
+  .readiness-quickcheck-title span { font-weight:400; color:var(--ink-mute); }
+  .checkin-chip { background:transparent; border:1px solid var(--line); border-radius:var(--radius); padding:8px 14px; }
+  .checkin-chip.selected { border-color:var(--teal-dark); background:transparent; }
+  .readiness-struggle-btn { font-family:'DM Sans',sans-serif; font-size:14px; text-decoration:none; color:var(--ink-mute); letter-spacing:0; margin-top:18px; }
+
 `;
 
 // ─── Static Data ──────────────────────────────────────────────────────────────
@@ -3976,33 +4159,29 @@ function CalendarEventsSection({ calendarPermission, calConnected, onRequestPerm
   return (
     <div className="cal-section">
       <div className="cal-section-header">
-        <div className="cal-section-title">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Today's Calendar
-        </div>
+        <div className="cal-section-title">Today's calendar</div>
         {isConnected && (
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <button
               onClick={onResync}
               disabled={loading}
-              style={{ background:"none", border:"none", padding:0, cursor:loading ? "default" : "pointer", opacity:loading ? 0.4 : 1, display:"flex", alignItems:"center" }}
-              title="Resync calendar"
+              style={{ background:"none", border:"none", padding:4, cursor:loading ? "default" : "pointer", opacity:loading ? 0.4 : 1, display:"flex", alignItems:"center" }}
+              title="Resync calendar" aria-label="Resync calendar"
             >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mute)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
                 <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
               </svg>
             </button>
             <button
               onClick={onUnsync}
-              style={{ background:"none", border:"none", padding:0, cursor:"pointer", display:"flex", alignItems:"center" }}
-              title="Disconnect calendar"
+              style={{ background:"none", border:"none", padding:4, cursor:"pointer", display:"flex", alignItems:"center" }}
+              title="Disconnect calendar" aria-label="Disconnect calendar"
             >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mute)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mute)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
-            <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:"var(--teal-dark)" }}>connected</span>
           </div>
         )}
       </div>
@@ -4010,17 +4189,15 @@ function CalendarEventsSection({ calendarPermission, calConnected, onRequestPerm
       {!isConnected ? (
         <div className="cal-permission-prompt">
           {calendarPermission === "denied" ? (
-            <div className="cal-permission-sub" style={{ textAlign:"center", lineHeight:1.55 }}>
-              Calendar access was denied.<br />
-              <span style={{ fontWeight:500 }}>Settings → Privacy &amp; Security → Calendars</span><br />
-              to enable it for MyBattery.
+            <div className="cal-permission-sub">
+              To see your events here, turn on calendar access in Settings → Privacy &amp; Security → Calendars → MyBattery.
             </div>
           ) : (
             <>
+              <div className="cal-permission-sub">See your events alongside your tasks.</div>
               <button className="cal-permission-btn" onClick={onRequestPermission}>
-                Connect Calendar
+                Connect calendar
               </button>
-              <div className="cal-permission-sub">See your events alongside your tasks</div>
             </>
           )}
         </div>
@@ -4031,7 +4208,6 @@ function CalendarEventsSection({ calendarPermission, calConnected, onRequestPerm
       ) : (
         events.map((ev, i) => (
           <div key={ev.id || i} className="cal-event-row">
-            <div className="cal-event-dot" />
             <div className="cal-event-time">
               {ev.isAllDay ? "" : fmtTime(ev.startDate)}
             </div>
@@ -4628,14 +4804,27 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
   const nowHour = today.getHours() + today.getMinutes() / 60;
 
   const hourGridRef = useRef(null);
-  // Scroll the grid so the current hour (or 8am for future days) is near the top on mount
-  useEffect(() => {
-    const el = hourGridRef.current;
-    if (!el) return;
-    const targetHour = isToday ? Math.max(0, nowHour - 1) : 8;
-    const targetPx   = targetHour * 2 * ROW_H;
-    el.scrollTop = targetPx;
-  }, [selKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const formRef     = useRef(null);
+  // The add/edit form stays tucked away until it's needed.
+  const [showForm, setShowForm] = useState(false);
+  function openForm() {
+    setShowForm(true);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
+      formRef.current?.querySelector("input")?.focus();
+    }, 50);
+  }
+  // The timeline starts at 6am, or an hour before now later in the day (never after 6pm, so
+  // there's always a good stretch of evening visible); earlier hours are one tap away.
+  const defaultStartH = isToday ? Math.min(18, Math.max(6, Math.floor(nowHour) - 1)) : 6;
+  const [startH, setStartH] = useState(defaultStartH);
+  useEffect(() => { setStartH(defaultStartH); setShowForm(false); }, [selKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Position of a block on the visible part of the timeline (null if it ends before it starts).
+  function slot(start, end) {
+    if (end <= startH) return null;
+    const from = Math.max(start, startH);
+    return { top: (from - startH) * 2 * ROW_H, height: (end - from) * 2 * ROW_H };
+  }
 
   function doAutoSchedule() {
     const minHour = isToday ? nowHour : 0;
@@ -4683,6 +4872,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
   ];
 
   function startEditEvent(ev) {
+    openForm();
     setEditingEventId(ev.id);
     setMlActivity(ev.activity);
     setMlStart(ev.startHour);
@@ -4693,6 +4883,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
   }
 
   function cancelEdit() {
+    setShowForm(false);
     setEditingEventId(null);
     setEditingRecId(null);
     setMlActivity("");
@@ -4705,6 +4896,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
   }
 
   function startEditRecEvent(ev) {
+    openForm();
     setEditingRecId(ev.id);
     setEditingEventId(null);
     setMlActivity(ev.activity);
@@ -4801,6 +4993,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
       onToast && onToast({ type:"win", title:"Added.", msg:`${name} · ${dur}` });
     }
 
+    setStartH(h => Math.min(h, Math.floor(mlStart))); // make sure the new event is on screen
     setMlActivity("");
     setMlNotes("");
     setMlStart(mlEnd);
@@ -4810,6 +5003,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
     setMlEventImpactMode("drain");
     setMlEventIntensity(10);
     setActivePicker(null);
+    setShowForm(false);
   }
 
   function removeCustomEvent(id) {
@@ -4874,23 +5068,8 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
   return (
     <div className="cal-page">
       <div className="cal-header">
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          {onBack && (
-            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", fontSize:20, lineHeight:1, padding:"2px 4px", display:"flex", alignItems:"center" }} aria-label="Back">
-              ←
-            </button>
-          )}
-          <div className="cal-title">
-            {selDate.toLocaleDateString("en-US", { weekday:"long" })},{" "}
-            <span>{selDate.toLocaleDateString("en-US", { month:"long", day:"numeric" })}</span>
-          </div>
-        </div>
-        <div className="cal-header-right">
-          <div className="zone-legend">
-            <div className="zone-badge"><div className="zone-swatch" style={{ background:"rgba(90,122,90,0.25)" }}/>peak</div>
-            <div className="zone-badge"><div className="zone-swatch" style={{ background:"rgba(196,168,130,0.35)" }}/>dip</div>
-            <div className="zone-badge"><div className="zone-swatch" style={{ background:"rgba(106,138,170,0.25)" }}/>wind</div>
-          </div>
+        <div className="cal-title">
+          {selDate.toLocaleDateString("en-US", { weekday:"long", month:"short", day:"numeric" })}
         </div>
       </div>
 
@@ -4927,8 +5106,19 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
         </button>
       </div>
 
-      {/* Event entry form — above the calendar so it's always reachable */}
-      <div className="ml-event-form" style={{ marginBottom:16 }}>
+      {!showForm && (
+        <button className="cal-add-link" onClick={() => {
+          // Default to the next hour today, 9am on other days
+          const from = isToday ? Math.min(22, Math.ceil(nowHour)) : 9;
+          setMlStart(from); setMlEnd(from + 1);
+          openForm();
+        }}>
+          + Add to {selDate.toLocaleDateString("en-US", { month:"short", day:"numeric" })}
+        </button>
+      )}
+
+      {/* Event entry form — opens from the link above, a timeline slot, or an event's edit button */}
+      {showForm && <div className="ml-event-form" ref={formRef} style={{ marginBottom:16 }}>
         {/* Mad-lib sentence — time buttons are inline and clickable */}
         <div className="ml-sentence">
           {"I'm "}
@@ -4970,7 +5160,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
         {/* Energy impact */}
         <div className="ml-form-section ml-impact-row">
           <div className="ml-impact-header">
-            <span className="ml-impact-label-text">Energy Impact</span>
+            <span className="ml-impact-label-text">Energy impact</span>
             <span style={{ fontSize:11, fontFamily:"'DM Mono',monospace", fontWeight:500,
               color: mlEnergyValue < 0 ? "var(--error)" : mlEnergyValue > 0 ? "var(--teal-dark)" : "var(--ink-mute)" }}>
               {mlEnergyValue > 0 ? "+" : ""}{mlEnergyValue}
@@ -4987,7 +5177,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
             />
             <div className="ml-impact-center-tick" />
           </div>
-          <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", marginTop:5, letterSpacing:"0.3px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"var(--ink-mute)", marginTop:5 }}>
             <span>Drains</span>
             <span>Neutral</span>
             <span>Recharges</span>
@@ -5064,18 +5254,21 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
               <button className="ml-save-btn" disabled={!mlActivity.trim() || mlEnd === mlStart} onClick={addCustomEvent}>
                 {editingEventId ? "Update" : "Save"}
               </button>
-              {editingEventId && (
-                <button className="ml-cancel-btn" onClick={cancelEdit}>Cancel</button>
-              )}
+              <button className="ml-cancel-btn" onClick={cancelEdit}>Cancel</button>
             </>
           )}
         </div>
-      </div>
+      </div>}
 
       <div className="cal-body">
         {/* Day view */}
         <div className="day-view">
-          <div className="day-view-header">
+          <div className="zone-legend">
+            <span className="zone-badge"><span className="zone-swatch peak" />Peak</span>
+            <span className="zone-badge"><span className="zone-swatch dip" />Dip</span>
+            <span className="zone-badge"><span className="zone-swatch wind" />Wind-down</span>
+          </div>
+          {powerMode && <div className="day-view-header">
             <div className="day-view-title">Hourly plan</div>
             <div style={{ display:"flex", gap:8, alignItems:"center" }}>
               {powerMode ? (
@@ -5094,11 +5287,9 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
                     Auto-schedule
                   </button>
                 </>
-              ) : (
-                <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", letterSpacing:"0.3px", opacity:0.7 }}>⚡ Power Mode unlocks auto-schedule</span>
-              )}
+              ) : null}
             </div>
-          </div>
+          </div>}
 
           {deviceCalEvents.filter(ev => ev.isAllDay).length > 0 && (
             <div style={{ padding:"6px 14px 6px", borderBottom:"1px solid var(--warm)", display:"flex", flexWrap:"wrap", gap:5 }}>
@@ -5109,12 +5300,14 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
               ))}
             </div>
           )}
+          {startH > 0 && (
+            <button className="cal-earlier-btn" onClick={() => setStartH(0)}>Show earlier hours</button>
+          )}
           <div className="hour-grid" ref={hourGridRef}>
-            {HOURS.map(h => {
+            {HOURS.filter(h => h >= startH).map(h => {
               const isHalf  = h % 1 === 0.5;
               const blocks  = schedule[h] || [];
               const zc      = zoneClass(h);
-              const zl      = zoneLabel(h);
               const showNow = isToday && nowHour >= h && nowHour < h + 0.5;
               const nowPct  = ((nowHour - h) / 0.5 * 100).toFixed(1);
               const coveredByEvent = (eventsMap[selKey] || []).some(ev => h >= ev.startHour && h < ev.endHour);
@@ -5122,12 +5315,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
               return (
                 <div key={h} className={`hour-row ${zc} ${isHalf ? "half-hour" : ""}`}>
                   {showNow && <div className="now-line" style={{ top:`${nowPct}%` }} />}
-                  <div>
-                    <div className="hour-label" style={isHalf ? { opacity:0.4, fontSize:"10px", paddingTop:8 } : {}}>
-                      {isHalf ? ":30" : formatHour(h)}
-                    </div>
-                    {zl && !isHalf && <div className={`hour-zone-tag ${zl}-tag`}>{zl}</div>}
-                  </div>
+                  <div className="hour-label">{isHalf ? "" : formatHour(h)}</div>
                   <div className="hour-content">
                     {blocks.map(block => (
                       <div key={block.id} className={`cal-block type-${block.type}`}>
@@ -5145,7 +5333,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
                       <button className="hour-add-btn" onClick={() => {
                         setMlStart(h);
                         setMlEnd(Math.min(h + 1, 23.75));
-                        document.querySelector(".ml-event-form input")?.focus();
+                        openForm();
                       }}>+ Add to {formatHour(h)}</button>
                     )}
                   </div>
@@ -5155,8 +5343,10 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
             {/* One-time custom events */}
             {(eventsMap[selKey] || []).map(ev => {
               const c        = EVENT_COLORS[ev.colorIdx % EVENT_COLORS.length];
-              const topPx    = ev.startHour * 2 * ROW_H;
-              const heightPx = (ev.endHour - ev.startHour) * 2 * ROW_H;
+              const box      = slot(ev.startHour, ev.endHour);
+              if (!box) return null;
+              const topPx    = box.top;
+              const heightPx = box.height;
               const isDone   = doneEventIds.has(ev.id);
               const hasImpact = ev.energyImpact !== undefined && ev.energyImpact !== 0;
               return (
@@ -5185,8 +5375,10 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
             {/* Recurring event overlays */}
             {dayRecurringEvents.map(ev => {
               const c          = EVENT_COLORS[ev.colorIdx % EVENT_COLORS.length];
-              const topPx      = ev.startHour * 2 * ROW_H;
-              const heightPx   = (ev.endHour - ev.startHour) * 2 * ROW_H;
+              const box        = slot(ev.startHour, ev.endHour);
+              if (!box) return null;
+              const topPx      = box.top;
+              const heightPx   = box.height;
               const isRemoving = removingRecId === ev.id;
               const isDone     = doneEventIds.has(ev.id);
               const hasImpact  = ev.energyImpact !== undefined && ev.energyImpact !== 0;
@@ -5237,8 +5429,10 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
               const startHour = d.getHours() + d.getMinutes() / 60;
               const durMs = (ev.endDate || ev.startDate + 3600000) - ev.startDate;
               const durHours = Math.max(0.5, durMs / 3600000);
-              const topPx    = startHour * 2 * ROW_H;
-              const heightPx = Math.max(ROW_H, durHours * 2 * ROW_H);
+              const box      = slot(startHour, startHour + durHours);
+              if (!box) return null;
+              const topPx    = box.top;
+              const heightPx = Math.max(ROW_H, box.height);
               return (
                 <div key={ev.id || i} className="cal-event cal-event-device" style={{ top:topPx, height:heightPx }}>
                   <div>
@@ -5310,36 +5504,28 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
           {/* Check-in history */}
           <div className="shutdown-history">
             <div className="shutdown-history-title">Days you checked in</div>
-            <div className="shutdown-dots">
+            <div className="checkin-week">
               {weekDays.map((d, i) => {
                 const k    = d.toLocaleDateString("en-CA");
-                const tk   = todayKey();
-                const isTd = k === tk;
-                const past = d < today && !isTd;
+                const isTd = k === todayKey();
                 const done = shutdownDays.has(k);
-                let cls = "future";
-                if (isTd)       cls = done ? "done" : "today";
-                else if (past)  cls = done ? "done" : "missed";
+                // Days without a check-in stay neutral — no "missed" marks.
                 return (
-                  <div key={i} className={`s-dot ${cls}`} title={d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}>
-                    {cls==="done"?"·":cls==="missed"?"·":cls==="today"?"•":DAY_NAMES[i][0]}
+                  <div key={i} className={`checkin-day${isTd ? " today" : ""}`} title={d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}>
+                    <span className="checkin-day-letter">{DAY_NAMES[i][0]}</span>
+                    <span className={`checkin-day-dot${done ? " done" : ""}`} />
                   </div>
                 );
               })}
             </div>
-            <div className="shutdown-streak">
-              <strong>{weekDays.filter(d => shutdownDays.has(d.toLocaleDateString("en-CA"))).length}</strong> day{weekDays.filter(d => shutdownDays.has(d.toLocaleDateString("en-CA"))).length !== 1 ? "s" : ""} checked in this week
-            </div>
             {(() => {
-              const prefix = new Date().toISOString().slice(0,7);
+              const weekCount  = weekDays.filter(d => shutdownDays.has(d.toLocaleDateString("en-CA"))).length;
+              const prefix     = new Date().toISOString().slice(0,7);
               const monthCount = [...shutdownDays].filter(d => d.startsWith(prefix)).length;
-              return monthCount >= 2 ? (
-                <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--teal-dark)", marginTop:4 }}>
-                  {monthCount} this month · Every day you open the app counts.
-                </div>
-              ) : (
-                <div style={{ fontSize:12, color:"var(--ink-mute)", marginTop:6, lineHeight:1.5 }}>
-                  Every day you open the app counts, no matter what you did.
+              return (
+                <div className="checkin-week-note">
+                  {weekCount > 0 && <>{weekCount} this week{monthCount > weekCount ? ` · ${monthCount} this month` : ""}. </>}
+                  Every day you open the app counts.
                 </div>
               );
             })()}
@@ -6186,79 +6372,63 @@ function ColdWaterTimer({ onComplete, done }) {
 
   const complete = done || finished;
 
-  return (
-    <div className="ground-quick" style={{ marginBottom:16, flexDirection:"column", gap:10 }}>
-      <div style={{ display:"flex", alignItems:"flex-start", gap:14 }}>
-        <div className="ground-quick-icon" style={{ display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-          {running ? (
-            <svg width="44" height="44" style={{ flexShrink:0 }}>
-              <circle cx="22" cy="22" r={R} fill="none" stroke="var(--warm)" strokeWidth="3" />
-              <circle cx="22" cy="22" r={R} fill="none" stroke={phase.color} strokeWidth="3"
-                strokeDasharray={CIRC.toFixed(1)}
-                strokeDashoffset={(CIRC * (1 - pct)).toFixed(1)}
-                strokeLinecap="round"
-                transform="rotate(-90 22 22)"
-                style={{ transition:"stroke-dashoffset 1s linear, stroke 0.4s ease" }}
-              />
-              <text x="22" y="27" textAnchor="middle"
-                style={{ fontFamily:"'DM Mono',monospace", fontSize:11, fill:"var(--ink)", fontWeight:300 }}>
-                {Math.max(0, secsLeft)}
-              </text>
-            </svg>
-          ) : (
-            <Icon name="droplet" size={20} style={{ color: complete ? "var(--teal-dark)" : "var(--focus-blue)" }} />
-          )}
-        </div>
+  if (running) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:4 }}>
+        <svg width="44" height="44" style={{ flexShrink:0 }}>
+          <circle cx="22" cy="22" r={R} fill="none" stroke="var(--line)" strokeWidth="2" />
+          <circle cx="22" cy="22" r={R} fill="none" stroke="var(--teal-dark)" strokeWidth="2"
+            strokeDasharray={CIRC.toFixed(1)}
+            strokeDashoffset={(CIRC * (1 - pct)).toFixed(1)}
+            strokeLinecap="round"
+            transform="rotate(-90 22 22)"
+            style={{ transition:"stroke-dashoffset 1s linear" }}
+          />
+          <text x="22" y="27" textAnchor="middle" style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fill:"var(--ink)" }}>
+            {Math.max(0, secsLeft)}
+          </text>
+        </svg>
         <div style={{ flex:1 }}>
-          <div className="ground-quick-title" style={ complete ? { color:"var(--ink-mute)", textDecoration:"line-through" } : {} }>
-            Cold Water Reset
-          </div>
-          <div className="ground-quick-desc">
-            {running
-              ? <strong style={{ color:"var(--ink)", fontStyle:"normal" }}>{phase.label}</strong>
-              : complete
-              ? "Cold thermoreceptors interrupted the anxiety loop and triggered your dive reflex — slowing your heart rate within seconds."
-              : `Splash cold water on your face and wrists. The temperature shift signals safety to your nervous system. ${COLD_TOTAL} seconds total.`
-            }
-          </div>
+          <div style={{ fontSize:15, color:"var(--ink)" }}>{phase.label}</div>
+          <div style={{ fontSize:13, color:"var(--ink-mute)", marginTop:2 }}>Step {phaseIdx + 1} of {COLD_PHASES.length}</div>
         </div>
+        <button onClick={cancel} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontSize:14, color:"var(--ink-mute)" }}>Cancel</button>
       </div>
-      {!running && !complete && (
-        <button className="btn-primary" style={{ width:"100%", fontSize:13, padding:"10px" }} onClick={start}>
+    );
+  }
+
+  return (
+    <>
+      <p className="ground-tip">
+        {complete
+          ? "Cold thermoreceptors interrupted the anxiety loop and triggered your dive reflex — slowing your heart rate within seconds."
+          : `Splash cold water on your face and wrists. The temperature shift signals safety to your nervous system. ${COLD_TOTAL} seconds total.`}
+      </p>
+      {complete ? (
+        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:14, color:"var(--teal-dark)" }}>
+          <Icon name="check-circle" size={14} />Completed
+        </div>
+      ) : (
+        <button className="ground-complete-btn" style={{ background:"var(--teal-dark)", color:"white" }} onClick={start}>
           Start ({COLD_TOTAL}s)
         </button>
       )}
-      {running && (
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%" }}>
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"var(--ink-mute)" }}>
-            step {phaseIdx + 1} of {COLD_PHASES.length}
-          </div>
-          <button onClick={cancel} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"'DM Mono',monospace", fontSize:11, color:"var(--ink-mute)", letterSpacing:"0.5px" }}>
-            cancel
-          </button>
-        </div>
-      )}
-      {complete && (
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontFamily:"'DM Mono',monospace", fontSize:11, color:"var(--teal-dark)" }}>
-          <Icon name="check-circle" size={13} />Completed
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
-function GroundingCard({ id, icon, iconBg, title, meta, btnColor, children, noComplete, open, onToggle, done, onMarkDone }) {
+function GroundingCard({ id, icon, iconBg, title, meta, btnColor, children, noComplete, completeLabel = "Mark complete", open, onToggle, done, onMarkDone }) {
   return (
     <div className={`ground-card ${open===id?"open":""}`} onClick={() => onToggle(id)}>
       <div className="ground-card-header">
         <div className="ground-card-left">
-          <div className="ground-card-icon" style={{ background: iconBg, display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name={icon} size={18} style={{color:"var(--ink-soft)"}} /></div>
+          <div className="ground-card-icon"><Icon name={icon} size={20} /></div>
           <div>
             <div className="ground-card-title" style={ done.has(id) ? { textDecoration:"line-through", color:"var(--ink-mute)" } : {} }>{title}</div>
             <div className="ground-card-meta">{meta}{done.has(id) ? <span style={{display:"inline-flex",alignItems:"center",gap:3,marginLeft:4}}> · <Icon name="check-circle" size={11} style={{color:"var(--teal-dark)"}} />done</span> : ""}</div>
           </div>
         </div>
-        <span className="ground-card-chevron">▾</span>
+        <Icon name="chevron" size={18} className="ground-card-chevron" />
       </div>
       <div className="ground-card-body">
         <div className="ground-card-inner" onClick={e => e.stopPropagation()}>
@@ -6270,7 +6440,7 @@ function GroundingCard({ id, icon, iconBg, title, meta, btnColor, children, noCo
               disabled={done.has(id)}
               onClick={() => onMarkDone(id)}
             >
-              {done.has(id) ? <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Icon name="check-circle" size={13} />Completed</span> : "Mark complete"}
+              {done.has(id) ? <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Icon name="check-circle" size={13} />Completed</span> : completeLabel}
             </button>
           )}
         </div>
@@ -6359,24 +6529,36 @@ function GroundingView({ uid, saveJournalEntry, deleteJournalEntry, isPro = fals
       </>}
       {subtab === "ground" && <>
 
+      {/* Shortest to longest */}
+      <GroundingCard id="coldwater" icon="droplet" title="Cold Water Reset" meta={`Quick reset · ${COLD_TOTAL} sec`} noComplete open={open} onToggle={toggle} done={done} onMarkDone={markDone}>
+        <ColdWaterTimer onComplete={() => markDone("coldwater")} done={done.has("coldwater")} />
+      </GroundingCard>
+
+      <GroundingCard id="namestate" icon="leaf" title="Name Your State" meta="Quick reset · 1 min" btnColor="var(--teal-dark)" completeLabel="I named it" open={open} onToggle={toggle} done={done} onMarkDone={markDone}>
+        <p className="ground-tip">Say aloud: "I notice I'm feeling ___." Labeling an emotion activates the prefrontal cortex and reduces its intensity. You don't have to fix it — just name it.</p>
+      </GroundingCard>
+
       {onJumpstart && (
         <div className="ground-card" onClick={onJumpstart} role="button" tabIndex={0}
           onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onJumpstart(); } }}>
           <div className="ground-card-header">
             <div className="ground-card-left">
-              <div className="ground-card-icon" style={{ background:"rgba(196,168,130,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="bolt" size={18} style={{color:"var(--ink-soft)"}} /></div>
+              <div className="ground-card-icon"><Icon name="bolt" size={20} /></div>
               <div>
                 <div className="ground-card-title">Jumpstart</div>
                 <div className="ground-card-meta">Six tiny steps · 2 min</div>
               </div>
             </div>
-            <span className="ground-card-chevron" style={{ transform:"rotate(-90deg)" }}>▾</span>
+            <Icon name="chevron" size={18} className="ground-card-chevron" style={{ transform:"rotate(-90deg)" }} />
           </div>
         </div>
       )}
 
+      <GroundingCard id="breathing" icon="wind" iconBg="rgba(90,122,90,0.1)" title="Box Breathing" meta="Breathwork · 2–5 min" noComplete open={open} onToggle={toggle} done={done} onMarkDone={markDone}>
+        <BreathingExercise isOpen={open === "breathing"} />
+      </GroundingCard>
+
       <GroundingCard id="54321" icon="eye" iconBg="rgba(90,122,90,0.1)" title="5-4-3-2-1 Grounding" meta="Sensory awareness · 3–5 min" btnColor="var(--teal-dark)" open={open} onToggle={toggle} done={done} onMarkDone={markDone}>
-        <p className="ground-tip">Whenever you're ready, move through each sense slowly. You can't do this wrong.</p>
         {[
           { n:5, color:"#5a7a5a", sense:"see",   desc:"Look around slowly. Notice shapes, colors, textures, shadows." },
           { n:4, color:"#6a8a6a", sense:"touch",  desc:"Feel the temperature, weight, and texture of what's near you." },
@@ -6385,17 +6567,13 @@ function GroundingView({ uid, saveJournalEntry, deleteJournalEntry, isPro = fals
           { n:1, color:"#9a7a5a", sense:"taste",  desc:"Notice what lingers. Take a sip of water if you have one." },
         ].map(({ n, color, sense, desc }) => (
           <div key={n} className="ground-step">
-            <div className="ground-step-num" style={{ background:color }}>{n}</div>
+            <div className="ground-step-num">{n}</div>
             <div className="ground-step-text">
-              <strong>Name {n} things you can <em>{sense}</em></strong>
+              <strong>Name {n} thing{n === 1 ? "" : "s"} you can <em>{sense}</em></strong>
               <span>{desc}</span>
             </div>
           </div>
         ))}
-      </GroundingCard>
-
-      <GroundingCard id="breathing" icon="wind" iconBg="rgba(90,122,90,0.1)" title="Box Breathing" meta="Breathwork · 2–5 min" noComplete open={open} onToggle={toggle} done={done} onMarkDone={markDone}>
-        <BreathingExercise isOpen={open === "breathing"} />
       </GroundingCard>
 
       <GroundingCard id="bodyscan" icon="activity" iconBg="rgba(196,168,130,0.15)" title="Body Scan" meta="Physical awareness · 5–10 min" btnColor="var(--slate-dark)" open={open} onToggle={toggle} done={done} onMarkDone={markDone}>
@@ -6408,40 +6586,18 @@ function GroundingView({ uid, saveJournalEntry, deleteJournalEntry, isPro = fals
           "Feel both feet on the floor. Notice the solid ground beneath you.",
         ].map((text, i) => (
           <div key={i} className="ground-step">
-            <div className="ground-step-num" style={{ background:"var(--slate-dark)", fontSize:10 }}>↓</div>
+            <div className="ground-step-num">↓</div>
             <div className="ground-step-text"><span style={{ fontSize:14, color:"var(--ink)" }}>{text}</span></div>
           </div>
         ))}
       </GroundingCard>
 
-      <ColdWaterTimer onComplete={() => markDone("coldwater")} done={done.has("coldwater")} />
-
-      <div className="ground-quick" style={{ flexDirection:"column", gap:10 }}>
-        <div style={{ display:"flex", alignItems:"flex-start", gap:14 }}>
-          <div className="ground-quick-icon" style={{display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <Icon name="leaf" size={20} style={{ color: done.has("namestate") ? "var(--teal-dark)" : "var(--teal-dark)" }} />
-          </div>
-          <div>
-            <div className="ground-quick-title" style={ done.has("namestate") ? { color:"var(--ink-mute)", textDecoration:"line-through" } : {} }>Name Your State</div>
-            <div className="ground-quick-desc">Say aloud: "I notice I'm feeling ___." Labeling an emotion activates the prefrontal cortex and reduces its intensity. You don't have to fix it — just name it.</div>
-          </div>
-        </div>
-        <button
-          className="ground-complete-btn"
-          style={{ background: done.has("namestate") ? "var(--warm)" : "var(--teal-dark)", color: done.has("namestate") ? "var(--ink-mute)" : "white" }}
-          disabled={done.has("namestate")}
-          onClick={() => markDone("namestate")}
-        >
-          {done.has("namestate") ? <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Icon name="check-circle" size={13} />Completed</span> : "I named it"}
-        </button>
-      </div>
-
       <div className="wellness-fact-card">
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-          <div className="wellness-fact-eyebrow" style={{ marginBottom:0 }}>did you know</div>
+          <div className="wellness-fact-eyebrow" style={{ marginBottom:0 }}>Did you know?</div>
           <div style={{ display:"flex", gap:2 }}>
-            <button onClick={e => { e.stopPropagation(); setFactIdx(i => (i - 1 + BURNOUT_FACTS.length) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", fontSize:18, padding:"0 6px", lineHeight:1, fontFamily:"sans-serif" }}>‹</button>
-            <button onClick={e => { e.stopPropagation(); setFactIdx(i => (i + 1) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", fontSize:18, padding:"0 6px", lineHeight:1, fontFamily:"sans-serif" }}>›</button>
+            <button aria-label="Previous fact" onClick={e => { e.stopPropagation(); setFactIdx(i => (i - 1 + BURNOUT_FACTS.length) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", padding:"4px 6px", display:"flex" }}><Icon name="chevron" size={16} style={{ transform:"rotate(90deg)" }} /></button>
+            <button aria-label="Next fact" onClick={e => { e.stopPropagation(); setFactIdx(i => (i + 1) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", padding:"4px 6px", display:"flex" }}><Icon name="chevron" size={16} style={{ transform:"rotate(-90deg)" }} /></button>
           </div>
         </div>
         <div className="wellness-fact-text">"{BURNOUT_FACTS[factIdx].fact}"</div>
@@ -8989,14 +9145,13 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
   );
 }
 
-function BatteryPanel({ battery, onBatteryChange, charging = false, darkMode = false, minimal = false }) {
+function BatteryPanel({ battery, onBatteryChange, charging = false, darkMode = false, minimal = false, mascotSize = 44 }) {
   const trackRef   = useRef(null);
   const isDragging = useRef(false);
   const [localVal, setLocalVal] = useState(battery);
 
   const colorFor  = v => v < BATTERY_THRESHOLDS.CRITICAL ? "var(--error)" : v < BATTERY_THRESHOLDS.MID ? "var(--slate-dark)" : "var(--teal-dark)";
   const fillFor   = v => v < BATTERY_THRESHOLDS.CRITICAL ? "var(--error)" : v < BATTERY_THRESHOLDS.MID ? (darkMode ? "linear-gradient(90deg,#c4906a,#d4a57a)" : "linear-gradient(90deg,#b8813e,#c4906a)") : (darkMode ? "linear-gradient(90deg,#3ecfb0,#1f9e8a)" : "linear-gradient(90deg,#4a9e8e,#1f7a68)");
-  const glowFor   = v => v <= 0 ? "none" : v < BATTERY_THRESHOLDS.CRITICAL ? "0 0 8px rgba(196,114,106,0.22)" : v < BATTERY_THRESHOLDS.MID ? "0 0 10px rgba(196,144,106,0.22)" : "0 0 14px rgba(61,102,64,0.25)";
   const pctClrFor = v => v < BATTERY_THRESHOLDS.CRITICAL ? "var(--error)" : v < BATTERY_THRESHOLDS.MID ? "var(--slate-dark)" : "var(--ink)";
   const statusFor = v => {
     if (v < BATTERY_THRESHOLDS.CRITICAL) return "Rest is productive. Be gentle with yourself.";
@@ -9043,7 +9198,7 @@ function BatteryPanel({ battery, onBatteryChange, charging = false, darkMode = f
           <div className="battery-panel-pct" style={{ color: pctClrFor(localVal) }}>{localVal}%</div>
           {!minimal && <div className="battery-panel-status">{statusFor(localVal)}</div>}
         </div>
-        <BatteryMascot level={localVal} size={44} />
+        <BatteryMascot level={localVal} size={mascotSize} />
       </div>
       <div
         className="battery-shape-outer"
@@ -9052,7 +9207,7 @@ function BatteryPanel({ battery, onBatteryChange, charging = false, darkMode = f
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <div ref={trackRef} className="battery-body" style={{ borderColor: colorFor(localVal), boxShadow: glowFor(localVal) }}>
+        <div ref={trackRef} className="battery-body">
           <div className="battery-panel-fill" style={{ width:`${localVal}%`, background:fillFor(localVal) }} />
         </div>
         <div className="battery-nub" style={{ background: colorFor(localVal) }} />
@@ -9992,7 +10147,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
               <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 0", borderTop:"1px solid var(--warm)" }}>
                 <button onClick={() => isActiveToday && toggleStep(r.id, s.id)} style={{
                   width:20, height:20, borderRadius:"50%", border:"2px solid",
-                  borderColor: s.done ? "var(--teal-dark)" : "var(--teal-light)",
+                  borderColor: s.done ? "var(--teal-dark)" : "var(--control-line)",
                   background: s.done ? "var(--teal-dark)" : "transparent",
                   display:"flex", alignItems:"center", justifyContent:"center",
                   cursor: isActiveToday ? "pointer" : "default", flexShrink:0, transition:"var(--transition)",
@@ -10032,10 +10187,6 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                   })}
                 </div>
               </div>
-              <span style={{ display:"flex", flexDirection:"column", alignItems:"center", fontSize:9, fontFamily:"'DM Mono',monospace", color: energyOpt.color, background:`${energyOpt.color}18`, borderRadius:12, padding:"3px 8px", lineHeight:1.4, flexShrink:0 }}>
-                <span>{energyOpt.label}</span>
-                <span>-{energyOpt.drain}%</span>
-              </span>
             </div>
               </>
             )}
@@ -10437,7 +10588,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     const sb = window.Capacitor?.Plugins?.StatusBar;
     if (!sb) return;
     sb.setStyle({ style: darkMode ? "DARK" : "LIGHT" }).catch(() => {});
-    sb.setBackgroundColor({ color: darkMode ? "#0e1818" : "#f4f7f7" }).catch(() => {});
+    sb.setBackgroundColor({ color: darkMode ? "#121514" : "#f4f7f7" }).catch(() => {});
   }, [darkMode]);
 
 
@@ -11413,16 +11564,12 @@ export default function App({ user, firebaseHelpers = {} }) {
 
         <nav className="nav">
           <button
-            className="nav-logo"
-            style={{ display:"flex", alignItems:"center", gap:7, background:"none", border:"none", cursor:"pointer", padding:0, textAlign:"left" }}
+            className="nav-battery"
             onClick={() => setShowLogEnergy(true)}
-            title="Log energy"
+            title={`Energy ${battery}% — tap to log`}
+            aria-label={`Energy ${battery}%. Log energy`}
           >
-            <BatteryMascot level={battery} size={22} mood={battery <= 15 ? "sleeping" : mascotMood} />
-            <span style={{ display:"flex", flexDirection:"column", lineHeight:1, gap:2 }}>
-              <span>{battery}%</span>
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--ink-mute)", fontStyle:"normal", fontWeight:400 }}>energy</span>
-            </span>
+            <BatteryMascot level={battery} size={26} mood={battery <= 15 ? "sleeping" : mascotMood} />
           </button>
           {false && (
             <span className="streak-badge">🔥 {checkinStreak}d</span>
@@ -11477,8 +11624,6 @@ export default function App({ user, firebaseHelpers = {} }) {
           )}
 
           {view === "readiness" && (() => {
-            const derivedEnergy = energy ?? (battery >= ENERGY_LEVEL_THRESHOLDS.HIGH ? "high" : battery >= ENERGY_LEVEL_THRESHOLDS.MED ? "med" : battery >= ENERGY_LEVEL_THRESHOLDS.LOW ? "low" : "hibernate");
-            const derivedSelected = ENERGY_LEVELS.find(e => e.id === derivedEnergy);
             return (
               <div className="readiness-card">
                 <div className="readiness-eyebrow">Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}{userProfile?.userName ? `, ${userProfile.userName.split(" ")[0]}` : ""}</div>
@@ -11488,6 +11633,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                   <BatteryPanel
                     battery={battery}
                     darkMode={darkMode}
+                    mascotSize={88}
                     onBatteryChange={v => {
                       setBattery(v);
                       localStorage.setItem("reflow-battery", String(v));
@@ -11496,10 +11642,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                   />
                 </div>
                 <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6, marginTop:16 }}>
-                  <span className={`energy-badge ${derivedEnergy}`}>
-                    <Icon name={derivedSelected.icon} size={12} style={{ marginRight:4 }} />{derivedSelected.label}
-                  </span>
-                  <span style={{ fontSize:13, color:"var(--ink-mute)" }}>
+                  <span style={{ fontSize:14, color:"var(--ink-soft)" }}>
                     {(() => {
                       const drainCost = tasks.filter(t => !t.done && typeof t.energyImpact === "number" && t.energyImpact < 0).reduce((s, t) => s + Math.abs(t.energyImpact), 0);
                       return battery >= ENERGY_LEVEL_THRESHOLDS.HIGH
@@ -11768,7 +11911,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                   )}
                 </div>
               </div>
-              <button className="btn-primary" style={{ width:"100%", background:"#2a2a25", borderRadius:"var(--radius-sm)", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, marginTop:8 }} onClick={() => setView("shutdown")}>
+              <button className="btn-primary btn-quiet" style={{ width:"100%", background:"none", color:"var(--ink-soft)", border:"1px solid var(--line)", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, marginTop:16 }} onClick={() => setView("shutdown")}>
                 <Icon name="moon" size={15} />Begin wind-down
               </button>
             </>
@@ -11800,7 +11943,7 @@ export default function App({ user, firebaseHelpers = {} }) {
               calPermission={calPermission}
               deviceCalEventsByDay={deviceCalCache}
             />
-            <div style={{ marginTop:24 }}>
+            <div className="cal-events-wrap">
             <CalendarEventsSection
               calendarPermission={calPermission}
               calConnected={calConnected}

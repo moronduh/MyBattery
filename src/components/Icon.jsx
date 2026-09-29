@@ -9,6 +9,7 @@ const ICON_PATHS = {
   calendar:     <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
   chart:        <><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
   bolt:         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
+  chevron:      <polyline points="6 9 12 15 18 9"/>,
   battery:      <><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/></>,
   ground:       <><circle cx="12" cy="5" r="2"/><path d="M12 7v8"/><path d="M8 15h8"/><path d="M6 19h12"/></>,
   heart:        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>,

@@ -19,6 +19,7 @@
 		AA11BB22CC33DD44EE55FF67 /* StoreKitIAP.m in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF61 /* StoreKitIAP.m */; };
 		AA11BB22CC33DD44EE55FF68 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF62 /* ViewController.swift */; };
 		DD1A2B3C4D5E6F7C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DD1A2B3C4D5E6F7B /* PrivacyInfo.xcprivacy */; };
+		EE1A2B3C4D5E6F7C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EE1A2B3C4D5E6F7B /* GoogleService-Info.plist */; };
 		FEAA72032FDFBCC8001EE66C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E52FDFBCAB001EE66C /* WidgetKit.framework */; };
 		FEAA72042FDFBCC8001EE66C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEAA71E72FDFBCAC001EE66C /* SwiftUI.framework */; };
 		FEAA72152FDFBCC9001EE66C /* TaskPreviewWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FEAA72022FDFBCC8001EE66C /* TaskPreviewWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -88,6 +89,7 @@
 		AA11BB22CC33DD44EE55FF62 /* ViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		BB1A2B3C4D5E6F7A /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = file.storekit; path = Products.storekit; sourceTree = "<group>"; };
 		DD1A2B3C4D5E6F7B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EE1A2B3C4D5E6F7B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FEAA71E52FDFBCAB001EE66C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		FEAA71E72FDFBCAC001EE66C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		FEAA72022FDFBCC8001EE66C /* TaskPreviewWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TaskPreviewWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -209,6 +211,7 @@
 				50B271D01FEDC1A000F3C39B /* public */,
 				BB1A2B3C4D5E6F7A /* Products.storekit */,
 				DD1A2B3C4D5E6F7B /* PrivacyInfo.xcprivacy */,
+				EE1A2B3C4D5E6F7B /* GoogleService-Info.plist */,
 				AA11BB22CC33DD44EE55FF60 /* StoreKitIAPPlugin.swift */,
 				AA11BB22CC33DD44EE55FF61 /* StoreKitIAP.m */,
 				AA11BB22CC33DD44EE55FF62 /* ViewController.swift */,
@@ -389,6 +392,7 @@
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				DD1A2B3C4D5E6F7C /* PrivacyInfo.xcprivacy in Resources */,
+				EE1A2B3C4D5E6F7C /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

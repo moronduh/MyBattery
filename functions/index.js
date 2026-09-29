@@ -277,6 +277,7 @@ exports.sendCheckin = onSchedule("every 1 minutes", async () => {
   for (const doc of snap.docs) {
     const { token, prefs } = doc.data();
     if (!prefs?.checkinEnabled || !token) continue;
+    if (prefs.platform === "ios") continue; // the iPhone app schedules this reminder on-device
     if (typeof prefs.checkinTime !== "string" || !/^\d{1,2}:\d{2}$/.test(prefs.checkinTime)) continue;
     const [hh, mm] = prefs.checkinTime.split(":").map(Number);
     if (isNaN(hh) || isNaN(mm)) continue;
@@ -339,6 +340,7 @@ exports.sendWinddown = onSchedule("every 1 minutes", async () => {
   for (const doc of snap.docs) {
     const { token, prefs } = doc.data();
     if (!prefs?.winddownEnabled || !token) continue;
+    if (prefs.platform === "ios") continue; // the iPhone app schedules this reminder on-device
     if (typeof prefs.winddownTime !== "string" || !/^\d{1,2}:\d{2}$/.test(prefs.winddownTime)) continue;
     const [hh, mm] = prefs.winddownTime.split(":").map(Number);
     if (isNaN(hh) || isNaN(mm)) continue;

@@ -6978,6 +6978,22 @@ function _fmtScheduledTime(h, m) {
   return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
+// Registers this device's push token + notification prefs with the server. `platform` lets the
+// server skip reminders an iPhone already schedules on-device (check-in, wind-down).
+const SAVE_PREFS_URL = "https://us-central1-mindfulstillflow.cloudfunctions.net/savePrefs";
+async function syncPushPrefs(token, prefs, getIdToken, uid) {
+  const idToken = await getIdToken();
+  if (!idToken) return false;
+  const res = await fetch(SAVE_PREFS_URL, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+    body:    JSON.stringify({ token, prefs: { ...prefs, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, platform: _isNative() ? "ios" : "web" } }),
+  });
+  if (!res.ok) throw new Error(`savePrefs ${res.status}`);
+  try { localStorage.setItem("reflow-push-synced", `${uid}:${token}`); } catch {}
+  return true;
+}
+
 async function scheduleIosNotifs(prefs, battery) {
   const ln = _localNotifs();
   if (!ln || !_isNative()) return;
@@ -7050,6 +7066,8 @@ async function _scheduleHabitNotifsIosNow(routines) {
 function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggleGentleMode, battery = 100, onDirtyChange, saveRef, discardRef }) {
   const requestNotificationPermission = firebaseHelpers.requestNotificationPermission ?? (async () => null);
   const getIdToken = firebaseHelpers.getIdToken ?? (async () => null);
+  const requestNativePushToken = firebaseHelpers.requestNativePushToken ?? (async () => null);
+  const uid = firebaseHelpers.uid ?? null;
   const isElectron = typeof window !== "undefined" && !!window.electronAPI?.sendNotification;
   const [permissionState, setPermissionState] = useState(
     isElectron ? "granted" :
@@ -7065,6 +7083,8 @@ function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggle
     if (!ln) return;
     ln.checkPermissions().then(({ display }) => {
       setPermissionState(display === "granted" ? "granted" : "default");
+      // Already allowed → fetch the push token silently (no prompt)
+      if (display === "granted") requestNativePushToken().then(t => { if (t) setFcmToken(t); });
     }).catch(() => {});
   }, []);
 
@@ -7173,19 +7193,11 @@ function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggle
     savedPrefsRef.current = { ...prefs };
     await scheduleIosNotifs(prefs, battery);
     if (fcmToken) {
-      const idToken = await getIdToken();
-      if (idToken) {
-        try {
-          const res = await fetch("https://us-central1-mindfulstillflow.cloudfunctions.net/savePrefs", {
-            method:  "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
-            body:    JSON.stringify({ token: fcmToken, prefs: { ...prefs, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone } }),
-          });
-          if (!res.ok) throw new Error(`savePrefs ${res.status}`);
-        } catch {
-          onToast({ type:"error", title:"Couldn't sync.", msg:"Notification schedule saved locally but not synced — push notifications may use the wrong time. Try again." });
-          return;
-        }
+      try {
+        await syncPushPrefs(fcmToken, prefs, getIdToken, uid);
+      } catch {
+        onToast({ type:"error", title:"Couldn't sync.", msg:"Notification schedule saved locally but not synced — push notifications may use the wrong time. Try again." });
+        return;
       }
     }
     onToast({ type:"win", title:"Saved.", msg:"Your notification schedule has been saved." });
@@ -7199,6 +7211,8 @@ function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggle
         const { display } = ln ? await ln.requestPermissions() : { display: "denied" };
         setPermissionState(display === "granted" ? "granted" : "denied");
         if (display === "granted") {
+          const token = await requestNativePushToken();
+          if (token) setFcmToken(token);
           onToast({ type:"win", title:"Notifications enabled.", msg:"You're all set. Save your schedule below." });
         } else {
           onToast({ type:"win", title:"Permission denied.", msg:"Enable notifications in iOS Settings → MyBattery and try again." });
@@ -8345,7 +8359,7 @@ function SettingsView({ initialTab = "settings", onShowTutorial, powerMode, onTo
           {settingsSubTab === "notifications" && (
             <NotificationsView
               onToast={onToast}
-              firebaseHelpers={firebaseHelpers}
+              firebaseHelpers={{ ...firebaseHelpers, uid }}
               gentleMode={gentleMode}
               onToggleGentleMode={onToggleGentleMode}
               battery={battery}
@@ -10361,6 +10375,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
 export default function App({ user, firebaseHelpers = {} }) {
   const {
     requestNotificationPermission, onForegroundMessage,
+    requestNativePushToken, onNativePushTap, getIdToken,
     createAccount, signIn, signInGoogle, redirectError, signOutUser, resetPassword, friendlyAuthError,
     saveUserProfile, loadUserData, loadRecentDays,
     saveDailyRecord,
@@ -10754,6 +10769,31 @@ export default function App({ user, firebaseHelpers = {} }) {
     sw.addEventListener("message", onMessage);
     return () => sw.removeEventListener("message", onMessage);
   }, []);
+
+  // iPhone push: tapping a server notification opens its link (e.g. the Wellness tab).
+  useEffect(() => {
+    if (!_isNative() || !onNativePushTap) return;
+    let off = () => {};
+    onNativePushTap(data => { if (data?.link) openTabFromLink(data.link); }).then(fn => { off = fn; });
+    return () => off();
+  }, []);
+
+  // iPhone push: once notifications are allowed, keep this device's token registered with the
+  // server so it gets server-sent notifications (like the quiet check-in) without visiting Settings.
+  useEffect(() => {
+    if (!_isNative() || !uid || !requestNativePushToken || !getIdToken) return;
+    (async () => {
+      try {
+        const ln = _localNotifs();
+        const { display } = ln ? await ln.checkPermissions() : { display: "denied" };
+        if (display !== "granted") return;
+        const token = await requestNativePushToken();
+        if (!token || localStorage.getItem("reflow-push-synced") === `${uid}:${token}`) return;
+        const saved = JSON.parse(localStorage.getItem("mindfull-notif-prefs") || "null") || {};
+        await syncPushPrefs(token, saved, getIdToken, uid);
+      } catch {}
+    })();
+  }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cold-start: runs once on mount. Drains any pending widget energy logs and reads
   // the launch deep-link URL (written to UserDefaults by AppDelegate on cold launch).

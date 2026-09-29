@@ -405,6 +405,33 @@ export async function requestNotificationPermission() {
   }
 }
 
+// ─── Native push (iPhone) ─────────────────────────────────────────────────────
+// Uses @capacitor-firebase/messaging, so iPhones get an FCM token just like the web
+// and the server's existing getMessaging().send() reaches them unchanged.
+export async function requestNativePushToken() {
+  try {
+    const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
+    const { receive } = await FirebaseMessaging.requestPermissions();
+    if (receive !== "granted") return null;
+    const { token } = await FirebaseMessaging.getToken();
+    return token || null;
+  } catch (err) {
+    console.warn("Native push token:", err);
+    return null;
+  }
+}
+
+// Calls back with the tapped notification's data (e.g. { link: "/?tab=wellness" }).
+export async function onNativePushTap(callback) {
+  try {
+    const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
+    const handle = await FirebaseMessaging.addListener("notificationActionPerformed", e => callback(e.notification?.data || {}));
+    return () => handle.remove();
+  } catch {
+    return () => {};
+  }
+}
+
 export async function onForegroundMessage(callback) {
   const m = await getMessagingInstance();
   if (!m) return () => {};

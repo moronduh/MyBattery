@@ -5,6 +5,7 @@ import App from "./mindful-productivity.jsx";
 import { useSubscription } from "./hooks/useSubscription.js";
 import {
   requestNotificationPermission, onForegroundMessage, getIdToken,
+  requestNativePushToken, onNativePushTap,
   createAccount, signIn, signInGoogle, handleGoogleRedirect, signOutUser, resetPassword, onAuthChange, friendlyAuthError,
   saveUserProfile, loadUserData, loadRecentDays,
   saveDailyRecord,
@@ -60,6 +61,8 @@ function Root() {
   const firebaseHelpers = {
     requestNotificationPermission,
     onForegroundMessage,
+    requestNativePushToken,
+    onNativePushTap,
     getIdToken,
     createAccount,
     signIn,

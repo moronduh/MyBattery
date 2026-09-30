@@ -2102,6 +2102,7 @@ const styles = `
   .week-nav-btn::after { inset:-10px -4px; }
   .new-task-check::after, .task-btn-stuck::after { content:""; position:absolute; inset:-12px; }
   .task-btn-stuck { position:relative; }
+  body[data-form-open] .ai-fab, body[data-form-open] .fab-menu, body[data-form-open] .fab-backdrop { display:none; }
   .rt-form button, .rt-form input:not([type=checkbox]) { min-height:44px; }
   .rt-form button.tap-slop { min-height:0; }
   .tap-slop-lg::after { inset:-14px -12px; }
@@ -10018,6 +10019,14 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
   const [editingTagsFor, setEditingTagsFor] = useState(null);
   const [inlineTagInput, setInlineTagInput] = useState("");
   const [editingId, setEditingId] = useState(null);
+
+  // The floating + button sits on top of the form's Save/Cancel row on phones, so hide it while a form is open.
+  const formOpen = !!showAdd || editingId != null;
+  useEffect(() => {
+    if (!formOpen) return;
+    document.body.setAttribute("data-form-open", "");
+    return () => document.body.removeAttribute("data-form-open");
+  }, [formOpen]);
   const [editName, setEditName] = useState("");
   const [editEmoji, setEditEmoji] = useState("");
   const [editEnergy, setEditEnergy] = useState("medium");

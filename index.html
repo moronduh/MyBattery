@@ -40,36 +40,67 @@
       /* Prevent iOS Safari horizontal momentum scroll causing centering issues */
       html, body { overflow-x: hidden; touch-action: pan-y; max-width: 100%; }
       body { overflow-x: clip; } /* clip, not hidden: hidden makes body a scroll container and breaks the sticky header */
-      #error-overlay { display:none; position:fixed; inset:0; background:#1e1e1e; color:#ff6b6b; font-family:monospace; font-size:13px; padding:24px; overflow:auto; z-index:99999; white-space:pre-wrap; }
+      #error-overlay { display:none; position:fixed; inset:0; z-index:99999; align-items:center; justify-content:center; padding:24px; text-align:center; background:#f5f7f5; color:#2a2a25; font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      #error-overlay.show { display:flex; }
+      #error-overlay .err-box { max-width:340px; }
+      #error-overlay h1 { font-family:'Playfair Display',Georgia,serif; font-weight:400; font-size:26px; margin:0 0 10px; }
+      #error-overlay p { font-size:15px; line-height:1.6; color:#5b6b5b; margin:0 0 22px; }
+      #error-overlay button { font:inherit; font-size:15px; font-weight:500; background:#1f7a68; color:#fff; border:0; border-radius:32px; padding:11px 26px; cursor:pointer; }
+      #error-overlay .err-links { margin-top:18px; font-size:13px; }
+      #error-overlay .err-links a { color:#1f7a68; }
+      #error-overlay details { margin-top:22px; font-size:12px; color:#8a8078; text-align:left; }
+      #error-overlay pre { white-space:pre-wrap; word-break:break-word; margin-top:8px; max-height:140px; overflow:auto; font-family:monospace; }
+      [data-theme="dark"] #error-overlay { background:#121514; color:#e8ede9; }
+      [data-theme="dark"] #error-overlay p { color:#a9b5ac; }
     </style>
     <script>
+      // Friendly full-screen fallback shown when the app crashes or never finishes loading.
+      var errShown = false;
       function showError(text) {
-        // Log to native console (visible in Xcode device logs)
         console.error('[AppError]', text);
         var el = document.getElementById('error-overlay');
-        if (!el) {
-          // DOM not ready yet — buffer and retry
-          setTimeout(function() { showError(text); }, 50);
-          return;
-        }
-        el.style.display = 'block';
-        el.textContent = text;
+        if (!el) { setTimeout(function() { showError(text); }, 50); return; }
+        if (errShown) return;
+        errShown = true;
+        document.getElementById('error-detail').textContent = String(text).slice(0, 1500);
+        el.className = 'show';
+        var body = 'Hi, MyBattery didn\'t load for me.\n\nWhat I was doing:\n\n\n---\nDetails (please keep):\n' + String(text).slice(0, 800) + '\nPage: ' + location.href + '\nBrowser: ' + navigator.userAgent;
+        document.getElementById('error-mail').href = 'mailto:info@mybatteryapp.com?subject=' + encodeURIComponent('MyBattery won\'t load') + '&body=' + encodeURIComponent(body);
       }
       window.onerror = function(msg, src, line, col, err) {
+        // Browsers report this harmless layout notice as an error; it isn't a crash.
+        if (/ResizeObserver loop/.test(String(msg))) return;
         var detail = err && err.stack ? err.stack : (src ? src + ':' + line + ':' + col : 'source unknown');
         showError('JS ERROR:\n' + msg + '\n\n' + detail);
       };
       window.onunhandledrejection = function(e) {
         var r = e.reason;
-        // Log to console for debugging (visible in Xcode device logs and Safari devtools)
-        // but do NOT show the blocking overlay — unhandled rejections from Firebase SDK
-        // internals (IndexedDB, Auth persistence) are non-fatal and must not crash the UI.
+        // Logged only: unhandled rejections from Firebase SDK internals (IndexedDB, Auth
+        // persistence) are non-fatal and must not take over the UI.
         console.error('[UnhandledPromise]', r && r.stack ? r.stack : String(r));
       };
+      // The app script itself failed to download (offline, blocked, stale deploy).
+      window.addEventListener('error', function(e) {
+        var t = e.target;
+        if (t && t.tagName === 'SCRIPT') showError('Could not load ' + (t.src || 'script'));
+      }, true);
+      // Nothing rendered after 15s: the app is stuck, so offer a way out instead of a blank page.
+      setTimeout(function() {
+        var root = document.getElementById('root');
+        if (root && !root.firstChild) showError('The app did not start within 15 seconds.');
+      }, 15000);
     </script>
   </head>
   <body>
-    <div id="error-overlay"></div>
+    <div id="error-overlay" role="alert">
+      <div class="err-box">
+        <h1>MyBattery didn't load</h1>
+        <p>Something got stuck on our end or yours. Your data is safe. Give it another try.</p>
+        <button type="button" onclick="location.reload()">Try again</button>
+        <div class="err-links">Still stuck? <a id="error-mail" href="mailto:info@mybatteryapp.com">Email us</a> · <a href="/support">Help</a></div>
+        <details><summary>Details</summary><pre id="error-detail"></pre></details>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

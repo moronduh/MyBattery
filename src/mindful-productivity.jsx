@@ -2104,6 +2104,9 @@ const styles = `
   .new-task-check::after, .task-btn-stuck::after { content:""; position:absolute; inset:-12px; }
   .task-btn-stuck { position:relative; }
   body[data-form-open] .ai-fab, body[data-form-open] .fab-menu, body[data-form-open] .fab-backdrop { display:none; }
+  body[data-sheet-open] .bottom-nav { display:none; }
+  /* The sheet ends where the visual viewport does; on iPhone the keyboard toolbar floats over the strip below it, so colour that strip like the sheet. */
+  .atm-overlay::after { content:""; position:fixed; left:0; right:0; top:calc(var(--vv-top,0px) + var(--vv-height,100%)); height:240px; background:var(--cream); pointer-events:none; }
   .rt-form button, .rt-form input:not([type=checkbox]) { min-height:44px; }
   .rt-form button.tap-slop { min-height:0; }
   .tap-slop-lg::after { inset:-14px -12px; }
@@ -10701,6 +10704,12 @@ export default function App({ user, firebaseHelpers = {} }) {
   const [impactMode,     setImpactMode]     = useState("drain");
   const [impactIntensity,setImpactIntensity]= useState(10);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  // On iPhone the sheet stops above the keyboard toolbar, and the fixed tab bar shows through the gap below it.
+  useEffect(() => {
+    if (!showAddTaskModal) return;
+    document.body.setAttribute("data-sheet-open", "");
+    return () => document.body.removeAttribute("data-sheet-open");
+  }, [showAddTaskModal]);
   const [editingTaskId,    setEditingTaskId]    = useState(null);
   const [newTaskDesc,      setNewTaskDesc]      = useState("");
   const [newTaskTime,      setNewTaskTime]      = useState("");

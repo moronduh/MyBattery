@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, Component } from "react";
+import { createPortal } from "react-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import ConfirmModal from "./components/ConfirmModal.jsx";
 import DeleteAccountModal from "./components/DeleteAccountModal.jsx";
@@ -4574,19 +4575,22 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
         <WinsCardSection wins={sessionWins} onUncomplete={onUncomplete} />
       )}
 
-      {/* Drag ghost — follows pointer on touch/desktop */}
-      {ptrDrag?.moved && (
+      {/* Drag ghost — follows pointer on touch/desktop. Portaled to <body>: an ancestor's fadeUp
+          animation leaves a transform behind, which turns position:fixed into "relative to that
+          ancestor" and made the ghost land far below the finger. */}
+      {ptrDrag?.moved && createPortal(
         <div style={{
           position:"fixed", left:ptrDrag.x, top:ptrDrag.y,
           transform:"translate(-50%,-50%) rotate(2deg) scale(1.04)",
           background:"var(--card)", border:"1.5px solid var(--teal-dark)",
-          borderRadius:8, padding:"6px 12px", fontSize:13, fontWeight:500,
+          borderRadius:8, padding:"6px 12px", fontSize:13, fontWeight:500, fontFamily:"'DM Sans',sans-serif",
           color:"var(--ink)", boxShadow:"0 4px 16px rgba(0,0,0,0.18)",
           pointerEvents:"none", zIndex:9999, maxWidth:220,
           whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
         }}>
           {ptrDrag.label}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

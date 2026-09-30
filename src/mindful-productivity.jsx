@@ -839,12 +839,12 @@ const styles = `
   .shutdown-prompt { margin-bottom:20px; }
   .shutdown-q { font-size:13px; color:rgba(255,255,255,0.7); margin-bottom:8px; font-weight:400; }
   .shutdown-textarea { width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:var(--radius-sm); padding:12px 14px; font-family:'DM Sans',sans-serif; font-size:13px; color:white; resize:none; outline:none; transition:var(--transition); min-height:70px; }
-  .shutdown-textarea::placeholder { color:rgba(255,255,255,0.25); }
+  .shutdown-textarea::placeholder { color:rgba(255,255,255,0.5); }
   .shutdown-textarea:focus { border-color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); }
   .shutdown-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:24px; }
   .shutdown-stat { text-align:center; background:rgba(255,255,255,0.05); border-radius:var(--radius-sm); padding:14px 10px; }
   .shutdown-num { font-family:'Playfair Display',serif; font-size:28px; color:var(--teal-light); display:block; margin-bottom:4px; }
-  .shutdown-label { font-size:11px; color:rgba(255,255,255,0.4); font-family:'DM Mono',monospace; }
+  .shutdown-label { font-size:11px; color:rgba(255,255,255,0.6); font-family:'DM Mono',monospace; }
   .btn-shutdown { width:100%; background:var(--teal-dark); color:white; border:none; border-radius:40px; padding:14px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:var(--transition); letter-spacing:0.3px; }
   .btn-shutdown:hover { background:var(--teal); }
   .sd-ml-sentence { font-size:15px; color:rgba(255,255,255,0.9); line-height:2.2; margin-bottom:12px; }
@@ -1551,12 +1551,12 @@ const styles = `
 
   /* ── Swipe-to-defer (shutdown) ───────────────────────────────────────────── */
   .shutdown-undone { margin-bottom:18px; }
-  .shutdown-undone-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.35); margin-bottom:10px; }
+  .shutdown-undone-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.6); margin-bottom:10px; }
   .swipe-task-wrap { position:relative; overflow:hidden; border-radius:12px; margin-bottom:6px; }
   .swipe-task-hint-right { position:absolute; inset:0; display:flex; align-items:center; padding:0 16px; background:rgba(90,140,90,0.35); color:rgba(255,255,255,0.9); font-size:12px; font-family:'DM Mono',monospace; gap:6px; }
   .swipe-task-hint-left  { position:absolute; inset:0; display:flex; align-items:center; justify-content:flex-end; padding:0 16px; background:rgba(200,80,80,0.35); color:rgba(255,255,255,0.9); font-size:12px; font-family:'DM Mono',monospace; gap:6px; }
   .swipe-task-card { position:relative; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:11px 14px; font-size:13px; color:rgba(255,255,255,0.8); display:flex; align-items:center; gap:10px; cursor:grab; user-select:none; touch-action:pan-y; will-change:transform; }
-  .shutdown-defer-all { width:100%; padding:9px; border:1px solid rgba(255,255,255,0.15); border-radius:40px; background:none; color:rgba(255,255,255,0.4); font-size:11px; font-family:'DM Mono',monospace; cursor:pointer; transition:all 0.2s; margin-top:4px; letter-spacing:0.4px; }
+  .shutdown-defer-all { width:100%; padding:9px; border:1px solid rgba(255,255,255,0.15); border-radius:40px; background:none; color:rgba(255,255,255,0.6); font-size:11px; font-family:'DM Mono',monospace; cursor:pointer; transition:all 0.2s; margin-top:4px; letter-spacing:0.4px; }
   .shutdown-defer-all:hover { color:rgba(255,255,255,0.7); border-color:rgba(255,255,255,0.3); }
 
   /* ── Milestone toast / badge shelf ─────────────────────────────────────────── */
@@ -5756,8 +5756,8 @@ function ShutdownView({ tasks, onComplete, onCancel, onDeferTask, shutdownDays =
                 fontFamily:"'DM Sans',sans-serif", transition:"all 0.2s", textAlign:"center"
               }}
             >
-              <Icon name={m.icon} size={16} style={{ color: eveningMood === m.id ? "rgba(196,212,196,0.9)" : "rgba(255,255,255,0.45)", display:"block", margin:"0 auto 4px" }} />
-              <div style={{ fontSize:11, color: eveningMood === m.id ? "rgba(196,212,196,0.9)" : "rgba(255,255,255,0.4)", fontFamily:"'DM Mono',monospace", letterSpacing:"0.3px" }}>{m.label}</div>
+              <Icon name={m.icon} size={16} style={{ color: eveningMood === m.id ? "rgba(196,212,196,0.9)" : "rgba(255,255,255,0.6)", display:"block", margin:"0 auto 4px" }} />
+              <div style={{ fontSize:11, color: eveningMood === m.id ? "rgba(196,212,196,0.9)" : "rgba(255,255,255,0.6)", fontFamily:"'DM Mono',monospace", letterSpacing:"0.3px" }}>{m.label}</div>
             </button>
           ))}
         </div>
@@ -5774,7 +5774,7 @@ function ShutdownView({ tasks, onComplete, onCancel, onDeferTask, shutdownDays =
           <Icon name="leaf" size={16} />I'm done for today.
         </button>
         {onCancel && (
-          <button onClick={onCancel} style={{ background:"none", border:"1.5px solid rgba(255,255,255,0.12)", borderRadius:40, padding:"10px 20px", color:"rgba(255,255,255,0.4)", fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all 0.2s" }}>Not now — go back</button>
+          <button onClick={onCancel} style={{ background:"none", border:"1.5px solid rgba(255,255,255,0.12)", borderRadius:40, padding:"10px 20px", color:"rgba(255,255,255,0.6)", fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all 0.2s" }}>Not now — go back</button>
         )}
       </div>
     </div>

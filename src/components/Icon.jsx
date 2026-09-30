@@ -52,7 +52,7 @@ export default function Icon({ name, size = 16, className = "", style = {} }) {
   return (
     <svg
       width={size} height={size} viewBox="0 0 24 24"
-      fill="none" stroke="currentColor"
+      fill="none" stroke="currentColor" aria-hidden="true" focusable="false"
       strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
       className={className} style={{ display:"inline-block", verticalAlign:"middle", flexShrink:0, ...style }}
     >

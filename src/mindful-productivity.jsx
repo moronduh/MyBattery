@@ -19,10 +19,25 @@ fontLink.rel = "stylesheet";
 fontLink.href = "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap";
 document.head.appendChild(fontLink);
 
+// When the keyboard opens, iOS scrolls the page and shrinks the visual viewport, which left bottom
+// sheets (Add/Edit Task, Brain Dump…) sitting under the status bar or over a shifted page. Publish
+// the visible area as CSS vars so those overlays can pin themselves to what is actually on screen.
+if (typeof window !== "undefined" && window.visualViewport) {
+  const vv = window.visualViewport;
+  const syncViewportVars = () => {
+    const root = document.documentElement.style;
+    root.setProperty("--vv-top", `${vv.offsetTop}px`);
+    root.setProperty("--vv-height", `${vv.height}px`);
+  };
+  syncViewportVars();
+  vv.addEventListener("resize", syncViewportVars);
+  vv.addEventListener("scroll", syncViewportVars);
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = `
   :root {
-    --teal: #4a9e8e; --teal-light: #b8ddd8; --teal-dark: #1f7a68;
+    --teal: #4a9e8e; --teal-light: #b8ddd8; --teal-dark: #1c7562;
     --cream: #f4f7f7; --warm: #e6efee;
     /* Minimal: sections sit flat on the page (--card), only true surfaces are raised */
     --card: var(--cream); --surface: #ffffff; --line: rgba(20,30,30,0.10);
@@ -231,6 +246,7 @@ const styles = `
   .new-task-row.holding .task-hold-fill { animation:taskHoldFill 600ms linear forwards; }
   .new-task-check { width:30px; height:30px; border-radius:50%; border:2px solid rgba(0,0,0,0.2); background:none; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:var(--transition); }
   .new-task-check.done { border-color:var(--teal-dark); background:var(--teal-dark); }
+  .new-task-check::before { content:""; position:absolute; inset:-10px; } /* roomy touch target without a bigger circle */
   .new-task-info { flex:1; min-width:0; position:relative; z-index:1; }
   .new-task-title-text { font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; color:var(--ink); line-height:1.25; }
   .new-task-sub-text { font-size:11px; color:var(--teal-dark); margin-top:2px; font-family:'DM Sans',sans-serif; }
@@ -243,7 +259,7 @@ const styles = `
   .bucket-dot-pill { height:8px; border-radius:4px; background:var(--teal-dark); transition:all 0.25s; cursor:pointer; border:none; padding:0; }
   .bucket-dot-pill.active { width:24px; opacity:1; }
   .bucket-dot-pill:not(.active) { width:8px; opacity:0.25; }
-  .wins-card { background:var(--card); border-radius:20px; padding:20px; margin-top:16px; }
+  .wins-card { user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; background:var(--card); border-radius:20px; padding:20px; margin-top:16px; }
   .wins-card-title { font-family:'DM Sans',sans-serif; font-size:16px; font-weight:600; color:var(--ink); margin-bottom:0; padding-bottom:12px; border-bottom:1px solid var(--warm); }
   .wins-item { display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid var(--warm); }
   .wins-item:last-child { border-bottom:none; }
@@ -434,8 +450,8 @@ const styles = `
   .add-task-trigger-icon { width:28px; height:28px; border-radius:50%; background:var(--teal-dark); color:white; display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1; flex-shrink:0; }
 
   /* ADD TASK MODAL (bottom sheet) */
-  .atm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:200; display:flex; align-items:flex-end; animation:fadeIn 0.2s ease; }
-  .atm-sheet { width:100%; max-width:560px; margin:0 auto; background:var(--cream); border-radius:28px 28px 0 0; padding:0 0 max(28px,env(safe-area-inset-bottom)) 0; max-height:min(92dvh, calc(100dvh - env(safe-area-inset-top) - 24px)); overflow-y:auto; animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .atm-overlay { position:fixed; inset:var(--vv-top,0px) 0 auto 0; height:var(--vv-height,100%); overflow-y:auto; overscroll-behavior:contain; background:rgba(0,0,0,0.35); z-index:200; display:flex; align-items:flex-end; animation:fadeIn 0.2s ease; }
+  .atm-sheet { width:100%; max-width:560px; margin:0 auto; background:var(--cream); border-radius:28px 28px 0 0; padding:0 0 max(28px,env(safe-area-inset-bottom)) 0; max-height:min(92%, calc(100% - env(safe-area-inset-top) - 24px)); overflow-y:auto; animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1); }
   @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
   .atm-handle { width:40px; height:4px; border-radius:2px; background:var(--teal-light); margin:12px auto 0; }
   .atm-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px; }
@@ -1579,8 +1595,8 @@ const styles = `
   .node-empty { text-align:center; padding:36px; color:var(--ink-mute); font-size:13px; font-family:'DM Mono',monospace; letter-spacing:0.5px; }
 
   /* Brain dump modal */
-  .bdump-overlay { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; }
-  .bdump-sheet { background:var(--cream); border-radius:24px 24px 0 0; padding:28px 20px 40px; width:100%; max-height:85vh; display:flex; flex-direction:column; gap:14px; }
+  .bdump-overlay { position:fixed; inset:var(--vv-top,0px) 0 auto 0; height:var(--vv-height,100%); overflow-y:auto; overscroll-behavior:contain; z-index:300; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; }
+  .bdump-sheet { background:var(--cream); border-radius:24px 24px 0 0; padding:28px 20px 40px; width:100%; max-height:min(85%, calc(100% - env(safe-area-inset-top) - 12px)); overflow-y:auto; overscroll-behavior:contain; display:flex; flex-direction:column; gap:14px; }
   .bdump-header { display:flex; align-items:center; justify-content:space-between; }
   .bdump-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--ink); }
   .bdump-sub { font-size:13px; color:var(--ink-mute); line-height:1.5; }
@@ -2042,7 +2058,64 @@ const styles = `
   .checkin-chip.selected { border-color:var(--teal-dark); background:transparent; }
   .readiness-struggle-btn { font-family:'DM Sans',sans-serif; font-size:14px; text-decoration:none; color:var(--ink-mute); letter-spacing:0; margin-top:18px; }
 
+
+  /* Dark mode: every other white-on-teal fill gets the same deep green (white on bright mint was ~2:1) */
+  [data-theme="dark"] .new-due-pill,
+  [data-theme="dark"] .subtask-add-confirm,
+  [data-theme="dark"] .wplan-priority-num,
+  [data-theme="dark"] .week-day-btn.selected,
+  [data-theme="dark"] .btn-add,
+  [data-theme="dark"] .add-task-trigger-icon,
+  [data-theme="dark"] .mindfulness-btn-add,
+  [data-theme="dark"] .cal-event-done-btn.marked,
+  [data-theme="dark"] .ml-day-btn.active,
+  [data-theme="dark"] .s-dot.done,
+  [data-theme="dark"] .btn-shutdown,
+  [data-theme="dark"] .journal-prompt-cat.active,
+  [data-theme="dark"] .dirty-modal-save,
+  [data-theme="dark"] .wellness-intro-dismiss,
+  [data-theme="dark"] .screening-opt.selected,
+  [data-theme="dark"] .screening-submit,
+  [data-theme="dark"] .pomo-btn-main,
+  [data-theme="dark"] .tpm-btn-start,
+  [data-theme="dark"] .tpm-done-close,
+  [data-theme="dark"] .fab-menu-icon,
+  [data-theme="dark"] .frec-try-btn,
+  [data-theme="dark"] .meds-time-btn.taken .meds-check,
+  [data-theme="dark"] .cal-permission-btn,
+  [data-theme="dark"] .node-btn-ai,
+  [data-theme="dark"] .bdump-btn-ai,
+  [data-theme="dark"] .ai-message-user,
+  [data-theme="dark"] .ai-send-btn,
+  [data-theme="dark"] .ai-add-tasks-yes,
+  [data-theme="dark"] .sched-generate-btn,
+  [data-theme="dark"] .sched-add-all,
+  [data-theme="dark"] .ai-breakdown-add-all,
+  [data-theme="dark"] .checkin-btn-primary,
+  [data-theme="dark"] .paywall-plan-badge,
+  [data-theme="dark"] .paywall-cta,
+  [data-theme="dark"] [style*="var(--teal-dark)"][style*="color: white"] { background:#1f7a68 !important; color:#fff !important; }
+
+  /* Keyboard focus ring for everything that isn't a text field */
+  button:focus-visible, [role="button"]:focus-visible, [role="radio"]:focus-visible, [role="checkbox"]:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visible, .notif-toggle input:focus-visible + .notif-toggle-slider {
+    outline:2px solid var(--teal-dark); outline-offset:2px;
+  }
+  input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline:2px solid var(--teal-dark); outline-offset:1px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+  }
 `;
+
+// Makes a clickable non-button element keyboard-operable (Enter/Space) and announced correctly.
+const asButton = (onActivate, role = "button", extra = {}) => ({
+  role, tabIndex: 0, ...extra,
+  onKeyDown: e => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onActivate(e); }
+  },
+});
 
 // ─── Static Data ──────────────────────────────────────────────────────────────
 const PROFILES = [
@@ -3046,7 +3119,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
         <div className="onboard-sub">Different work drains energy differently. This shapes your personal task limits — because one size never fits all.</div>
         <div className="profile-grid">
           {PROFILES.map(p => (
-            <div key={p.id} className={`profile-option ${prof?.id===p.id?"selected":""}`} onClick={() => pickProf(p)}>
+            <div key={p.id} className={`profile-option ${prof?.id===p.id?"selected":""}`} onClick={() => pickProf(p)} {...asButton(() => pickProf(p), "radio", { "aria-checked": prof?.id===p.id })}>
               <span className="profile-baseline">peak ~{p.baseline}</span>
               <span className="profile-icon"><Icon name={p.icon} size={24} style={{color:"var(--teal-dark)"}} /></span>
               <div className="profile-name">{p.name}</div>
@@ -3097,7 +3170,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
         <div className="onboard-sub">Not how you wish it was — how it actually runs. This shapes how we sequence tasks around your energy, not the other way around.</div>
         <div className="rhythm-options">
           {RHYTHMS.map(r => (
-            <div key={r.id} className={`rhythm-option ${rhythm===r.id?"selected":""}`} onClick={() => setRhythm(r.id)}>
+            <div key={r.id} className={`rhythm-option ${rhythm===r.id?"selected":""}`} onClick={() => setRhythm(r.id)} {...asButton(() => setRhythm(r.id), "radio", { "aria-checked": rhythm===r.id })}>
               <span className="rhythm-icon"><Icon name={r.icon} size={18} style={{color:"var(--teal-dark)"}} /></span>
               <div><div className="rhythm-name">{r.name}</div><div className="rhythm-desc">{r.desc}</div></div>
             </div>
@@ -3143,7 +3216,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           <div style={{ fontSize:13, fontWeight:600, color:"var(--ink)", marginBottom:10 }}>When do you feel sharpest?</div>
           <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
             {MAP_PEAK_OPTIONS.map(o => (
-              <div key={o.id} onClick={() => setMapPeak(o.id)}
+              <div key={o.id} onClick={() => setMapPeak(o.id)} {...asButton(() => setMapPeak(o.id), "radio", { "aria-checked": mapPeak===o.id })}
                 style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 14px", borderRadius:"var(--radius-sm)", border:`2px solid ${mapPeak===o.id?"var(--teal-dark)":"var(--warm)"}`, background:mapPeak===o.id?"rgba(90,122,90,0.05)":"var(--cream)", cursor:"pointer", transition:"all 0.15s" }}
               >
                 <Icon name={o.icon} size={16} style={{color:"var(--teal-dark)", flexShrink:0}} />
@@ -3160,7 +3233,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           <div style={{ fontSize:13, fontWeight:600, color:"var(--ink)", marginBottom:10 }}>Do you get an afternoon slump?</div>
           <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
             {MAP_DIP_OPTIONS.map(o => (
-              <div key={o.id} onClick={() => setMapDip(o.id)}
+              <div key={o.id} onClick={() => setMapDip(o.id)} {...asButton(() => setMapDip(o.id), "radio", { "aria-checked": mapDip===o.id })}
                 style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:"var(--radius-sm)", border:`2px solid ${mapDip===o.id?"var(--teal-dark)":"var(--warm)"}`, background:mapDip===o.id?"rgba(90,122,90,0.05)":"var(--cream)", cursor:"pointer", transition:"all 0.15s" }}
               >
                 <span style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${mapDip===o.id?"var(--teal-dark)":"var(--warm)"}`, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -3176,7 +3249,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           <div style={{ fontSize:13, fontWeight:600, color:"var(--ink)", marginBottom:10 }}>How does your energy end the day?</div>
           <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
             {MAP_EVENING_OPTIONS.map(o => (
-              <div key={o.id} onClick={() => setMapEvening(o.id)}
+              <div key={o.id} onClick={() => setMapEvening(o.id)} {...asButton(() => setMapEvening(o.id), "radio", { "aria-checked": mapEvening===o.id })}
                 style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:"var(--radius-sm)", border:`2px solid ${mapEvening===o.id?"var(--teal-dark)":"var(--warm)"}`, background:mapEvening===o.id?"rgba(90,122,90,0.05)":"var(--cream)", cursor:"pointer", transition:"all 0.15s" }}
               >
                 <span style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${mapEvening===o.id?"var(--teal-dark)":"var(--warm)"}`, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -3548,7 +3621,7 @@ function SOSModal({ onDismiss, onOpenSafety }) {
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"var(--error)", background:"rgba(196,114,106,0.1)", border:"1.5px solid rgba(196,114,106,0.3)", borderRadius:20, padding:"3px 10px", flexShrink:0 }}>SOS</span>
           <div style={{ fontFamily:"'Playfair Display',serif", fontSize:20, fontWeight:400, color:"var(--ink)", flex:1 }}>You're not alone.</div>
-          <button onClick={onDismiss} style={{ background:"none", border:"1.5px solid rgba(0,0,0,0.1)", borderRadius:"50%", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--ink-mute)", fontSize:16, flexShrink:0 }}>×</button>
+          <button aria-label="Close" onClick={onDismiss} style={{ background:"none", border:"1.5px solid rgba(0,0,0,0.1)", borderRadius:"50%", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--ink-mute)", fontSize:16, flexShrink:0 }}>×</button>
         </div>
         <p className="safety-intro" style={{ marginBottom:16 }}>
           These lines are here for hard moments — big or small. All are free, confidential, and available right now.
@@ -3691,8 +3764,8 @@ function AnalyticsView() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-            <XAxis dataKey="label" tick={{ fontSize:11, fill:"#9a9a8a", fontFamily:"DM Mono,monospace" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize:11, fill:"#9a9a8a", fontFamily:"DM Mono,monospace" }} axisLine={false} tickLine={false} domain={[0, 100]} />
+            <XAxis dataKey="label" tick={{ fontSize:11, fill:"var(--ink-mute)", fontFamily:"DM Mono,monospace" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize:11, fill:"var(--ink-mute)", fontFamily:"DM Mono,monospace" }} axisLine={false} tickLine={false} domain={[0, 100]} />
             <Tooltip
               contentStyle={{ background:"var(--card)", border:"1px solid var(--warm)", borderRadius:10, fontSize:12, fontFamily:"DM Sans,sans-serif" }}
               formatter={(val, name) => [val === null ? "—" : name === "battery" ? `${val}%` : val, name === "battery" ? "Energy" : "Tasks"]}
@@ -3911,7 +3984,7 @@ function TaskColumn({ title, pillClass, tasks, onToggle, onDelete, onEdit, onOpe
                       ))}
                     </div>
                     {_isNative() && (
-                      <button
+                      <button aria-label="Add to device calendar"
                         type="button"
                         onClick={async e => { e.stopPropagation(); await calendarHelpers.addTaskAsEvent(t); }}
                         title="Add to device calendar"
@@ -3940,6 +4013,7 @@ function TaskColumn({ title, pillClass, tasks, onToggle, onDelete, onEdit, onOpe
                       className={`task-bucket-btn ${bs.className}`}
                       onClick={e => { e.stopPropagation(); onChangeBucket(t.id, BUCKET_CYCLE[t.bucket] || "should"); }}
                       title="Tap to change priority"
+                    aria-label={`Priority: ${bs.label}. Tap to change`}
                     >{bs.label}</button>
                   );
                 })()}
@@ -3981,8 +4055,8 @@ function TaskColumn({ title, pillClass, tasks, onToggle, onDelete, onEdit, onOpe
                             >
                               {s.done && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                             </div>
-                            <span className={`subtask-name${s.done ? " done" : ""}`} onClick={() => onToggleSubtask?.(t.id, s.id)}>{s.name}</span>
-                            <button className="subtask-del" onClick={() => onDeleteSubtask?.(t.id, s.id)}>×</button>
+                            <span className={`subtask-name${s.done ? " done" : ""}`} onClick={() => onToggleSubtask?.(t.id, s.id)} {...asButton(() => onToggleSubtask?.(t.id, s.id), "checkbox", { "aria-checked": !!s.done })}>{s.name}</span>
+                            <button aria-label="Delete subtask" className="subtask-del" onClick={() => onDeleteSubtask?.(t.id, s.id)}>×</button>
                           </div>
                         ))}
                         <div className="subtask-add-row">
@@ -4029,10 +4103,10 @@ function TaskColumn({ title, pillClass, tasks, onToggle, onDelete, onEdit, onOpe
             </div>
             <div className="task-actions">
               {!t.done && onParalysis && (
-                <button className="task-btn-stuck" title="Feeling stuck?" onClick={e => { e.stopPropagation(); onParalysis(t); }}>stuck?</button>
+                <button aria-label="Feeling stuck?" className="task-btn-stuck" title="Feeling stuck?" onClick={e => { e.stopPropagation(); onParalysis(t); }}>stuck?</button>
               )}
-              <button className="task-btn" title="Edit" onClick={e => { e.stopPropagation(); onOpenEdit ? onOpenEdit(t) : startEdit(t, e); }}><Icon name="pen" size={13} /></button>
-              <button className="task-btn delete" title="Delete" onClick={e => { e.stopPropagation(); onDelete(t.id); }}><Icon name="trash" size={13} /></button>
+              <button aria-label="Edit" className="task-btn" title="Edit" onClick={e => { e.stopPropagation(); onOpenEdit ? onOpenEdit(t) : startEdit(t, e); }}><Icon name="pen" size={13} /></button>
+              <button aria-label="Delete" className="task-btn delete" title="Delete" onClick={e => { e.stopPropagation(); onDelete(t.id); }}><Icon name="trash" size={13} /></button>
             </div>
           </div>
         );
@@ -4044,18 +4118,29 @@ function TaskColumn({ title, pillClass, tasks, onToggle, onDelete, onEdit, onOpe
 // ─── NewTaskRow ───────────────────────────────────────────────────────────────
 const HOLD_DURATION = 600;
 
+// Shared by the hold, tap and drag gestures on task rows. A hold or drag that just ended
+// must not also register as a tap that opens Edit.
+let lastTaskGestureEnd = 0;
+const markTaskGestureEnd = () => { lastTaskGestureEnd = Date.now(); };
+const TAP_SLOP_PX = 8;      // finger travel beyond this is a scroll/drag, not a tap or hold
+const TAP_MAX_MS  = 500;    // presses longer than this are not taps
+const TAP_QUIET_MS = 300;   // ignore taps right after a hold/drag finished
+
 function useHoldToggle(onComplete, active = true, onShortPress) {
   const [holding, setHolding] = useState(false);
   const timerRef = useRef(null);
+  const startRef = useRef(null);
 
   function start(e) {
     if (!active) return;
     e.stopPropagation();
     e.preventDefault();
+    startRef.current = { x: e.clientX, y: e.clientY };
     setHolding(true);
     timerRef.current = setTimeout(() => {
       setHolding(false);
       timerRef.current = null;
+      markTaskGestureEnd();
       onComplete();
     }, HOLD_DURATION);
   }
@@ -4063,14 +4148,20 @@ function useHoldToggle(onComplete, active = true, onShortPress) {
   function cancel(e) {
     e?.stopPropagation();
     const released = !!timerRef.current && e?.type === "pointerup";
-    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; markTaskGestureEnd(); }
     setHolding(false);
     if (released) onShortPress?.(e); // let go before the hold finished
   }
 
+  // Finger wandered off the circle: that's a scroll or drag, so abandon the hold.
+  function move(e) {
+    if (!timerRef.current || !startRef.current) return;
+    if (Math.hypot(e.clientX - startRef.current.x, e.clientY - startRef.current.y) > TAP_SLOP_PX) cancel(e);
+  }
+
   return {
     holding,
-    handlers: { onPointerDown: start, onPointerUp: cancel, onPointerLeave: cancel, onPointerCancel: cancel },
+    handlers: { onPointerDown: start, onPointerMove: move, onPointerUp: cancel, onPointerLeave: cancel, onPointerCancel: cancel },
   };
 }
 
@@ -4104,17 +4195,33 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis }) {
     return `${m}/${d}/${String(y).slice(2)}`;
   }
 
+  // Only a real tap opens Edit: little finger travel, short press, and not the tail of a hold/drag.
+  const pressRef = useRef(null);
+  function openIfTap() {
+    const p = pressRef.current;
+    pressRef.current = null;
+    if (!p) return;
+    if (Date.now() - p.t > TAP_MAX_MS) return;
+    if (Date.now() - lastTaskGestureEnd < TAP_QUIET_MS) return;
+    onOpenEdit?.(task);
+  }
+
   return (
     <div
       className={`new-task-row${holding ? " holding" : ""}${task.priority === "urgent" ? " urgency-urgent" : task.priority === "high" ? " urgency-high" : ""}`}
-      style={!task.done ? { touchAction:"none" } : undefined}
-      {...(!task.done ? handlers : {})}
-      onClick={() => onOpenEdit?.(task)}
+      onPointerDown={e => { pressRef.current = { x: e.clientX, y: e.clientY, t: Date.now() }; }}
+      onPointerMove={e => {
+        const p = pressRef.current;
+        if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > TAP_SLOP_PX) pressRef.current = null;
+      }}
+      onPointerCancel={() => { pressRef.current = null; }}
+      onClick={openIfTap}
     >
       <div className="task-hold-fill" />
-      <button
+      <button aria-label={task.done ? `Mark "${task.name}" not done` : `Complete "${task.name}" (press and hold)`}
         className={`new-task-check${task.done ? " done" : ""}`}
-        style={{ touchAction:"none", position:"relative", zIndex:1, flexShrink:0 }}
+        style={{ touchAction: task.done ? undefined : "none", position:"relative", zIndex:1, flexShrink:0 }}
+        {...(!task.done ? handlers : {})}
         onClick={e => { e.stopPropagation(); if (task.done) onToggle(task.id); }}
       >
         <HoldRing holding={holding} size={HOLD_DURATION} />
@@ -4139,7 +4246,7 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis }) {
         {task.recurrence && <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:"var(--teal-dark)", background:"rgba(90,122,90,0.1)", borderRadius:20, padding:"2px 7px", letterSpacing:"0.5px" }}>↻ {task.recurrence}</span>}
         {task.dueDate && <span className="new-due-pill">Due {formatDue(task.dueDate)}</span>}
         {!task.done && onParalysis && (
-          <button className="task-btn-stuck" title="Feeling stuck?" onClick={e => { e.stopPropagation(); onParalysis(task); }}>stuck?</button>
+          <button aria-label="Feeling stuck?" className="task-btn-stuck" title="Feeling stuck?" onClick={e => { e.stopPropagation(); onParalysis(task); }}>stuck?</button>
         )}
       </div>
     </div>
@@ -4245,7 +4352,7 @@ function WinsCardSection({ wins, onUncomplete }) {
     <div className="wins-card">
       <div className="wins-card-title">Today's Wins</div>
       {wins.map(w => (
-        <div key={w.id} className="wins-item" onClick={() => handleTap(w.id)} style={{ cursor:"pointer" }}>
+        <div key={w.id} className="wins-item" onClick={() => handleTap(w.id)} {...asButton(() => handleTap(w.id))} style={{ cursor:"pointer" }}>
           <div className="wins-bullet" />
           <span className="wins-name">{w.name}</span>
           {w.energyImpact !== undefined && (
@@ -4280,17 +4387,19 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
       const x = e.clientX, y = e.clientY;
       setPtrDrag(d => {
         if (!d) return null;
-        const moved = d.moved || (Math.abs(x - d.x) > 6 || Math.abs(y - d.y) > 6);
+        const moved = d.moved || Math.hypot(x - d.startX, y - d.startY) > 10;
         return { ...d, x, y, moved };
       });
       const el = document.elementFromPoint(x, y);
-      setDragOverKey(el?.closest('[data-bucket-key]')?.dataset.bucketKey ?? null);
+      setDragOverKey(ptrDragRef.current?.moved ? (el?.closest('[data-bucket-key]')?.dataset.bucketKey ?? null) : null);
     }
     function onUp(e) {
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const target = el?.closest('[data-bucket-key]')?.dataset.bucketKey;
       const current = ptrDragRef.current;
-      if (target && current && target !== current.fromBucket) onChangeBucket?.(current.id, target);
+      // A touch that never really travelled is not a drag: don't move the task.
+      if (current?.moved && target && target !== current.fromBucket) onChangeBucket?.(current.id, target);
+      markTaskGestureEnd();
       setPtrDrag(null);
       setDragOverKey(null);
     }
@@ -4394,7 +4503,7 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
                         e.preventDefault();
                         e.stopPropagation();
                         e.currentTarget.setPointerCapture(e.pointerId);
-                        setPtrDrag({ id: t.id, fromBucket: tab.key, x: e.clientX, y: e.clientY, label: t.text, moved: false });
+                        setPtrDrag({ id: t.id, fromBucket: tab.key, x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, label: t.name, moved: false });
                       }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -5191,7 +5300,10 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
         <div className="ml-form-section">
           <div className="ml-repeat-row">
             <div className="ml-repeat-left">
-              <div className="ml-check-item" onClick={() => {
+              <div className="ml-check-item" {...asButton(() => {
+                if (!isPro && mlRecurrence === "none") { onOpenPaywall?.(); return; }
+                setMlRecurrence(r => r === "none" ? "daily" : "none");
+              }, "checkbox", { "aria-checked": mlRecurrence !== "none" })} onClick={() => {
                 if (!isPro && mlRecurrence === "none") { onOpenPaywall?.(); return; }
                 setMlRecurrence(r => r === "none" ? "daily" : "none");
               }}>
@@ -5329,7 +5441,7 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
                             {block.duration && <span style={{ marginLeft: block.tag ? 6 : 0 }}>⏱ {block.duration < 60 ? `${block.duration}m` : block.duration % 60 === 0 ? `${block.duration/60}h` : `${Math.floor(block.duration/60)}h ${block.duration%60}m`}</span>}
                           </div>
                         </div>
-                        <button className="cal-block-remove" onClick={() => removeBlock(h, block.id)}>×</button>
+                        <button aria-label="Remove block" className="cal-block-remove" onClick={() => removeBlock(h, block.id)}>×</button>
                       </div>
                     ))}
                     {blocks.length === 0 && !coveredByEvent && (
@@ -5363,10 +5475,10 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
                       </span>
                     )}
                   </div>
-                  <button className="cal-event-edit" onClick={() => startEditEvent(ev)} title="Edit"><Icon name="pen" size={11} /></button>
-                  <button className="cal-event-remove" onClick={() => removeCustomEvent(ev.id)}>×</button>
+                  <button aria-label="Edit" className="cal-event-edit" onClick={() => startEditEvent(ev)} title="Edit"><Icon name="pen" size={11} /></button>
+                  <button aria-label="Remove event" className="cal-event-remove" onClick={() => removeCustomEvent(ev.id)}>×</button>
                   {hasImpact && (
-                    <button
+                    <button aria-label={isDone ? "Undo" : "Mark done"}
                       className={`cal-event-done-btn${isDone ? " marked" : ""}`}
                       title={isDone ? "Undo" : "Mark done"}
                       onClick={() => markEventDone(ev.id, ev.energyImpact, ev.activity)}
@@ -5404,19 +5516,19 @@ function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode 
                     )}
                   </div>
                   {!isRemoving && (
-                    <button className="cal-event-edit" onClick={() => startEditRecEvent(ev)} title="Edit"><Icon name="pen" size={11} /></button>
+                    <button aria-label="Edit" className="cal-event-edit" onClick={() => startEditRecEvent(ev)} title="Edit"><Icon name="pen" size={11} /></button>
                   )}
                   {!isRemoving ? (
-                    <button className="cal-event-remove" onClick={() => setRemovingRecId(ev.id)}>×</button>
+                    <button aria-label="Remove event" className="cal-event-remove" onClick={() => setRemovingRecId(ev.id)}>×</button>
                   ) : (
                     <div className="cal-event-remove-choice">
                       <button onClick={() => removeRecurringToday(ev.id)}>Today</button>
                       <button onClick={() => removeRecurringSeries(ev.id)}>All</button>
-                      <button onClick={() => setRemovingRecId(null)}>×</button>
+                      <button aria-label="Cancel" onClick={() => setRemovingRecId(null)}>×</button>
                     </div>
                   )}
                   {hasImpact && (
-                    <button
+                    <button aria-label={isDone ? "Undo" : "Mark done"}
                       className={`cal-event-done-btn${isDone ? " marked" : ""}`}
                       title={isDone ? "Undo" : "Mark done"}
                       onClick={() => markEventDone(ev.id, ev.energyImpact, ev.activity)}
@@ -5934,7 +6046,7 @@ function MicroJournal({ uid, saveJournalEntry, deleteJournalEntry, isPro = false
         </div>
         <div className="journal-prompt-card">
           <span className="journal-prompt-text">"{currentPrompt}"</span>
-          <button className="journal-prompt-shuffle" onClick={shuffle} title="Show another prompt">↺</button>
+          <button aria-label="Show another prompt" className="journal-prompt-shuffle" onClick={shuffle} title="Show another prompt">↺</button>
           <button className="journal-prompt-use" onClick={usePrompt}>Use this →</button>
         </div>
       </div>
@@ -5961,7 +6073,7 @@ function MicroJournal({ uid, saveJournalEntry, deleteJournalEntry, isPro = false
                   const isOpen = expandedId === e.id;
                   const preview = e.text.length > 90 ? e.text.slice(0, 90).trimEnd() + "…" : e.text;
                   return (
-                    <div key={e.id} className="journal-entry" onClick={() => setExpandedId(isOpen ? null : e.id)}>
+                    <div key={e.id} className="journal-entry" onClick={() => setExpandedId(isOpen ? null : e.id)} {...asButton(() => setExpandedId(isOpen ? null : e.id), "button", { "aria-expanded": isOpen })}>
                       <div className="journal-entry-header">
                         <div className="journal-entry-preview">{isOpen ? e.text.split("\n")[0] || preview : preview}</div>
                         <div className="journal-entry-meta">
@@ -6422,7 +6534,7 @@ function ColdWaterTimer({ onComplete, done }) {
 
 function GroundingCard({ id, icon, iconBg, title, meta, btnColor, children, noComplete, completeLabel = "Mark complete", open, onToggle, done, onMarkDone }) {
   return (
-    <div className={`ground-card ${open===id?"open":""}`} onClick={() => onToggle(id)}>
+    <div className={`ground-card ${open===id?"open":""}`} onClick={() => onToggle(id)} {...asButton(() => onToggle(id), "button", { "aria-expanded": open===id })}>
       <div className="ground-card-header">
         <div className="ground-card-left">
           <div className="ground-card-icon"><Icon name={icon} size={20} /></div>
@@ -6707,8 +6819,8 @@ function FeedbackView({ onToast, saveFeedback, uid }) {
       <div className="feedback-card">
         <form onSubmit={submit}>
           <div className="feedback-field">
-            <label className="feedback-label">Type</label>
-            <div className="feedback-type-row">
+            <span className="feedback-label" id="fb-type-label">Type</span>
+            <div className="feedback-type-row" role="group" aria-labelledby="fb-type-label">
               {TYPES.map(t => (
                 <button key={t.id} type="button" className={`feedback-type-btn ${type===t.id?"active":""}`}
                   onClick={() => setType(t.id)}>{t.label}</button>
@@ -6716,25 +6828,25 @@ function FeedbackView({ onToast, saveFeedback, uid }) {
             </div>
           </div>
           <div className="feedback-field">
-            <label className="feedback-label">Message <span style={{ color:"var(--error)" }}>*</span></label>
-            <textarea className="feedback-textarea"
+            <label className="feedback-label" htmlFor="fb-message">Message <span style={{ color:"var(--error)" }}>*</span></label>
+            <textarea id="fb-message" className="feedback-textarea"
               placeholder={type==="bug" ? "Describe what happened and what you expected…" : type==="complaint" ? "What frustrated you?" : type==="suggestion" ? "What would make MyBattery better?" : "What made your day?"}
               value={message} onChange={e => setMessage(e.target.value)} required />
           </div>
           <div className="feedback-field">
-            <label className="feedback-label">Email <span style={{ color:"var(--ink-mute)", fontWeight:400 }}>(optional — only if you want a reply)</span></label>
-            <input className="feedback-input" type="email" placeholder="you@example.com"
+            <label className="feedback-label" htmlFor="fb-email">Email <span style={{ color:"var(--ink-mute)", fontWeight:400 }}>(optional — only if you want a reply)</span></label>
+            <input id="fb-email" className="feedback-input" type="email" placeholder="you@example.com"
               value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div className="feedback-field">
-            <label className="feedback-label">Screenshot <span style={{ color:"var(--ink-mute)", fontWeight:400 }}>(optional)</span></label>
+            <span className="feedback-label">Screenshot <span style={{ color:"var(--ink-mute)", fontWeight:400 }}>(optional)</span></span>
             {imageDataUrl ? (
               <div className="feedback-img-preview">
                 <img src={imageDataUrl} alt="Attached screenshot" />
-                <button type="button" className="feedback-img-remove" onClick={() => { setImageDataUrl(null); if (imgInputRef.current) imgInputRef.current.value = ""; }}>✕</button>
+                <button aria-label="Remove image" type="button" className="feedback-img-remove" onClick={() => { setImageDataUrl(null); if (imgInputRef.current) imgInputRef.current.value = ""; }}>✕</button>
               </div>
             ) : (
-              <div className="feedback-img-upload" onClick={() => imgInputRef.current?.click()}>
+              <div className="feedback-img-upload" onClick={() => imgInputRef.current?.click()} {...asButton(() => imgInputRef.current?.click())}>
                 <Icon name="camera" size={16} style={{ color:"var(--ink-mute)", flexShrink:0 }} />
                 <span className="feedback-img-label">Attach a screenshot or image</span>
                 <input ref={imgInputRef} type="file" accept="image/*" style={{ display:"none" }} onChange={handleImageChange} />
@@ -7513,14 +7625,14 @@ function AuthView({ createAccount, signIn, signInGoogle, redirectError, resetPas
 
         <form onSubmit={handleSubmit}>
           <div className="auth-field">
-            <label className="auth-label">Email</label>
-            <input className="auth-input" type="email" placeholder="you@example.com" value={email}
+            <label className="auth-label" htmlFor="auth-email">Email</label>
+            <input id="auth-email" className="auth-input" type="email" placeholder="you@example.com" value={email}
               onChange={e => setEmail(e.target.value)} required autoComplete="email" />
           </div>
           {mode !== "reset" && (
             <div className="auth-field">
-              <label className="auth-label">Password</label>
-              <input className="auth-input" type="password" placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
+              <label className="auth-label" htmlFor="auth-password">Password</label>
+              <input id="auth-password" className="auth-input" type="password" placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
                 value={password} onChange={e => setPassword(e.target.value)} required autoComplete={mode === "signup" ? "new-password" : "current-password"} />
             </div>
           )}
@@ -9077,7 +9189,7 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
   }
 
   return (
-    <svg
+    <svg aria-hidden="true"
       width={size}
       height={Math.round(size * 54 / 40)}
       viewBox="0 0 40 54"
@@ -9403,7 +9515,7 @@ function LogEnergyModal({ battery, onSave, onClose }) {
           {FEELINGS.map(f => {
             const active = feeling.label === f.label;
             return (
-              <button key={f.label} onClick={() => setVal(f.value)} title={`${f.label} — ${f.hint}`}
+              <button aria-label={`${f.label} — ${f.hint}`} key={f.label} onClick={() => setVal(f.value)} title={`${f.label} — ${f.hint}`}
                 style={{
                   display:"flex", flexDirection:"column", alignItems:"center", gap:4,
                   padding:"6px 8px", borderRadius:10, cursor:"pointer", transition:"all 0.15s", border:"none", background:"transparent",
@@ -9426,7 +9538,23 @@ function LogEnergyModal({ battery, onSave, onClose }) {
   );
 }
 
+// Freeze the page behind an open sheet. Without this, dragging on the backdrop (or the keyboard
+// nudging the page) scrolls the screen underneath and leaves it shifted when the sheet closes.
+function useBodyScrollLock() {
+  useEffect(() => {
+    const y = window.scrollY;
+    const b = document.body.style;
+    const prev = { position: b.position, top: b.top, width: b.width };
+    b.position = "fixed"; b.top = `-${y}px`; b.width = "100%";
+    return () => {
+      b.position = prev.position; b.top = prev.top; b.width = prev.width;
+      window.scrollTo(0, y);
+    };
+  }, []);
+}
+
 function BrainDumpModal({ onClose, callAI, onAddTasks }) {
+  useBodyScrollLock();
   const [text, setText]       = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -9460,7 +9588,7 @@ function BrainDumpModal({ onClose, callAI, onAddTasks }) {
             <div className="bdump-title">Brain Dump</div>
             <div className="bdump-sub">Get everything out of your head.</div>
           </div>
-          <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color:"var(--ink-mute)", lineHeight:1 }}>×</button>
+          <button aria-label="Close" onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color:"var(--ink-mute)", lineHeight:1 }}>×</button>
         </div>
         <textarea
           className="bdump-textarea"
@@ -9582,6 +9710,7 @@ function AddTaskModal({
   isEditing = false,
   newRecurrence, setNewRecurrence,
 }) {
+  useBodyScrollLock();
   const priority = newBucket || "should";
 
   function handleOverlayClick(e) { if (e.target === e.currentTarget) onClose(); }
@@ -9646,7 +9775,7 @@ function AddTaskModal({
                   <div key={s.id} className="subtask-item">
                     <div className="subtask-check" style={{ cursor:"default" }} />
                     <span className="subtask-name">{s.name}</span>
-                    <button
+                    <button aria-label="Delete subtask"
                       className="subtask-del"
                       style={{ color:"var(--ink-mute)" }}
                       onClick={() => setNewTaskSubtasks(prev => prev.filter((_, j) => j !== i))}
@@ -9765,7 +9894,7 @@ function AddTaskModal({
               {newTaskTags.map(tag => (
                 <span key={tag} className="atm-tag">
                   {tag}
-                  <button className="atm-tag-remove" onClick={() => setNewTaskTags(prev => prev.filter(t => t !== tag))}>×</button>
+                  <button aria-label="Remove tag" className="atm-tag-remove" onClick={() => setNewTaskTags(prev => prev.filter(t => t !== tag))}>×</button>
                 </span>
               ))}
               {showTagInput ? (
@@ -9788,7 +9917,7 @@ function AddTaskModal({
 
           {/* AI breakdown */}
           {callAI && newTask.trim().length > 3 && (
-            <button
+            <button aria-label="Break this down with AI"
               type="button"
               className={`btn-ai-breakdown${aiBreakdownLoading?" spinning":""}`}
               onClick={breakdownTask}
@@ -10061,7 +10190,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                         onKeyDown={e => e.key === "Enter" && setEditSteps(prev => [...prev, { id: Date.now(), text: "", done: false }])}
                         style={{ flex:1, border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Sans',sans-serif" }} />
                       {editSteps.length > 1 && (
-                        <button onClick={() => setEditSteps(prev => prev.filter(x => x.id !== s.id))} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
+                        <button aria-label="Remove step" onClick={() => setEditSteps(prev => prev.filter(x => x.id !== s.id))} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
                       )}
                     </div>
                   ))}
@@ -10120,7 +10249,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                     <Icon name="bell" size={13} style={{ color:"var(--ink-mute)", flexShrink:0 }} />
                     <input type="time" value={editReminderTime} onChange={e => setEditReminderTime(e.target.value)}
                       style={{ border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Mono',monospace", flex:1 }} />
-                    {editReminderTime && <button type="button" onClick={() => setEditReminderTime("")} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:14, lineHeight:1, padding:"0 2px" }}>×</button>}
+                    {editReminderTime && <button aria-label="Clear reminder time" type="button" onClick={() => setEditReminderTime("")} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:14, lineHeight:1, padding:"0 2px" }}>×</button>}
                   </div>
                 </div>
 
@@ -10130,7 +10259,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                     {editTags.map(tag => (
                       <span key={tag} style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontFamily:"'DM Mono',monospace", letterSpacing:0.5, padding:"2px 6px 2px 9px", borderRadius:20, background:"rgba(90,122,90,0.12)", color:"var(--teal-dark)", textTransform:"uppercase" }}>
                         {tag}
-                        <button type="button" onClick={() => setEditTags(prev => prev.filter(t => t !== tag))} style={{ background:"none", border:"none", cursor:"pointer", padding:0, lineHeight:1, color:"var(--teal-dark)", fontSize:12 }}>×</button>
+                        <button aria-label="Remove tag" type="button" onClick={() => setEditTags(prev => prev.filter(t => t !== tag))} style={{ background:"none", border:"none", cursor:"pointer", padding:0, lineHeight:1, color:"var(--teal-dark)", fontSize:12 }}>×</button>
                       </span>
                     ))}
                     <input value={editTagInput} onChange={e => setEditTagInput(e.target.value)}
@@ -10172,7 +10301,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                 )}
               </div>
               {isComplete && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><polyline points="20 6 9 17 4 12"/></svg>}
-              <button onClick={() => startEdit(r)} title="Edit routine"
+              <button aria-label="Edit routine" onClick={() => startEdit(r)} title="Edit routine"
                 style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", color:"var(--ink-mute)", flexShrink:0, display:"flex", alignItems:"center" }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
@@ -10182,18 +10311,18 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                   onKeyDown={e => { if (e.key === "Enter") setReminder(r.id, e.target.value); if (e.key === "Escape") setEditingReminderFor(null); }}
                   style={{ width:88, border:"1.5px solid var(--teal-light)", borderRadius:8, padding:"3px 6px", fontSize:12, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Mono',monospace" }} />
               ) : (
-                <button onClick={() => setEditingReminderFor(r.id)} title={r.reminderTime ? `Reminder at ${r.reminderTime}` : "Set reminder"}
+                <button aria-label={r.reminderTime ? `Reminder at ${r.reminderTime}` : "Set reminder"} onClick={() => setEditingReminderFor(r.id)} title={r.reminderTime ? `Reminder at ${r.reminderTime}` : "Set reminder"}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", display:"flex", alignItems:"center", gap:3, color: r.reminderTime ? "var(--teal-dark)" : "var(--ink-mute)", flexShrink:0 }}>
                   <Icon name="bell" size={13} />
                   {r.reminderTime && <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace" }}>{r.reminderTime}</span>}
                 </button>
               )}
-              <button onClick={() => deleteRoutine(r.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px", flexShrink:0 }}>×</button>
+              <button aria-label="Delete routine" onClick={() => deleteRoutine(r.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px", flexShrink:0 }}>×</button>
             </div>
 
             {r.steps.map((s, idx) => (
               <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 0", borderTop:"1px solid var(--warm)" }}>
-                <button onClick={() => isActiveToday && toggleStep(r.id, s.id)} style={{
+                <button aria-label={s.done ? "Mark step not done" : "Mark step done"} onClick={() => isActiveToday && toggleStep(r.id, s.id)} style={{
                   width:20, height:20, borderRadius:"50%", border:"2px solid",
                   borderColor: s.done ? "var(--teal-dark)" : "var(--control-line)",
                   background: s.done ? "var(--teal-dark)" : "transparent",
@@ -10220,7 +10349,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                     const active = rDays.length === 0 || rDays.includes(d.value);
                     const isToday = d.value === todayDow;
                     return (
-                      <button key={d.value} onClick={() => toggleDay(d.value)} title={active ? "Remove this day" : "Add this day"}
+                      <button aria-label={active ? "Remove this day" : "Add this day"} key={d.value} onClick={() => toggleDay(d.value)} title={active ? "Remove this day" : "Add this day"}
                         style={{
                           width:16, height:16, borderRadius:"50%", border:`1.5px solid ${active ? (isToday ? "var(--teal-dark)" : "var(--teal-light)") : "var(--ink-mute)"}`,
                           background: active ? (isToday ? "var(--teal-dark)" : "rgba(90,122,90,0.15)") : "transparent",
@@ -10258,7 +10387,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                   onKeyDown={e => e.key === "Enter" && addStep()}
                   style={{ flex:1, border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Sans',sans-serif" }} />
                 {newSteps.length > 1 && (
-                  <button onClick={() => removeStep(s.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
+                  <button aria-label="Remove step" onClick={() => removeStep(s.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
                 )}
               </div>
             ))}
@@ -10330,7 +10459,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
               <Icon name="bell" size={13} style={{ color:"var(--ink-mute)", flexShrink:0 }} />
               <input type="time" value={newReminderTime} onChange={e => setNewReminderTime(e.target.value)}
                 style={{ border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Mono',monospace", flex:1 }} />
-              {newReminderTime && <button type="button" onClick={() => setNewReminderTime("")}
+              {newReminderTime && <button aria-label="Clear reminder time" type="button" onClick={() => setNewReminderTime("")}
                 style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:14, lineHeight:1, padding:"0 2px" }}>×</button>}
             </div>
           </div>
@@ -10341,7 +10470,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
               {newTags.map(tag => (
                 <span key={tag} style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontFamily:"'DM Mono',monospace", letterSpacing:0.5, padding:"2px 6px 2px 9px", borderRadius:20, background:"rgba(90,122,90,0.12)", color:"var(--teal-dark)", textTransform:"uppercase" }}>
                   {tag}
-                  <button type="button" onClick={() => setNewTags(prev => prev.filter(t => t !== tag))}
+                  <button aria-label="Remove tag" type="button" onClick={() => setNewTags(prev => prev.filter(t => t !== tag))}
                     style={{ background:"none", border:"none", cursor:"pointer", padding:0, lineHeight:1, color:"var(--teal-dark)", fontSize:12 }}>×</button>
                 </span>
               ))}
@@ -11637,7 +11766,7 @@ export default function App({ user, firebaseHelpers = {} }) {
           <div className="fumes-banner">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             <span className="fumes-banner-text">You're running on fumes. Be very gentle with yourself today.</span>
-            <button className="fumes-banner-dismiss" onClick={() => setFumesDismissed(true)}>×</button>
+            <button aria-label="Dismiss" className="fumes-banner-dismiss" onClick={() => setFumesDismissed(true)}>×</button>
           </div>
         )}
 
@@ -11716,7 +11845,7 @@ export default function App({ user, firebaseHelpers = {} }) {
           )}
 
           <div className="nav-right">
-            <button
+            <button aria-label={privacyMode ? "Privacy Mode on — click to turn off" : "Privacy Mode off — click to blur task names"}
               className={`nav-privacy-btn${privacyMode ? " active" : ""}`}
               onClick={() => {
                 haptic.light();
@@ -11728,7 +11857,7 @@ export default function App({ user, firebaseHelpers = {} }) {
             >
               <Icon name="lock" size={13} />
             </button>
-            <button className="nav-sos-btn" onClick={() => { haptic.sos(); setShowSOSModal(true); }} title="Get support">SOS</button>
+            <button aria-label="Get support" className="nav-sos-btn" onClick={() => { haptic.sos(); setShowSOSModal(true); }} title="Get support">SOS</button>
           </div>
         </nav>
 
@@ -12002,7 +12131,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                           <div style={{ margin:"10px 0 4px" }}>
                             <div style={{ fontSize:12, color:"var(--ink-mute)", marginBottom:6 }}>Tasks that give energy back:</div>
                             {suggestion.suggestions.map(t => (
-                              <div key={t.id} className="suggest-item" onClick={() => toggleTask(t.id)}>
+                              <div key={t.id} className="suggest-item" onClick={() => toggleTask(t.id)} {...asButton(() => toggleTask(t.id))}>
                                 <span className="suggest-impact charge">+{t.energyImpact}</span>
                                 <span className="suggest-name" style={{ fontSize:14, color:"var(--ink)", lineHeight:1.4 }}>{t.name}</span>
                               </div>
@@ -12273,7 +12402,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                 ].filter(i => !i.hidden).map(item => (
                   <div key={item.label} className="fab-menu-item">
                     <button className="fab-menu-label" onClick={item.action}>{item.label}</button>
-                    <button className="fab-menu-icon" onClick={item.action}>{item.icon}</button>
+                    <button aria-label={item.label} className="fab-menu-icon" onClick={item.action}>{item.icon}</button>
                   </div>
                 ))}
               </div>

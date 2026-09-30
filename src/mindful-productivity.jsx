@@ -2096,6 +2096,20 @@ const styles = `
   [data-theme="dark"] .paywall-cta,
   [data-theme="dark"] [style*="var(--teal-dark)"][style*="color: white"] { background:#1f7a68 !important; color:#fff !important; }
 
+  /* Touch targets: small icon/link controls get an invisible hit area out to ~44px; chunky controls get a 44px minimum height */
+  .nav-battery, .nav-privacy-btn, .nav-sos-btn, .week-nav-btn, .bucket-view-toggle, .node-add-link, .tap-slop { position:relative; }
+  .nav-battery::after, .nav-privacy-btn::after, .nav-sos-btn::after, .week-nav-btn::after, .bucket-view-toggle::after, .node-add-link::after, .tap-slop::after { content:""; position:absolute; inset:-10px -8px; }
+  .week-nav-btn::after { inset:-10px -4px; }
+  .new-task-check::after, .task-btn-stuck::after { content:""; position:absolute; inset:-12px; }
+  .task-btn-stuck { position:relative; }
+  .bucket-view-toggle::after { inset:-10px -8px; }
+  .node-add-link::after { inset:-13px -8px; }
+  .mind-tab, .stern-mode-option, .feedback-type-btn, .breath-pattern-btn, .ground-complete-btn, .btn-secondary, .node-btn-add, .cal-earlier-btn, .feedback-input { min-height:44px; }
+  .settings-advanced-toggle { padding:15px 0; margin:5px 0 -3px; }
+  .atm-hbtn { width:44px; height:44px; }
+  .subtask-add-input, .subtask-add-confirm, .atm-priority-btn, .atm-urgency-btn, .impact-toggle, .impact-slider, .atm-tag-add, .atm-datetime-field input { min-height:44px; }
+  .subtask-add-confirm { min-width:44px; }
+
   /* Keyboard focus ring for everything that isn't a text field */
   button:focus-visible, [role="button"]:focus-visible, [role="radio"]:focus-visible, [role="checkbox"]:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visible, .notif-toggle input:focus-visible + .notif-toggle-slider {
     outline:2px solid var(--teal-dark); outline-offset:2px;
@@ -6711,8 +6725,8 @@ function GroundingView({ uid, saveJournalEntry, deleteJournalEntry, isPro = fals
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
           <div className="wellness-fact-eyebrow" style={{ marginBottom:0 }}>Did you know?</div>
           <div style={{ display:"flex", gap:2 }}>
-            <button aria-label="Previous fact" onClick={e => { e.stopPropagation(); setFactIdx(i => (i - 1 + BURNOUT_FACTS.length) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", padding:"4px 6px", display:"flex" }}><Icon name="chevron" size={16} style={{ transform:"rotate(90deg)" }} /></button>
-            <button aria-label="Next fact" onClick={e => { e.stopPropagation(); setFactIdx(i => (i + 1) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", padding:"4px 6px", display:"flex" }}><Icon name="chevron" size={16} style={{ transform:"rotate(-90deg)" }} /></button>
+            <button className="tap-slop" aria-label="Previous fact" onClick={e => { e.stopPropagation(); setFactIdx(i => (i - 1 + BURNOUT_FACTS.length) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", padding:"4px 6px", display:"flex" }}><Icon name="chevron" size={16} style={{ transform:"rotate(90deg)" }} /></button>
+            <button className="tap-slop" aria-label="Next fact" onClick={e => { e.stopPropagation(); setFactIdx(i => (i + 1) % BURNOUT_FACTS.length); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--ink-mute)", padding:"4px 6px", display:"flex" }}><Icon name="chevron" size={16} style={{ transform:"rotate(-90deg)" }} /></button>
           </div>
         </div>
         <div className="wellness-fact-text">"{BURNOUT_FACTS[factIdx].fact}"</div>
@@ -8371,7 +8385,7 @@ function SettingsView({ initialTab = "settings", onShowTutorial, powerMode, onTo
               </div>
               <div style={{ display:"flex", gap:8 }}>
                 {[["sm","S — Small"],["md","M — Default"],["lg","L — Large"]].map(([val, label]) => (
-                  <button key={val} onClick={() => onChangeFontScale(val)} style={{ flex:1, padding:"8px 4px", borderRadius:"var(--radius-sm)", border:`1.5px solid ${fontScale===val?"var(--teal-dark)":"var(--warm)"}`, background: fontScale===val?"rgba(90,122,90,0.08)":"var(--card)", color: fontScale===val?"var(--teal-dark)":"var(--ink-mute)", fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight: fontScale===val?500:400, cursor:"pointer", transition:"var(--transition)" }}>
+                  <button key={val} onClick={() => onChangeFontScale(val)} style={{ flex:1, minHeight:44, padding:"8px 4px", borderRadius:"var(--radius-sm)", border:`1.5px solid ${fontScale===val?"var(--teal-dark)":"var(--warm)"}`, background: fontScale===val?"rgba(90,122,90,0.08)":"var(--card)", color: fontScale===val?"var(--teal-dark)":"var(--ink-mute)", fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight: fontScale===val?500:400, cursor:"pointer", transition:"var(--transition)" }}>
                     {label}
                   </button>
                 ))}
@@ -8569,7 +8583,7 @@ function SettingsView({ initialTab = "settings", onShowTutorial, powerMode, onTo
 
           {settingsSubTab !== "legal" && (
             <div style={{ marginTop:32, paddingTop:16, borderTop:"1px solid var(--warm)", textAlign:"center", fontSize:11, color:"var(--ink-mute)" }}>
-              © {new Date().getFullYear()} MyBattery. All rights reserved. · <button onClick={() => setSettingsSubTab("legal")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:11, color:"var(--ink-mute)", padding:0, textDecoration:"underline" }}>Privacy & Terms</button>
+              © {new Date().getFullYear()} MyBattery. All rights reserved. · <button className="tap-slop" onClick={() => setSettingsSubTab("legal")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:11, color:"var(--ink-mute)", padding:0, textDecoration:"underline" }}>Privacy & Terms</button>
             </div>
           )}
         </div>
@@ -9870,7 +9884,7 @@ function AddTaskModal({
               {[["","None"],["daily","Daily"],["weekdays","Weekdays"],["weekly","Weekly"]].map(([val, label]) => (
                 <button key={val} type="button"
                   onClick={() => setNewRecurrence(val)}
-                  style={{ padding:"8px 16px", borderRadius:40, border:`1.5px solid ${newRecurrence===val?"var(--teal-dark)":"var(--warm)"}`, background:newRecurrence===val?"var(--teal-dark)":"var(--cream)", color:newRecurrence===val?"white":"var(--ink-soft)", fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer", transition:"all 0.15s" }}
+                  style={{ minHeight:44, padding:"8px 16px", borderRadius:40, border:`1.5px solid ${newRecurrence===val?"var(--teal-dark)":"var(--warm)"}`, background:newRecurrence===val?"var(--teal-dark)":"var(--cream)", color:newRecurrence===val?"white":"var(--ink-soft)", fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer", transition:"all 0.15s" }}
                 >{label}</button>
               ))}
             </div>

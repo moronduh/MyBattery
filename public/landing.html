@@ -36,6 +36,10 @@
     .mood figure { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
     .mood figcaption { font-size: 13px; color: var(--ink-mute); }
 
+    .shots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding-bottom: 72px; }
+    .shots figure { margin: 0; }
+    .shots img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 14px; }
+    .shots figcaption { margin-top: 10px; font-size: 13px; color: var(--ink-mute); }
     section.block { border-top: 1px solid var(--line); padding: 72px 0; }
     .cols { display: grid; grid-template-columns: 1fr 2fr; gap: 48px; }
     .cols h2 { font-size: 28px; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; }
@@ -78,6 +82,7 @@
       .grid2 { grid-template-columns: 1fr; gap: 28px; }
       section.block { padding: 48px 0; }
       .mood { padding-bottom: 48px; }
+      .shots { grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 48px; }
     }
   </style>
 </head>
@@ -153,6 +158,13 @@
         <figcaption>High</figcaption>
       </figure>
     </div>
+
+    <section class="shots" aria-label="App screenshots">
+      <figure><img src="/screenshots/app-checkin.jpg" width="600" height="1304" alt="The morning check-in, with a slider to set today's energy" loading="lazy" /><figcaption>Check in each morning</figcaption></figure>
+      <figure><img src="/screenshots/app-today.jpg" width="600" height="1304" alt="Today's tasks grouped as must, should, and could" loading="lazy" /><figcaption>Tasks that fit your energy</figcaption></figure>
+      <figure><img src="/screenshots/app-wellness.jpg" width="600" height="1304" alt="The wellness hub with grounding and breathing exercises" loading="lazy" /><figcaption>Grounding when you need it</figcaption></figure>
+      <figure><img src="/screenshots/app-dark.jpg" width="600" height="1304" alt="The Today screen in dark mode" loading="lazy" /><figcaption>Soft dark mode</figcaption></figure>
+    </section>
 
     <section class="block" id="how">
       <div class="cols">

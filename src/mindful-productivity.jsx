@@ -2102,6 +2102,10 @@ const styles = `
   .week-nav-btn::after { inset:-10px -4px; }
   .new-task-check::after, .task-btn-stuck::after { content:""; position:absolute; inset:-12px; }
   .task-btn-stuck { position:relative; }
+  .rt-form button, .rt-form input:not([type=checkbox]) { min-height:44px; }
+  .rt-form button.tap-slop { min-height:0; }
+  .tap-slop-lg::after { inset:-14px -12px; }
+  .tap-slop-sm::after { inset:-6px; }
   .bucket-view-toggle::after { inset:-10px -8px; }
   .node-add-link::after { inset:-13px -8px; }
   .mind-tab, .stern-mode-option, .feedback-type-btn, .breath-pattern-btn, .ground-complete-btn, .btn-secondary, .node-btn-add, .cal-earlier-btn, .feedback-input { min-height:44px; }
@@ -10191,7 +10195,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
             opacity: isActiveToday ? 1 : 0.5,
           }}>
             {editingId === r.id ? (
-              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              <div className="rt-form" style={{ display:"flex", flexDirection:"column", gap:12 }}>
                 <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Routine name"
                   style={{ border:"1.5px solid var(--warm)", borderRadius:8, padding:"8px 12px", fontSize:14, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Sans',sans-serif" }} />
 
@@ -10204,7 +10208,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                         onKeyDown={e => e.key === "Enter" && setEditSteps(prev => [...prev, { id: Date.now(), text: "", done: false }])}
                         style={{ flex:1, border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Sans',sans-serif" }} />
                       {editSteps.length > 1 && (
-                        <button aria-label="Remove step" onClick={() => setEditSteps(prev => prev.filter(x => x.id !== s.id))} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
+                        <button className="tap-slop tap-slop-lg" aria-label="Remove step" onClick={() => setEditSteps(prev => prev.filter(x => x.id !== s.id))} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
                       )}
                     </div>
                   ))}
@@ -10263,7 +10267,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                     <Icon name="bell" size={13} style={{ color:"var(--ink-mute)", flexShrink:0 }} />
                     <input type="time" value={editReminderTime} onChange={e => setEditReminderTime(e.target.value)}
                       style={{ border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Mono',monospace", flex:1 }} />
-                    {editReminderTime && <button aria-label="Clear reminder time" type="button" onClick={() => setEditReminderTime("")} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:14, lineHeight:1, padding:"0 2px" }}>×</button>}
+                    {editReminderTime && <button className="tap-slop" aria-label="Clear reminder time" type="button" onClick={() => setEditReminderTime("")} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:14, lineHeight:1, padding:"0 2px" }}>×</button>}
                   </div>
                 </div>
 
@@ -10273,7 +10277,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                     {editTags.map(tag => (
                       <span key={tag} style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontFamily:"'DM Mono',monospace", letterSpacing:0.5, padding:"2px 6px 2px 9px", borderRadius:20, background:"rgba(90,122,90,0.12)", color:"var(--teal-dark)", textTransform:"uppercase" }}>
                         {tag}
-                        <button aria-label="Remove tag" type="button" onClick={() => setEditTags(prev => prev.filter(t => t !== tag))} style={{ background:"none", border:"none", cursor:"pointer", padding:0, lineHeight:1, color:"var(--teal-dark)", fontSize:12 }}>×</button>
+                        <button className="tap-slop" aria-label="Remove tag" type="button" onClick={() => setEditTags(prev => prev.filter(t => t !== tag))} style={{ background:"none", border:"none", cursor:"pointer", padding:0, lineHeight:1, color:"var(--teal-dark)", fontSize:12 }}>×</button>
                       </span>
                     ))}
                     <input value={editTagInput} onChange={e => setEditTagInput(e.target.value)}
@@ -10315,7 +10319,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                 )}
               </div>
               {isComplete && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><polyline points="20 6 9 17 4 12"/></svg>}
-              <button aria-label="Edit routine" onClick={() => startEdit(r)} title="Edit routine"
+              <button className="tap-slop tap-slop-lg" aria-label="Edit routine" onClick={() => startEdit(r)} title="Edit routine"
                 style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", color:"var(--ink-mute)", flexShrink:0, display:"flex", alignItems:"center" }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
@@ -10325,18 +10329,18 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                   onKeyDown={e => { if (e.key === "Enter") setReminder(r.id, e.target.value); if (e.key === "Escape") setEditingReminderFor(null); }}
                   style={{ width:88, border:"1.5px solid var(--teal-light)", borderRadius:8, padding:"3px 6px", fontSize:12, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Mono',monospace" }} />
               ) : (
-                <button aria-label={r.reminderTime ? `Reminder at ${r.reminderTime}` : "Set reminder"} onClick={() => setEditingReminderFor(r.id)} title={r.reminderTime ? `Reminder at ${r.reminderTime}` : "Set reminder"}
+                <button className="tap-slop tap-slop-lg" aria-label={r.reminderTime ? `Reminder at ${r.reminderTime}` : "Set reminder"} onClick={() => setEditingReminderFor(r.id)} title={r.reminderTime ? `Reminder at ${r.reminderTime}` : "Set reminder"}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", display:"flex", alignItems:"center", gap:3, color: r.reminderTime ? "var(--teal-dark)" : "var(--ink-mute)", flexShrink:0 }}>
                   <Icon name="bell" size={13} />
                   {r.reminderTime && <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace" }}>{r.reminderTime}</span>}
                 </button>
               )}
-              <button aria-label="Delete routine" onClick={() => deleteRoutine(r.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px", flexShrink:0 }}>×</button>
+              <button className="tap-slop tap-slop-lg" aria-label="Delete routine" onClick={() => deleteRoutine(r.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px", flexShrink:0 }}>×</button>
             </div>
 
             {r.steps.map((s, idx) => (
               <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 0", borderTop:"1px solid var(--warm)" }}>
-                <button aria-label={s.done ? "Mark step not done" : "Mark step done"} onClick={() => isActiveToday && toggleStep(r.id, s.id)} style={{
+                <button className="tap-slop tap-slop-lg" aria-label={s.done ? "Mark step not done" : "Mark step done"} onClick={() => isActiveToday && toggleStep(r.id, s.id)} style={{
                   width:20, height:20, borderRadius:"50%", border:"2px solid",
                   borderColor: s.done ? "var(--teal-dark)" : "var(--control-line)",
                   background: s.done ? "var(--teal-dark)" : "transparent",
@@ -10363,7 +10367,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                     const active = rDays.length === 0 || rDays.includes(d.value);
                     const isToday = d.value === todayDow;
                     return (
-                      <button aria-label={active ? "Remove this day" : "Add this day"} key={d.value} onClick={() => toggleDay(d.value)} title={active ? "Remove this day" : "Add this day"}
+                      <button className="tap-slop tap-slop-sm" aria-label={active ? "Remove this day" : "Add this day"} key={d.value} onClick={() => toggleDay(d.value)} title={active ? "Remove this day" : "Add this day"}
                         style={{
                           width:16, height:16, borderRadius:"50%", border:`1.5px solid ${active ? (isToday ? "var(--teal-dark)" : "var(--teal-light)") : "var(--ink-mute)"}`,
                           background: active ? (isToday ? "var(--teal-dark)" : "rgba(90,122,90,0.15)") : "transparent",
@@ -10386,7 +10390,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
       })}
 
       {showAdd && (
-        <div style={{ background:"var(--card)", borderRadius:"var(--radius)", padding:18, marginTop:8, display:"flex", flexDirection:"column", gap:12, boxShadow:"0 2px 16px var(--glow)" }}>
+        <div className="rt-form" style={{ background:"var(--card)", borderRadius:"var(--radius)", padding:18, marginTop:8, display:"flex", flexDirection:"column", gap:12, boxShadow:"0 2px 16px var(--glow)" }}>
           <div className="plain-label" style={{ marginBottom:0 }}>New routine</div>
 
           <input placeholder="Routine name (e.g. Morning Ritual)" value={newName} onChange={e => setNewName(e.target.value)}
@@ -10401,7 +10405,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
                   onKeyDown={e => e.key === "Enter" && addStep()}
                   style={{ flex:1, border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Sans',sans-serif" }} />
                 {newSteps.length > 1 && (
-                  <button aria-label="Remove step" onClick={() => removeStep(s.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
+                  <button className="tap-slop tap-slop-lg" aria-label="Remove step" onClick={() => removeStep(s.id)} style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:16, lineHeight:1, padding:"0 2px" }}>×</button>
                 )}
               </div>
             ))}
@@ -10473,7 +10477,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
               <Icon name="bell" size={13} style={{ color:"var(--ink-mute)", flexShrink:0 }} />
               <input type="time" value={newReminderTime} onChange={e => setNewReminderTime(e.target.value)}
                 style={{ border:"1.5px solid var(--warm)", borderRadius:8, padding:"7px 10px", fontSize:13, background:"var(--cream)", color:"var(--ink)", outline:"none", fontFamily:"'DM Mono',monospace", flex:1 }} />
-              {newReminderTime && <button aria-label="Clear reminder time" type="button" onClick={() => setNewReminderTime("")}
+              {newReminderTime && <button className="tap-slop" aria-label="Clear reminder time" type="button" onClick={() => setNewReminderTime("")}
                 style={{ background:"none", border:"none", color:"var(--ink-mute)", cursor:"pointer", fontSize:14, lineHeight:1, padding:"0 2px" }}>×</button>}
             </div>
           </div>
@@ -10484,7 +10488,7 @@ function RoutineSection({ routines, setRoutines, onComplete, onUncomplete, showA
               {newTags.map(tag => (
                 <span key={tag} style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontFamily:"'DM Mono',monospace", letterSpacing:0.5, padding:"2px 6px 2px 9px", borderRadius:20, background:"rgba(90,122,90,0.12)", color:"var(--teal-dark)", textTransform:"uppercase" }}>
                   {tag}
-                  <button aria-label="Remove tag" type="button" onClick={() => setNewTags(prev => prev.filter(t => t !== tag))}
+                  <button className="tap-slop" aria-label="Remove tag" type="button" onClick={() => setNewTags(prev => prev.filter(t => t !== tag))}
                     style={{ background:"none", border:"none", cursor:"pointer", padding:0, lineHeight:1, color:"var(--teal-dark)", fontSize:12 }}>×</button>
                 </span>
               ))}

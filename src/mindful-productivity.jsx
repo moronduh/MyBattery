@@ -6773,19 +6773,9 @@ function GroundingView({ uid, saveJournalEntry, deleteJournalEntry, isPro = fals
       </GroundingCard>
 
       {onJumpstart && (
-        <div className="ground-card" onClick={onJumpstart} role="button" tabIndex={0}
-          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onJumpstart(); } }}>
-          <div className="ground-card-header">
-            <div className="ground-card-left">
-              <div className="ground-card-icon"><Icon name="bolt" size={20} /></div>
-              <div>
-                <div className="ground-card-title">Jumpstart</div>
-                <div className="ground-card-meta">Six tiny steps · 2 min</div>
-              </div>
-            </div>
-            <Icon name="chevron" size={18} className="ground-card-chevron" style={{ transform:"rotate(-90deg)" }} />
-          </div>
-        </div>
+        <GroundingCard id="jumpstart" icon="bolt" title="Jumpstart" meta="Six tiny steps · 2 min" btnColor="var(--teal-dark)" completeLabel="Start Jumpstart" open={open} onToggle={toggle} done={done} onMarkDone={() => onJumpstart()}>
+          <p className="ground-tip">For when you're physically stuck and can't get going. Six tiny steps, each one a few seconds. No pressure to finish them all.</p>
+        </GroundingCard>
       )}
 
       <GroundingCard id="breathing" icon="wind" iconBg="rgba(90,122,90,0.1)" title="Box Breathing" meta="Breathwork · 2–5 min" noComplete open={open} onToggle={toggle} done={done} onMarkDone={markDone}>

@@ -4321,7 +4321,7 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis, onDelete 
       <div className="task-hold-fill" />
       <button aria-label={task.done ? `Mark "${task.name}" not done` : `Complete "${task.name}" (press and hold)`}
         className={`new-task-check${task.done ? " done" : ""}`}
-        style={{ touchAction: task.done ? undefined : "none", position:"relative", zIndex:1, flexShrink:0 }}
+        style={{ touchAction: task.done ? undefined : "none", position:"relative", zIndex:2, flexShrink:0 }}
         {...(!task.done ? handlers : {})}
         onClick={e => { e.stopPropagation(); if (task.done) onToggle(task.id); }}
       >

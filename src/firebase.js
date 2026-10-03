@@ -4,7 +4,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   getAuth, initializeAuth, inMemoryPersistence, indexedDBLocalPersistence,
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, signInWithPopup, getRedirectResult,
+  signOut, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult,
   GoogleAuthProvider, sendPasswordResetEmail, deleteUser,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
 } from "firebase/auth";
@@ -78,9 +78,30 @@ export const messaging = null; // kept for any legacy references — use getMess
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const createAccount = (email, pw) => createUserWithEmailAndPassword(auth, email, pw);
 export const signIn        = (email, pw) => signInWithEmailAndPassword(auth, email, pw);
+// Popup first. Embedded browsers (in-app panes, some webviews) open the popup but never hear
+// back from it, which left the sign-in screen stuck on "…" forever. If the popup is blocked,
+// unsupported, or silent for too long, fall back to the full-page redirect flow
+// (handleGoogleRedirect picks up the result on return).
+const POPUP_FALLBACK_MS = 30000;
 export const signInGoogle  = Capacitor.isNativePlatform()
   ? null
-  : () => signInWithPopup(auth, new GoogleAuthProvider());
+  : async () => {
+      const provider = new GoogleAuthProvider();
+      let timer;
+      const silent = new Promise((_, reject) => {
+        timer = setTimeout(() => reject({ code: "auth/popup-timeout" }), POPUP_FALLBACK_MS);
+      });
+      try {
+        return await Promise.race([signInWithPopup(auth, provider), silent]);
+      } catch (err) {
+        if (["auth/popup-blocked", "auth/popup-timeout", "auth/operation-not-supported-in-this-environment"].includes(err?.code)) {
+          return signInWithRedirect(auth, provider);
+        }
+        throw err;
+      } finally {
+        clearTimeout(timer);
+      }
+    };
 export const handleGoogleRedirect = () => getRedirectResult(auth);
 export const signOutUser   = ()       => signOut(auth);
 export const resetPassword = (email)  => sendPasswordResetEmail(auth, email);

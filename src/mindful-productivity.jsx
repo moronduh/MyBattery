@@ -918,6 +918,7 @@ const styles = `
   .toast.warn { background:linear-gradient(135deg,var(--slate-dark) 0%,#9a6a3a 100%); }
   .toast-title { font-weight:500; font-size:14px; margin-bottom:4px; }
   .toast-msg   { font-size:12px; opacity:0.85; line-height:1.5; }
+  .toast-action { margin-top:8px; background:none; border:none; padding:4px 0; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:#f5f2eb; text-decoration:underline; cursor:pointer; }
   .toast-close { position:absolute; top:10px; right:12px; background:none; border:none; color:rgba(245,242,235,0.6); cursor:pointer; font-size:16px; line-height:1; }
 
   /* MINDFULNESS VIEW */
@@ -2120,6 +2121,11 @@ const styles = `
   .task-btn-stuck { position:relative; }
   body[data-form-open] .ai-fab, body[data-form-open] .fab-menu, body[data-form-open] .fab-backdrop { display:none; }
   body[data-sheet-open] .bottom-nav { display:none; }
+  .swipe-del-wrap { position:relative; overflow:hidden; }
+  .swipe-del-btn { position:absolute; top:0; right:0; bottom:0; width:88px; border:none; cursor:pointer; background:rgba(192,57,43,0.1); color:#b23a30; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; }
+  [data-theme="dark"] .swipe-del-btn { background:rgba(224,138,128,0.14); color:#e79a91; }
+  .new-task-row.swiped { background:var(--card); }
+
   /* The sheet ends where the visual viewport does; on iPhone the keyboard toolbar floats over the strip below it, so colour that strip like the sheet. */
   .atm-overlay::after { content:""; position:fixed; left:0; right:0; top:calc(var(--vv-top,0px) + var(--vv-height,100%)); height:240px; background:var(--cream); pointer-events:none; }
   .rt-form button, .rt-form input:not([type=checkbox]) { min-height:44px; }
@@ -4163,6 +4169,9 @@ const markTaskGestureEnd = () => { lastTaskGestureEnd = Date.now(); };
 const TAP_SLOP_PX = 8;      // finger travel beyond this is a scroll/drag, not a tap or hold
 const TAP_MAX_MS  = 500;    // presses longer than this are not taps
 const TAP_QUIET_MS = 300;   // ignore taps right after a hold/drag finished
+const SWIPE_OPEN_PX   = 88;   // how far a row rests open, showing Delete
+const SWIPE_DELETE_PX = 180;  // sliding past this deletes without a second tap
+const SWIPE_MAX_PX    = 240;
 
 function useHoldToggle(onComplete, active = true, onShortPress) {
   const [holding, setHolding] = useState(false);
@@ -4212,7 +4221,7 @@ const HoldRing = ({ holding, size = 600 }) => !holding ? null : (
   </svg>
 );
 
-function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis }) {
+function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis, onDelete }) {
   const subs   = task.subtasks || [];
   const energy = task.energyImpact ?? 0;
   const [showHint, setShowHint] = useState(false);
@@ -4233,6 +4242,51 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis }) {
     return `${m}/${d}/${String(y).slice(2)}`;
   }
 
+  // Slide left to reveal Delete; a long slide deletes straight away. Vertical moves are left to scrolling.
+  const wrapRef  = useRef(null);
+  const swipeRef = useRef(null);
+  const [offset,   setOffset]   = useState(0);
+  const [swiping,  setSwiping]  = useState(false);
+  const [leaving,  setLeaving]  = useState(false);
+  const open = offset <= -SWIPE_OPEN_PX / 2 && !swiping;
+  function removeTask() {
+    setLeaving(true);
+    setOffset(-(wrapRef.current?.offsetWidth ?? 400));
+    setTimeout(() => onDelete?.(task.id), 180);
+  }
+  useEffect(() => {
+    if (!open) return;
+    function closeOnOutside(e) { if (!wrapRef.current?.contains(e.target)) setOffset(0); }
+    document.addEventListener("pointerdown", closeOnOutside);
+    return () => document.removeEventListener("pointerdown", closeOnOutside);
+  }, [open]);
+  function swipeStart(e) {
+    if (!onDelete || task.done || e.target.closest("button, input, textarea, select, a")) return;
+    swipeRef.current = { x: e.clientX, y: e.clientY, base: offset, locked: false };
+  }
+  function swipeMove(e) {
+    const s = swipeRef.current;
+    if (!s) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (!s.locked) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { swipeRef.current = null; return; }
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      s.locked = true;
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+      setSwiping(true);
+    }
+    setOffset(Math.max(-SWIPE_MAX_PX, Math.min(0, s.base + dx)));
+  }
+  function swipeEnd() {
+    const s = swipeRef.current;
+    swipeRef.current = null;
+    if (!s?.locked) return;
+    markTaskGestureEnd();
+    setSwiping(false);
+    if (offset < -SWIPE_DELETE_PX) removeTask();
+    else setOffset(offset < -SWIPE_OPEN_PX / 2 ? -SWIPE_OPEN_PX : 0);
+  }
+
   // Only a real tap opens Edit: little finger travel, short press, and not the tail of a hold/drag.
   const pressRef = useRef(null);
   function openIfTap() {
@@ -4241,18 +4295,27 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis }) {
     if (!p) return;
     if (Date.now() - p.t > TAP_MAX_MS) return;
     if (Date.now() - lastTaskGestureEnd < TAP_QUIET_MS) return;
+    if (open) { setOffset(0); return; }
     onOpenEdit?.(task);
   }
 
   return (
+    <div ref={wrapRef} className="swipe-del-wrap">
+      {onDelete && (
+        <button className="swipe-del-btn" style={{ visibility: offset === 0 ? "hidden" : "visible" }}
+          aria-label={`Delete "${task.name}"`} tabIndex={open ? 0 : -1} onClick={removeTask}>Delete</button>
+      )}
     <div
-      className={`new-task-row${holding ? " holding" : ""}${task.priority === "urgent" ? " urgency-urgent" : task.priority === "high" ? " urgency-high" : ""}`}
-      onPointerDown={e => { pressRef.current = { x: e.clientX, y: e.clientY, t: Date.now() }; }}
+      className={`new-task-row${holding ? " holding" : ""}${task.priority === "urgent" ? " urgency-urgent" : task.priority === "high" ? " urgency-high" : ""}${offset !== 0 ? " swiped" : ""}`}
+      style={{ transform: offset ? `translateX(${offset}px)` : undefined, transition: swiping ? "none" : "transform 0.2s ease, opacity 0.18s ease", opacity: leaving ? 0 : 1, touchAction: onDelete && !task.done ? "pan-y" : undefined }}
+      onPointerDown={e => { e.stopPropagation(); pressRef.current = { x: e.clientX, y: e.clientY, t: Date.now() }; swipeStart(e); }}
       onPointerMove={e => {
         const p = pressRef.current;
         if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > TAP_SLOP_PX) pressRef.current = null;
+        swipeMove(e);
       }}
-      onPointerCancel={() => { pressRef.current = null; }}
+      onPointerUp={swipeEnd}
+      onPointerCancel={() => { pressRef.current = null; swipeEnd(); }}
       onClick={openIfTap}
     >
       <div className="task-hold-fill" />
@@ -4287,6 +4350,7 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis }) {
           <button aria-label="Feeling stuck?" className="task-btn-stuck" title="Feeling stuck?" onClick={e => { e.stopPropagation(); onParalysis(task); }}>stuck?</button>
         )}
       </div>
+    </div>
     </div>
   );
 }
@@ -4551,7 +4615,7 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
                       </svg>
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
-                      <NewTaskRow task={t} onToggle={onToggle} onOpenEdit={onOpenEdit} onEdit={onEdit} onParalysis={onParalysis} />
+                      <NewTaskRow task={t} onToggle={onToggle} onOpenEdit={onOpenEdit} onEdit={onEdit} onParalysis={onParalysis} onDelete={onDelete} />
                     </div>
                   </div>
                 ))}
@@ -4578,7 +4642,7 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
               style={{ transform: `translateX(${slidePx}px)`, transition: drag ? "none" : "transform 0.3s cubic-bezier(0.4,0,0.2,1)" }}
             >
               {pending.map(t => (
-                <NewTaskRow key={t.id} task={t} onToggle={onToggle} onOpenEdit={onOpenEdit} onEdit={onEdit} onParalysis={onParalysis} />
+                <NewTaskRow key={t.id} task={t} onToggle={onToggle} onOpenEdit={onOpenEdit} onEdit={onEdit} onParalysis={onParalysis} onDelete={onDelete} />
               ))}
               {pending.length === 0 && (
                 <div className="bucket-empty-label">{emptyMsg[active.key]}</div>
@@ -11637,11 +11701,19 @@ export default function App({ user, firebaseHelpers = {} }) {
   }
 
   function deleteTask(id) {
+    const removed = tasks.find(t => t.id === id);
     if (uid && deleteTaskDoc) {
       deleteTaskDoc(uid, String(id)).catch(reportTaskSyncError);
     } else {
       setTasks(prev => prev.filter(t => t.id !== id));
     }
+    // A swipe can delete in one motion, so always leave a way back (name hidden in privacy mode).
+    if (removed) setToast({ type:"win", title:"Task deleted", msg: privacyMode ? "" : removed.name, actionLabel:"Undo", onAction:() => restoreTask(removed), id: Date.now() });
+  }
+
+  function restoreTask(t) {
+    if (uid && addTaskDoc) addTaskDoc(uid, t).catch(reportTaskSyncError);
+    else setTasks(prev => prev.some(x => x.id === t.id) ? prev : [...prev, t]);
   }
 
   function editTask(id, newName, newDueDate, newDuration, extraUpdates) {
@@ -12534,7 +12606,7 @@ export default function App({ user, firebaseHelpers = {} }) {
             Welcome back 🌿 Glad you're here.
           </div>
         )}
-        {toast && <Toast type={toast.type} title={toast.title} msg={toast.msg} onClose={() => setToast(null)} />}
+        {toast && <Toast key={toast.id ?? toast.title} type={toast.type} title={toast.title} msg={toast.msg} actionLabel={toast.actionLabel} onAction={toast.onAction} onClose={() => setToast(null)} />}
         {showSOSModal && <SOSModal onDismiss={() => setShowSOSModal(false)} onOpenSafety={() => { setShowSOSModal(false); setControlTab("safety"); setView("control"); }} />}
         {showJumpstart && (
           <JumpstartMode

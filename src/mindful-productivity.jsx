@@ -1571,6 +1571,10 @@ const styles = `
 
   /* Shared: plain sentence-case section label (replaces tiny spaced-out mono caps) */
   .plain-label { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:10px; }
+  .guest-note { display:flex; align-items:center; gap:12px; padding:10px 0; margin-bottom:8px; border-bottom:1px solid var(--line); font-family:'DM Sans',sans-serif; font-size:13px; line-height:1.5; color:var(--ink-mute); }
+  .guest-note-text { flex:1; }
+  .guest-note-link { background:none; border:none; padding:6px 0; font-family:inherit; font-size:13px; font-weight:500; color:var(--teal-dark); cursor:pointer; white-space:nowrap; }
+  .guest-note-close { background:none; border:none; padding:6px; font-size:18px; line-height:1; color:var(--ink-mute); cursor:pointer; }
 
   /* Node view */
   .node-view { padding:8px 0 24px; }
@@ -1624,6 +1628,12 @@ const styles = `
   .ai-chips { display:flex; flex-wrap:wrap; gap:7px; padding:4px 20px 14px; flex-shrink:0; }
   .ai-chip { background:rgba(90,122,90,0.1); border:1.5px solid rgba(90,122,90,0.38); border-radius:20px; padding:6px 13px; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--teal-dark); cursor:pointer; transition:var(--transition); font-weight:500; }
   .ai-chip:hover { background:rgba(90,122,90,0.2); border-color:rgba(90,122,90,0.6); }
+  [data-theme="dark"] .ai-add-tasks-no { border-color:var(--control-line); }
+  [data-theme="dark"] .ai-panel { background:rgba(27,31,29,0.97); border-color:var(--line); box-shadow:0 -8px 40px rgba(0,0,0,0.5); }
+  [data-theme="dark"] .ai-panel-header, [data-theme="dark"] .ai-panel-input-row { border-color:var(--line); }
+  [data-theme="dark"] .ai-message-assistant { background:#262c29; color:var(--ink); }
+  [data-theme="dark"] .ai-panel-input { background:#262c29; border-color:var(--control-line); color:var(--ink); }
+  [data-theme="dark"] .ai-panel-input:focus { background:var(--surface); border-color:var(--teal-dark); }
   .ai-panel-input-row { display:flex; gap:10px; align-items:center; padding:12px 20px max(18px,env(safe-area-inset-bottom)); border-top:1.5px solid rgba(210,205,192,0.8); flex-shrink:0; }
   .ai-panel-input { flex:1; background:rgba(228,224,212,0.6); border:1.5px solid rgba(190,185,170,0.6); border-radius:40px; padding:10px 16px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); outline:none; transition:var(--transition); }
   .ai-panel-input:focus { border-color:rgba(90,122,90,0.5); background:var(--surface); }
@@ -1974,6 +1984,11 @@ const styles = `
     border-bottom:2px solid transparent; color:var(--ink-mute); box-shadow:none;
   }
   .mind-sub-tabs--split .mind-tab.active { color:var(--ink); border-bottom-color:var(--ink); }
+
+  /* Settings: both tab rows reuse the Grounding / Journal look; the second row is just tighter so four tabs fit */
+  .mind-sub-tabs--split.mind-sub-tabs--tight { gap:20px; margin-bottom:16px; }
+  .mind-sub-tabs--split.mind-sub-tabs--tight .mind-tab, .mind-sub-tabs--split.mind-sub-tabs--tight .mind-tab.active { font-size:13px; }
+  .mind-sub-tabs--split.mind-sub-tabs--tight .mind-tab svg { display:none !important; }
 
   /* Calendar: one scroll, hour lines, quiet energy zones */
   .cal-events-wrap { margin-top:8px; padding-bottom:96px; }  /* last thing on the tab: room for the + button */
@@ -4800,6 +4815,21 @@ function appliesToDate(r, dateStr, dayOfWeek) {
 
 const DAY_LABELS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
+// Guests keep everything on this phone only, and iOS can clear that storage. Say so once per
+// launch, quietly, with a way to move to an account.
+function GuestNote({ onCreateAccount }) {
+  const KEY = "reflow-guest-note-hidden";
+  const [hidden, setHidden] = useState(() => { try { return sessionStorage.getItem(KEY) === "1"; } catch { return false; } });
+  if (hidden) return null;
+  return (
+    <div className="guest-note" role="note">
+      <span className="guest-note-text">No account yet, so this only lives on this phone.</span>
+      <button className="guest-note-link" onClick={onCreateAccount}>Create account</button>
+      <button className="guest-note-close" aria-label="Dismiss" onClick={() => { try { sessionStorage.setItem(KEY, "1"); } catch {} setHidden(true); }}>×</button>
+    </div>
+  );
+}
+
 function CalendarView({ tasks, energy, shutdownDays, onToast, onBack, powerMode = false, uid, saveCalendarDay, subscribeCalendarDay, recurringEvents = [], onSaveRecurringEvents, battery = 100, onBatteryChange, onLogEnergy, energyMap = [], isPro = false, onOpenPaywall, calPermission = "prompt", deviceCalEventsByDay = {} }) {
   const today      = new Date();
   const [weekOffset, setWeekOffset] = useState(0); // weeks from current
@@ -6608,9 +6638,8 @@ function GroundingView({ uid, saveJournalEntry, deleteJournalEntry, isPro = fals
   const [factIdx,      setFactIdx]      = useState(() => Math.floor(Math.random() * BURNOUT_FACTS.length));
   const [showIntro,    setShowIntro]    = useState(() => localStorage.getItem("reflow-wellness-seen") !== "true");
 
-  useEffect(() => {
-    return () => { localStorage.setItem("reflow-wellness-seen", "true"); };
-  }, []);
+  // Mark seen on first show, not on unmount — the app can be killed while this tab is open
+  useEffect(() => { localStorage.setItem("reflow-wellness-seen", "true"); }, []);
 
   function dismissIntro() {
     localStorage.setItem("reflow-wellness-seen", "true");
@@ -8286,12 +8315,11 @@ function SettingsView({ initialTab = "settings", onShowTutorial, powerMode, onTo
       <div className="history-sub" style={{ marginBottom:20 }}>Customize how MyBattery works for you.</div>
 
       <div className="flat-nav-wrap">
-        <div className="mind-sub-tabs" style={{ justifyContent:"center" }}>
+        <div className="mind-sub-tabs mind-sub-tabs--split">
           <button className={`mind-tab ${activeTab==="settings"?"active":""}`}  onClick={() => trySetTab("settings")}><Icon name="gear" size={13} style={{marginRight:5}} />Settings{notifDirty && <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--slate-dark)", display:"inline-block", marginLeft:5, verticalAlign:"middle" }} />}</button>
           <button className={`mind-tab ${activeTab==="safety"?"active":""}`}    onClick={() => trySetTab("safety")}><Icon name="shield" size={13} style={{marginRight:5}} />Safety</button>
           <button className={`mind-tab ${activeTab==="history"?"active":""}`}   onClick={() => trySetTab("history")}><Icon name="calendar" size={13} style={{marginRight:5}} />History</button>
         </div>
-        <div className="flat-nav-fade" />
       </div>
 
       {pendingTab && (
@@ -8311,7 +8339,7 @@ function SettingsView({ initialTab = "settings", onShowTutorial, powerMode, onTo
       {activeTab === "settings" && (
         <div key="settings" className="settings-tab-content">
           {/* Second-level sub-tab bar */}
-          <div className="mind-sub-tabs mind-sub-tabs--compact" style={{ marginBottom:20 }}>
+          <div className="mind-sub-tabs mind-sub-tabs--split mind-sub-tabs--tight">
             <button className={`mind-tab ${settingsSubTab==="general"?"active":""}`}       onClick={() => setSettingsSubTab("general")}><Icon name="gear" size={13} style={{marginRight:5}} />General</button>
             <button className={`mind-tab ${settingsSubTab==="notifications"?"active":""}`} onClick={() => setSettingsSubTab("notifications")}><Icon name="bell" size={13} style={{marginRight:5}} />Notifications{notifDirty && <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--slate-dark)", display:"inline-block", marginLeft:5, verticalAlign:"middle" }} />}</button>
             <button className={`mind-tab ${settingsSubTab==="account"?"active":""}`}       onClick={() => setSettingsSubTab("account")}><Icon name="power" size={13} style={{marginRight:5}} />Account</button>
@@ -10863,7 +10891,7 @@ export default function App({ user, firebaseHelpers = {} }) {
       const today = todayKey();
       incoming.forEach(t => {
         if (t.recurrence && t.done && t.lastDoneDate !== today) {
-          updateTaskDoc(uid, String(t.id), { done: false, lastDoneDate: null, status: "active" }).catch(() => {});
+          updateTaskDoc(uid, String(t.id), { done: false, lastDoneDate: null, status: "active" }).catch(reportTaskSyncError);
         }
       });
       setTasks(incoming.map(t =>
@@ -10997,7 +11025,7 @@ export default function App({ user, firebaseHelpers = {} }) {
             if (!title) return;
             clearPendingTask();
             const t = { id: Date.now(), name: title, bucket: "could", done: false, energyImpact: -10, duration: 30, dueDate: null };
-            if (uid && addTaskDoc) addTaskDoc(uid, t).catch(() => {});
+            if (uid && addTaskDoc) addTaskDoc(uid, t).catch(reportTaskSyncError);
             else setTasks(prev => [...prev, t]);
             setToast({ type: "win", title: "Task added", msg: `"${title}" is in your Could Do list.` });
           });
@@ -11325,6 +11353,13 @@ export default function App({ user, firebaseHelpers = {} }) {
     setView("readiness");
   }
 
+  // Task writes used to fail silently (the list only updates from the Firestore echo), so a
+  // rejected save/delete looked like "nothing happened". Tell the user instead.
+  function reportTaskSyncError(err) {
+    console.error("Task sync failed:", err);
+    setToast({ type:"warn", title:"Couldn't save that change", msg:"Check your connection and try again." });
+  }
+
   function toggleTask(id) {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
@@ -11332,7 +11367,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     // Un-completing a recurring task that's already done — reset it
     if (task.recurrence && task.done) {
       const upd = { done: false, lastDoneDate: null };
-      if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), upd).catch(() => {});
+      if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), upd).catch(reportTaskSyncError);
       else setTasks(prev => prev.map(t => t.id === id ? { ...t, ...upd } : t));
       return;
     }
@@ -11353,7 +11388,7 @@ export default function App({ user, firebaseHelpers = {} }) {
       // status stays "active" so the task keeps carrying over — only non-recurring
       // completions should flip status to "completed" and drop out of the active query.
       const upd = { done: true, lastDoneDate: today, status: "active" };
-      if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), upd).catch(() => {});
+      if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), upd).catch(reportTaskSyncError);
       else setTasks(prev => prev.map(t => t.id === id ? { ...t, ...upd } : t));
       haptic.success();
       setSessionWins(prev => {
@@ -11402,7 +11437,7 @@ export default function App({ user, firebaseHelpers = {} }) {
         return clamped;
       });
     }
-    if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), { done: true, status: "completed" }).catch(() => {});
+    if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), { done: true, status: "completed" }).catch(reportTaskSyncError);
   }
 
   function uncompleteTask(id) {
@@ -11417,7 +11452,7 @@ export default function App({ user, firebaseHelpers = {} }) {
         return clamped;
       });
     }
-    if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), { done: false }).catch(() => {});
+    if (uid && updateTaskDoc) updateTaskDoc(uid, String(id), { done: false }).catch(reportTaskSyncError);
     setToast({ type:"win", title:"Back on the list.", msg:"Task moved back to your to-do." });
   }
 
@@ -11433,7 +11468,7 @@ export default function App({ user, firebaseHelpers = {} }) {
   }
 
   function handleParalysisComplete(taskId) {
-    if (uid && updateTaskDoc) updateTaskDoc(uid, String(taskId), { momentumStatus: "active" }).catch(() => {});;
+    if (uid && updateTaskDoc) updateTaskDoc(uid, String(taskId), { momentumStatus: "active" }).catch(reportTaskSyncError);;
     setBattery(prev => {
       const clamped = Math.min(100, prev + 2);
       logEnergy(2, "Momentum restored — paralysis broken", "paralysis", clamped);
@@ -11487,7 +11522,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     const taskId = Date.now();
     const t = { id: taskId, name: newTask.trim(), bucket: newBucket, priority: newPriority, energyImpact, duration: newDuration, done: false, dueDate: newDueDate || null, reminderTime: newTaskTime || null, description: newTaskDesc || null, tags: newTaskTags.length ? newTaskTags : null, subtasks: newTaskSubtasks.length ? newTaskSubtasks : [], recurrence: newRecurrence || null, lastDoneDate: null };
     if (uid && addTaskDoc) {
-      addTaskDoc(uid, t).catch(() => {});
+      addTaskDoc(uid, t).catch(reportTaskSyncError);
     } else {
       setTasks(prev => [...prev, t]);
     }
@@ -11563,7 +11598,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     const sub = { id: Date.now() + Math.random(), name, done: false };
     const updatedSubs = [...(task.subtasks || []), sub];
     if (uid && updateTaskDoc) {
-      updateTaskDoc(uid, String(taskId), { subtasks: updatedSubs }).catch(() => {});
+      updateTaskDoc(uid, String(taskId), { subtasks: updatedSubs }).catch(reportTaskSyncError);
     } else {
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, subtasks: updatedSubs } : t));
     }
@@ -11575,7 +11610,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     const updatedSubs = (task.subtasks || []).map(s => s.id === subtaskId ? { ...s, done: !s.done } : s);
     const allDone = updatedSubs.length > 0 && updatedSubs.every(s => s.done);
     if (uid && updateTaskDoc) {
-      updateTaskDoc(uid, String(taskId), { subtasks: updatedSubs, ...(allDone ? { done: true } : {}) }).catch(() => {});
+      updateTaskDoc(uid, String(taskId), { subtasks: updatedSubs, ...(allDone ? { done: true } : {}) }).catch(reportTaskSyncError);
     } else {
       setTasks(prev => prev.map(t => t.id !== taskId ? t : { ...t, subtasks: updatedSubs, done: allDone ? true : t.done }));
     }
@@ -11586,7 +11621,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     if (!task) return;
     const updatedSubs = (task.subtasks || []).filter(s => s.id !== subtaskId);
     if (uid && updateTaskDoc) {
-      updateTaskDoc(uid, String(taskId), { subtasks: updatedSubs }).catch(() => {});
+      updateTaskDoc(uid, String(taskId), { subtasks: updatedSubs }).catch(reportTaskSyncError);
     } else {
       setTasks(prev => prev.map(t => t.id !== taskId ? t : { ...t, subtasks: updatedSubs }));
     }
@@ -11597,13 +11632,13 @@ export default function App({ user, firebaseHelpers = {} }) {
     // between concurrent async onSnapshot callbacks when multiple tasks are moved at once.
     setTasks(prev => prev.map(t => t.id === id ? { ...t, dueDate: newDate || null } : t));
     if (uid && updateTaskDoc) {
-      updateTaskDoc(uid, String(id), { dueDate: newDate || null }).catch(() => {});
+      updateTaskDoc(uid, String(id), { dueDate: newDate || null }).catch(reportTaskSyncError);
     }
   }
 
   function deleteTask(id) {
     if (uid && deleteTaskDoc) {
-      deleteTaskDoc(uid, String(id)).catch(() => {});
+      deleteTaskDoc(uid, String(id)).catch(reportTaskSyncError);
     } else {
       setTasks(prev => prev.filter(t => t.id !== id));
     }
@@ -11617,7 +11652,7 @@ export default function App({ user, firebaseHelpers = {} }) {
       ...(extraUpdates || {}),
     };
     if (uid && updateTaskDoc) {
-      updateTaskDoc(uid, String(id), updates).catch(() => {});
+      updateTaskDoc(uid, String(id), updates).catch(reportTaskSyncError);
     } else {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
     }
@@ -11625,7 +11660,7 @@ export default function App({ user, firebaseHelpers = {} }) {
 
   function changeBucket(id, newBucket) {
     if (uid && updateTaskDoc) {
-      updateTaskDoc(uid, String(id), { bucket: newBucket }).catch(() => {});
+      updateTaskDoc(uid, String(id), { bucket: newBucket }).catch(reportTaskSyncError);
     } else {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, bucket: newBucket } : t));
     }
@@ -12004,7 +12039,7 @@ export default function App({ user, firebaseHelpers = {} }) {
               onAddTasks={(names) => {
                 names.forEach(name => {
                   const t = { id: Date.now() + Math.random(), name, bucket: "could", energyImpact: -5, duration: 30, done: false, dueDate: null, subtasks: [] };
-                  if (uid && addTaskDoc) addTaskDoc(uid, t).catch(() => {});
+                  if (uid && addTaskDoc) addTaskDoc(uid, t).catch(reportTaskSyncError);
                   else setTasks(prev => [...prev, t]);
                 });
               }}
@@ -12036,6 +12071,7 @@ export default function App({ user, firebaseHelpers = {} }) {
 
           {view === "circuit" && (
             <>
+              {guestMode && !uid && <GuestNote onCreateAccount={exitGuestMode} />}
               <div className="dashboard-header">
                 <div className="greeting">{greeting}{userProfile?.userName ? <>, <span>{userProfile.userName}</span></> : ""}.</div>
                 <div className="greeting-sub">
@@ -12192,7 +12228,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                       onAdd={text => {
                         const t = { id: Date.now(), name: text, bucket: "could", energyImpact: 1, done: false };
                         if (uid && addTaskDoc) {
-                          addTaskDoc(uid, t).catch(() => {});
+                          addTaskDoc(uid, t).catch(reportTaskSyncError);
                         } else {
                           setTasks(prev => [...prev, t]);
                         }
@@ -12209,6 +12245,7 @@ export default function App({ user, firebaseHelpers = {} }) {
 
           {view === "calendar" && (
             <>
+            {guestMode && !uid && <GuestNote onCreateAccount={exitGuestMode} />}
             <CalendarView
               tasks={tasks}
               energy={energy}
@@ -12483,7 +12520,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                 newTasks = [parent];
               }
               if (uid && addTaskDoc) {
-                Promise.all(newTasks.map(t => addTaskDoc(uid, t))).catch(() => {});
+                Promise.all(newTasks.map(t => addTaskDoc(uid, t))).catch(reportTaskSyncError);
               } else {
                 setTasks(prev => [...prev, ...newTasks]);
               }

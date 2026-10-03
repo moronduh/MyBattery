@@ -1,5 +1,6 @@
 const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule }                    = require("firebase-functions/v2/scheduler");
+const { onDocumentCreated }             = require("firebase-functions/v2/firestore");
 const { defineSecret }                  = require("firebase-functions/params");
 const { initializeApp }                 = require("firebase-admin/app");
 const { getFirestore }                  = require("firebase-admin/firestore");
@@ -413,6 +414,35 @@ exports.joinWaitlist = onCall(
     }
 
     return { ok: true, duplicate: false };
+  }
+);
+
+// ─── notifyFeedback ───────────────────────────────────────────────────────────
+// Emails the owner whenever a feedback/bug report lands in feedback/{id}.
+// Reuses the GMAIL_USER / GMAIL_APP_PASSWORD secrets from joinWaitlist.
+exports.notifyFeedback = onDocumentCreated(
+  { document: "feedback/{docId}", secrets: [gmailUser, gmailAppPassword] },
+  async (event) => {
+    const d = event.data?.data();
+    if (!d) return;
+    const type = escapeHtml(d.type || "feedback");
+    const when = d.ts?.toDate ? d.ts.toDate().toUTCString() : new Date().toUTCString();
+    try {
+      const nodemailer = require("nodemailer");
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: { user: gmailUser.value(), pass: gmailAppPassword.value() },
+      });
+      await transporter.sendMail({
+        from:    `"MyBattery Feedback" <${gmailUser.value()}>`,
+        to:      "info@mybatteryapp.com",
+        subject: `New ${d.type || "feedback"}: ${String(d.text || "").slice(0, 60)}`,
+        text:    `${d.text}\n\nType: ${d.type || "-"}\nApp version: ${d.appVersion || "-"}\nUser: ${d.uid}\nTime: ${when}`,
+        html:    `<p>${escapeHtml(d.text || "").replace(/\n/g, "<br>")}</p><p>Type: <code>${type}</code><br>App version: <code>${escapeHtml(d.appVersion || "-")}</code><br>User: <code>${escapeHtml(d.uid || "-")}</code><br>Time: ${when}</p>`,
+      });
+    } catch (mailErr) {
+      console.error("[notifyFeedback] email failed:", mailErr.message);
+    }
   }
 );
 

@@ -328,12 +328,16 @@ export async function loadHistory(uid) {
 // status: 'active' | 'completed'
 // Incomplete tasks automatically carry over because the query filters by status.
 
-export function subscribeActiveTasks(uid, onChange) {
+export function subscribeActiveTasks(uid, onChange, onError) {
   const q = query(
     collection(db, "users", uid, "tasks"),
     where("status", "==", "active")
   );
+  // Decrypting names is async, so two quick snapshots (local write, then server echo) can finish
+  // out of order and an older list would overwrite the newer one. Drop any result that's stale.
+  let latest = 0;
   return onSnapshot(q, async snap => {
+    const seq = ++latest;
     const tasks = await Promise.all(snap.docs.map(async d => {
       const data = d.data();
       return {
@@ -348,8 +352,13 @@ export function subscribeActiveTasks(uid, onChange) {
         name: data._enc ? await decryptField(data.name, uid) : data.name,
       };
     }));
+    if (seq !== latest) return;
     onChange(tasks);
-  }, () => onChange([]));
+  }, err => {
+    // Keep the last-known list: wiping it to [] made tasks vanish on any transient listener error.
+    console.error("Task subscription error:", err);
+    onError?.(err);
+  });
 }
 
 export async function addTaskDoc(uid, task) {

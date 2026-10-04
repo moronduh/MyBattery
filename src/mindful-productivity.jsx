@@ -931,8 +931,6 @@ const styles = `
   .mind-tab { padding:8px 22px; border:none; background:transparent; border-radius:40px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-soft); cursor:pointer; transition:var(--transition); white-space:nowrap; flex-shrink:0; outline:none; }
   .mind-tab:focus-visible { outline:2px solid var(--teal); outline-offset:2px; }
   .mind-tab.active { background:var(--card); color:var(--ink); font-weight:500; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .hold-hint { position:absolute; left:calc(100% + 8px); top:50%; transform:translateY(-50%); white-space:nowrap; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; color:var(--ink); background:var(--surface); border:1.5px solid var(--teal-dark); border-radius:20px; padding:4px 12px; pointer-events:none; box-shadow:0 2px 10px rgba(0,0,0,0.15); animation:holdHintIn 0.2s ease both; z-index:3; }
-  @keyframes holdHintIn { from { opacity:0; } to { opacity:1; } }
   /* Compact variant: equal-width tabs that fit a phone without scrolling */
   .mind-sub-tabs--compact .mind-tab { flex:1; min-width:0; padding:8px 4px; font-size:12px; display:flex; align-items:center; justify-content:center; }
   .mind-sub-tabs--compact .mind-tab svg { display:none; }
@@ -1036,6 +1034,9 @@ const styles = `
   @keyframes batteryPulse{ 0%,100%{opacity:1} 50%{opacity:0.55} }
   @keyframes checkPop    { 0%{transform:scale(1)} 20%{transform:scale(1.32);background:var(--teal-dark);border-color:var(--teal-dark)} 45%{transform:scale(0.9);background:var(--teal-dark);border-color:var(--teal-dark)} 60%{transform:scale(1.06);background:var(--teal-dark);border-color:var(--teal-dark)} 100%{transform:scale(1);background:var(--teal-dark);border-color:var(--teal-dark)} }
   @keyframes holdFill    { from{stroke-dashoffset:94.2} to{stroke-dashoffset:0} }
+  .hold-pulse { position:absolute; inset:-2px; border-radius:50%; border:2px solid var(--teal-dark); box-shadow:0 0 10px var(--teal-dark); pointer-events:none; opacity:0; animation:holdPulse 950ms ease-out 2; }
+  @keyframes holdPulse { 0% { transform:scale(1); opacity:0.85; } 100% { transform:scale(1.7); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { .hold-pulse { display:none; } }
   .hold-ring { position:absolute; inset:-5px; width:calc(100% + 10px); height:calc(100% + 10px); pointer-events:none; overflow:visible; }
   .hold-ring circle { transform-origin:center; transform:rotate(-90deg); }
   .new-task-check { position:relative; overflow:visible !important; }
@@ -3884,25 +3885,18 @@ const BUCKET_STYLE = {
 };
 
 function HoldTaskCheck({ done, onToggle, holding = false }) {
-  const [showHint, setShowHint] = useState(false);
-  const hintTimer = useRef(null);
-  useEffect(() => () => clearTimeout(hintTimer.current), []);
   return (
     <div
       className="task-check"
       style={{ touchAction:"none", position:"relative", zIndex:1 }}
       onClick={e => {
         e.stopPropagation();
-        if (done) { onToggle(); return; }
-        // A quick tap does nothing on its own — tell people completion is press-and-hold
-        setShowHint(true);
-        clearTimeout(hintTimer.current);
-        hintTimer.current = setTimeout(() => setShowHint(false), 3000);
+        // Un-completing is a tap; completing is press-and-hold (explained in the tutorial)
+        if (done) onToggle();
       }}
     >
       <HoldRing holding={holding} size={HOLD_DURATION} />
       <Checkmark />
-      {showHint && !holding && <span className="hold-hint" role="status">Hold to finish</span>}
     </div>
   );
 }
@@ -4175,6 +4169,7 @@ const SWIPE_MAX_PX    = 240;
 
 function useHoldToggle(onComplete, active = true, onShortPress) {
   const [holding, setHolding] = useState(false);
+  const [nudge, setNudge] = useState(0);   // bumps on each short press so the ring can demo the hold
   const timerRef = useRef(null);
   const startRef = useRef(null);
 
@@ -4197,7 +4192,7 @@ function useHoldToggle(onComplete, active = true, onShortPress) {
     const released = !!timerRef.current && e?.type === "pointerup";
     if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; markTaskGestureEnd(); }
     setHolding(false);
-    if (released) onShortPress?.(e); // let go before the hold finished
+    if (released) { setNudge(n => n + 1); onShortPress?.(e); } // let go before the hold finished
   }
 
   // Finger wandered off the circle: that's a scroll or drag, so abandon the hold.
@@ -4208,33 +4203,30 @@ function useHoldToggle(onComplete, active = true, onShortPress) {
 
   return {
     holding,
+    nudge,
     handlers: { onPointerDown: start, onPointerMove: move, onPointerUp: cancel, onPointerLeave: cancel, onPointerCancel: cancel },
   };
 }
 
-const HoldRing = ({ holding, size = 600 }) => !holding ? null : (
-  <svg className="hold-ring" viewBox="0 0 32 32">
-    <circle cx="16" cy="16" r="15" fill="none" stroke="var(--teal-dark)" strokeWidth="2.5"
-      strokeDasharray="94.2" strokeDashoffset="94.2"
-      style={{ animation:`holdFill ${size}ms linear forwards` }}
-    />
-  </svg>
-);
+const HoldRing = ({ holding, size = 600, nudge = 0 }) => {
+  if (holding) return (
+    <svg className="hold-ring" viewBox="0 0 32 32">
+      <circle cx="16" cy="16" r="15" fill="none" stroke="var(--teal-dark)" strokeWidth="2.5"
+        strokeDasharray="94.2" strokeDashoffset="94.2"
+        style={{ animation:`holdFill ${size}ms linear forwards` }}
+      />
+    </svg>
+  );
+  // A quick tap pulses a soft glow outward from the circle: "this wants a press-and-hold", no text
+  if (!nudge) return null;
+  return <span key={nudge} className="hold-pulse" aria-hidden="true" />;
+};
 
 function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis, onDelete }) {
   const subs   = task.subtasks || [];
   const energy = task.energyImpact ?? 0;
-  const [showHint, setShowHint] = useState(false);
-  const hintTimer = useRef(null);
-  useEffect(() => () => clearTimeout(hintTimer.current), []);
-  // A quick tap on the circle does nothing on its own — tell people completion is press-and-hold
-  function flashHint(e) {
-    if (!e?.target?.closest?.(".new-task-check")) return;
-    setShowHint(true);
-    clearTimeout(hintTimer.current);
-    hintTimer.current = setTimeout(() => setShowHint(false), 3000);
-  }
-  const { holding, handlers } = useHoldToggle(() => onToggle(task.id), !task.done, flashHint);
+  // Completing is press-and-hold. A quick tap only nudges the ring (see HoldRing); the tutorial explains it too.
+  const { holding, nudge, handlers } = useHoldToggle(() => onToggle(task.id), !task.done);
 
   function formatDue(ds) {
     if (!ds) return null;
@@ -4325,8 +4317,7 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis, onDelete 
         {...(!task.done ? handlers : {})}
         onClick={e => { e.stopPropagation(); if (task.done) onToggle(task.id); }}
       >
-        <HoldRing holding={holding} size={HOLD_DURATION} />
-        {showHint && !holding && <span className="hold-hint" role="status">Hold to finish</span>}
+        <HoldRing holding={holding} size={HOLD_DURATION} nudge={nudge} />
         {task.done && (
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>

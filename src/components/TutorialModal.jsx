@@ -54,7 +54,7 @@ export default function TutorialModal({ onClose }) {
     {
       label: "Tasks & energy",
       title: "Every task costs or gives energy.",
-      desc: "Tasks live in Must, Should and Could — swipe between them. Each one drains or charges your battery. If your list costs more than you have left, MyBattery suggests what to move to tomorrow. Frozen on something? Tap \"stuck?\" on the task.",
+      desc: "Tasks live in Must, Should and Could — swipe between them. Each one drains or charges your battery. If your list costs more than you have left, MyBattery suggests what to move to tomorrow. Press and hold a task's circle to finish it, or swipe a task left to delete it. Frozen on something? Tap \"stuck?\" on the task.",
       visual: (
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:0, marginBottom:12 }}>

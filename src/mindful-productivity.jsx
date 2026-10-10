@@ -906,7 +906,7 @@ const styles = `
   .nav-privacy-btn { background:none; border:1.5px solid var(--warm); border-radius:50%; width:32px; height:32px; cursor:pointer; color:var(--ink-mute); transition:var(--transition); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .nav-privacy-btn:hover { border-color:var(--teal-light); color:var(--teal-dark); }
   .nav-privacy-btn.active { border-color:var(--teal-dark); color:var(--teal-dark); background:var(--teal-pale,rgba(107,142,90,0.12)); }
-  .nav-sos-btn { background:none; border:1.5px solid rgba(196,114,106,0.4); border-radius:20px; padding:0 9px; height:32px; cursor:pointer; color:var(--error); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; font-weight:500; transition:var(--transition); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .nav-sos-btn { background:none; border:1.5px solid rgba(196,114,106,0.4); border-radius:20px; padding:0 13px; height:34px; cursor:pointer; color:var(--error); font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px; font-weight:500; transition:var(--transition); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .nav-sos-btn:hover { border-color:var(--error); background:rgba(196,114,106,0.08); }
 
   /* TOAST */
@@ -1576,6 +1576,11 @@ const styles = `
   .guest-note { display:flex; align-items:center; gap:12px; padding:10px 0; margin-bottom:8px; border-bottom:1px solid var(--line); font-family:'DM Sans',sans-serif; font-size:13px; line-height:1.5; color:var(--ink-mute); }
   .guest-note-text { flex:1; }
   .guest-note-link { background:none; border:none; padding:6px 0; font-family:inherit; font-size:13px; font-weight:500; color:var(--teal-dark); cursor:pointer; white-space:nowrap; }
+  .winddown-nudge { display:flex; align-items:center; gap:12px; padding:14px 0; margin-bottom:8px; border-bottom:1px solid var(--line); color:var(--ink-soft); animation:fadeUp 0.4s ease both; }
+  .winddown-nudge-text { flex:1; min-width:0; }
+  .winddown-nudge-title { font-size:15px; font-weight:600; color:var(--ink); }
+  .winddown-nudge-sub { font-size:13px; color:var(--ink-mute); margin-top:2px; line-height:1.4; }
+  .winddown-nudge-go { background:none; border:none; padding:8px 4px; font-family:inherit; font-size:14px; font-weight:600; color:var(--teal-dark); cursor:pointer; }
   .guest-note-close { background:none; border:none; padding:6px; font-size:18px; line-height:1; color:var(--ink-mute); cursor:pointer; }
 
   /* Node view */
@@ -2062,7 +2067,25 @@ const styles = `
   .node-btn-add { background:none; padding:8px 0; font-size:14px; font-weight:500; color:var(--teal-dark); }
 
   /* Check-in screen */
-  .readiness-card { border-bottom:none; }
+  .readiness-card { border-bottom:none; margin-top:0; padding-top:24px; }
+  .nav { border-bottom:1px solid var(--line); }
+  .readiness-title { font-size:34px; letter-spacing:-0.5px; }
+  .readiness-subtitle { font-size:15px; color:var(--ink-mute); }
+  .readiness-card .readiness-eyebrow { color:var(--ink-soft); font-weight:500; }
+  .readiness-card .battery-shape-outer { position:relative; }
+  .battery-thumb { display:none; }
+  .readiness-card .battery-thumb { display:block; position:absolute; top:50%; width:24px; height:24px; margin:-12px 0 0 -12px; border-radius:50%; border:3px solid var(--cream); box-shadow:0 1px 6px rgba(0,0,0,0.25); transition:left 0.8s cubic-bezier(0.4,0,0.2,1), background 0.6s ease; pointer-events:none; }
+  .readiness-card .battery-shape-outer { margin:0 12px; }
+  .readiness-quickcheck { border-top:1px solid var(--line); padding-top:0; margin-top:20px; }
+  .readiness-quickcheck > summary { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:14px 0; margin:0; }
+  .readiness-quickcheck > summary::-webkit-details-marker { display:none; }
+  .readiness-quickcheck > summary::after { content:""; width:8px; height:8px; border-right:1.5px solid var(--ink-mute); border-bottom:1.5px solid var(--ink-mute); transform:rotate(45deg); margin:-4px 4px 0 8px; transition:transform 0.2s ease; }
+  .readiness-quickcheck[open] > summary::after { transform:rotate(-135deg); margin-top:4px; }
+  .rqc-label { flex:1; }
+  .rqc-count { font-size:12px; font-weight:400; color:var(--teal-dark); }
+  .readiness-actions { position:sticky; bottom:0; z-index:6; margin:24px -24px 0; padding:16px 24px max(16px, env(safe-area-inset-bottom)); background:linear-gradient(to bottom, transparent, var(--cream) 24%); text-align:center; }
+  .readiness-actions .btn-primary { width:100%; max-width:320px; }
+  .readiness-actions .readiness-struggle-btn { margin-top:12px; }
   .readiness-eyebrow { font-family:'DM Sans',sans-serif; font-size:14px; letter-spacing:0; text-transform:none; color:var(--ink-mute); }
   .readiness-card .battery-panel { display:block; border-bottom:none; padding:0; }
   .readiness-card .battery-panel-label, .readiness-card .battery-panel-status { display:none; }
@@ -4872,6 +4895,39 @@ const DAY_LABELS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 // Guests keep everything on this phone only, and iOS can clear that storage. Say so once per
 // launch, quietly, with a way to move to an account.
+// Quiet in-app reminder on Today: appears once the wind-down time has passed and tonight's wind-down
+// isn't done. "Not tonight" hides it until tomorrow.
+function WindDownNudge({ onStart }) {
+  const dayKey = () => new Date().toLocaleDateString("en-CA");
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const bump = () => tick(n => n + 1);
+    const id = setInterval(bump, 60000);
+    document.addEventListener("visibilitychange", bump);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", bump); };
+  }, []);
+  let time = "19:00", done = false, snoozed = false;
+  try {
+    time    = JSON.parse(localStorage.getItem("mindfull-notif-prefs") || "{}").winddownTime || time;
+    done    = localStorage.getItem("reflow-winddown-done")   === dayKey();
+    snoozed = localStorage.getItem("reflow-winddown-snooze") === dayKey();
+  } catch {}
+  const [h, m] = time.split(":").map(Number);
+  const now = new Date();
+  if (done || snoozed || now.getHours() * 60 + now.getMinutes() < h * 60 + (m || 0)) return null;
+  return (
+    <div className="winddown-nudge" role="note">
+      <Icon name="moon" size={18} />
+      <div className="winddown-nudge-text">
+        <div className="winddown-nudge-title">Ready to wind down?</div>
+        <div className="winddown-nudge-sub">Close out the day. It takes about two minutes.</div>
+      </div>
+      <button className="winddown-nudge-go" onClick={onStart}>Begin</button>
+      <button className="guest-note-close" aria-label="Not tonight" title="Not tonight" onClick={() => { try { localStorage.setItem("reflow-winddown-snooze", dayKey()); } catch {} tick(n => n + 1); }}>×</button>
+    </div>
+  );
+}
+
 function GuestNote({ onCreateAccount }) {
   const KEY = "reflow-guest-note-hidden";
   const [hidden, setHidden] = useState(() => { try { return sessionStorage.getItem(KEY) === "1"; } catch { return false; } });
@@ -7274,6 +7330,47 @@ async function _scheduleHabitNotifsIosNow(routines) {
   } catch (err) { console.warn("Routine iOS notifications:", err); }
 }
 
+// IDs 5001–5500 reserved for task reminders. Mirrors the in-browser timer: a task with a due date
+// alerts once at that date + time; one without a due date alerts daily until it's done.
+const TASK_NOTIF_ID_BASE = 5001, TASK_NOTIF_MAX = 500;
+let _taskNotifQueue  = Promise.resolve();
+let _taskNotifLatest = null;
+function scheduleTaskNotifsIos(tasks) {
+  _taskNotifLatest = tasks;
+  _taskNotifQueue = _taskNotifQueue.then(() =>
+    tasks === _taskNotifLatest ? _scheduleTaskNotifsIosNow(tasks) : undefined);
+  return _taskNotifQueue;
+}
+
+async function _scheduleTaskNotifsIosNow(tasks) {
+  const ln = _localNotifs();
+  if (!ln || !_isNative()) return;
+  try {
+    await ln.cancel({ notifications: Array.from({ length: TASK_NOTIF_MAX }, (_, i) => ({ id: TASK_NOTIF_ID_BASE + i })) }).catch(() => {});
+    const now = new Date();
+    const notifs = [];
+    tasks.forEach(t => {
+      if (notifs.length >= TASK_NOTIF_MAX || !t.reminderTime || t.done) return;
+      const [hour, minute] = t.reminderTime.split(":").map(Number);
+      if (!Number.isFinite(hour) || !Number.isFinite(minute)) return;
+      const id = TASK_NOTIF_ID_BASE + notifs.length;
+      const body = `⏰ ${t.name}`;
+      if (t.dueDate) {
+        const [y, mo, d] = t.dueDate.split("-").map(Number);
+        const at = new Date(y, mo - 1, d, hour, minute, 0, 0);
+        if (!(at > now)) return;
+        notifs.push({ id, title:"MyBattery", body, schedule:{ at, allowWhileIdle:true } });
+      } else {
+        notifs.push({ id, title:"MyBattery", body, schedule:{ on:{ hour, minute }, repeats:true, allowWhileIdle:true } });
+      }
+    });
+    if (!notifs.length) return;
+    const { display } = await ln.requestPermissions();
+    if (display !== "granted") return;
+    await ln.schedule({ notifications: notifs });
+  } catch (err) { console.warn("Task iOS notifications:", err); }
+}
+
 // ─── NotificationsView ────────────────────────────────────────────────────────
 function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggleGentleMode, battery = 100, onDirtyChange, saveRef, discardRef }) {
   const requestNotificationPermission = firebaseHelpers.requestNotificationPermission ?? (async () => null);
@@ -9470,6 +9567,7 @@ function BatteryPanel({ battery, onBatteryChange, charging = false, darkMode = f
           <div className="battery-panel-fill" style={{ width:`${localVal}%`, background:fillFor(localVal) }} />
         </div>
         <div className="battery-nub" style={{ background: colorFor(localVal) }} />
+        <div className="battery-thumb" style={{ left:`${localVal}%`, background: colorFor(localVal) }} />
       </div>
     </div>
   );
@@ -10912,6 +11010,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     if (!uid || !loadRecentDays) return;
     loadRecentDays(uid, 8).then(days => {
       maybeShowWelcomeBack(days);
+      if (days.some(d => d.id === todayKey() && d.shutdownComplete)) { try { localStorage.setItem("reflow-winddown-done", todayKey()); } catch {} }
       const allActivityKeys = days.filter(d => d.shutdownComplete || d.energy).map(d => d.id);
       if (allActivityKeys.length === 0) return;
       setShutdownDays(prev => {
@@ -11306,6 +11405,9 @@ export default function App({ user, firebaseHelpers = {} }) {
     setEarnedBadges(next);
     localStorage.setItem("reflow-badges", JSON.stringify(next));
   }
+
+  // Native app: schedule task reminders as iOS notifications so they fire when the app is closed
+  useEffect(() => { scheduleTaskNotifsIos(tasks); }, [tasks]);
 
   // Task reminder scheduler — fires when a task's reminderTime matches current time
   useEffect(() => {
@@ -11721,6 +11823,7 @@ export default function App({ user, firebaseHelpers = {} }) {
 
   function handleShutdownComplete({ gratitude, answers, eveningMood }) {
     const k = todayKey();
+    try { localStorage.setItem("reflow-winddown-done", k); } catch {}
     awardXP(5);
     const shutdownCount = (JSON.parse(localStorage.getItem("reflow-shutdown-days") || "[]")).length;
     if (shutdownCount >= 4) awardBadge("rest-earned");
@@ -11947,7 +12050,7 @@ export default function App({ user, firebaseHelpers = {} }) {
             title={`Energy ${battery}% — tap to log`}
             aria-label={`Energy ${battery}%. Log energy`}
           >
-            <BatteryMascot level={battery} size={26} mood={battery <= 15 ? "sleeping" : mascotMood} />
+            <BatteryMascot level={battery} size={32} mood={battery <= 15 ? "sleeping" : mascotMood} />
           </button>
           {false && (
             <span className="streak-badge">🔥 {checkinStreak}d</span>
@@ -11983,7 +12086,7 @@ export default function App({ user, firebaseHelpers = {} }) {
               }}
               title={privacyMode ? "Privacy Mode on — click to turn off" : "Privacy Mode off — click to blur task names"}
             >
-              <Icon name="lock" size={13} />
+              <Icon name="lock" size={16} />
             </button>
             <button aria-label="Get support" className="nav-sos-btn" onClick={() => { haptic.sos(); setShowSOSModal(true); }} title="Get support">SOS</button>
           </div>
@@ -12035,8 +12138,11 @@ export default function App({ user, firebaseHelpers = {} }) {
                     })()}
                   </span>
                 </div>
-                <div className="readiness-quickcheck">
-                  <div className="readiness-quickcheck-title">Quick check <span>· optional</span></div>
+                <details className="readiness-quickcheck">
+                  <summary className="readiness-quickcheck-title">
+                    <span className="rqc-label">Add a quick check <span>· optional</span></span>
+                    {Object.values(bodyCheck).some(v => v !== null && v !== undefined) && <span className="rqc-count">{Object.values(bodyCheck).filter(v => v !== null && v !== undefined).length} added</span>}
+                  </summary>
                   {[
                     { label:"Sleep",   key:"sleep",    opts:[["poor","Poorly"],["normal","Okay"],["great","Well"]] },
                     { label:"Eaten",   key:"eaten",    opts:[[true,"Yes"],[false,"Not yet"]] },
@@ -12063,11 +12169,13 @@ export default function App({ user, firebaseHelpers = {} }) {
                       </div>
                     );
                   })()}
+                </details>
+                <div className="readiness-actions">
+                  <button className="btn-primary" onClick={handleBeginDay}>Begin my day</button>
+                  <button className="readiness-struggle-btn" onClick={() => setView("recharge")}>
+                    I'm struggling — take me to grounding exercises
+                  </button>
                 </div>
-                <button className="btn-primary" style={{ marginTop:28 }} onClick={handleBeginDay}>Begin my day</button>
-                <button className="readiness-struggle-btn" onClick={() => setView("recharge")}>
-                  I'm struggling — take me to grounding exercises
-                </button>
               </div>
             );
           })()}
@@ -12125,6 +12233,7 @@ export default function App({ user, firebaseHelpers = {} }) {
           {view === "circuit" && (
             <>
               {guestMode && !uid && <GuestNote onCreateAccount={exitGuestMode} />}
+              <WindDownNudge onStart={() => { haptic.light(); setView("shutdown"); }} />
               <div className="dashboard-header">
                 <div className="greeting">{greeting}{userProfile?.userName ? <>, <span>{userProfile.userName}</span></> : ""}.</div>
                 <div className="greeting-sub">
@@ -12519,7 +12628,7 @@ export default function App({ user, firebaseHelpers = {} }) {
         )}
 
         {/* FAB + menu — hidden during onboarding */}
-        {view !== "onboarding" && (
+        {view !== "onboarding" && view !== "readiness" && (
           <>
             {showFabMenu && <div className="fab-backdrop" onClick={() => setShowFabMenu(false)} />}
             {showFabMenu && (

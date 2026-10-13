@@ -346,8 +346,8 @@ const styles = `
   .safety-offline-note { font-size:11px; color:var(--ink-mute); text-align:center; margin-top:16px; font-family:'DM Mono',monospace; letter-spacing:0.3px; }
 
   /* CONFIRM MODAL */
-  .modal-overlay { position:fixed; inset:0; background:rgba(42,42,37,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding:24px; backdrop-filter:blur(4px); animation:fadeIn 0.15s ease; }
-  .modal-box { background:var(--surface); border-radius:24px; padding:36px 32px; max-width:420px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:fadeUp 0.2s ease; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(42,42,37,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom)); backdrop-filter:blur(4px); animation:fadeIn 0.15s ease; }
+  .modal-box { background:var(--surface); border-radius:24px; padding:36px 32px; max-width:420px; width:100%; max-height:100%; overflow-y:auto; overscroll-behavior:contain; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:fadeUp 0.2s ease; }
   .modal-title { font-family:'Playfair Display',serif; font-size:20px; color:var(--ink); margin-bottom:8px; }
   .modal-body { font-size:14px; color:var(--ink-soft); line-height:1.7; margin-bottom:24px; }
   .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
@@ -2170,6 +2170,12 @@ const styles = `
   }
   input:focus-visible, textarea:focus-visible, select:focus-visible {
     outline:2px solid var(--teal-dark); outline-offset:1px;
+  }
+  /* iOS zooms the page when a text field under 16px gets focus, and never zooms back out, which left
+     the layout shifted sideways after the keyboard closed. Keep every text-entry field at 16px+. */
+  @media (hover:none) and (pointer:coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="color"]):not([type="file"]),
+    textarea, select { font-size:max(16px,1em); }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }

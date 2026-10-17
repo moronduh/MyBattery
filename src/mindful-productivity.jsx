@@ -33,6 +33,20 @@ if (typeof window !== "undefined" && window.visualViewport) {
   syncViewportVars();
   vv.addEventListener("resize", syncViewportVars);
   vv.addEventListener("scroll", syncViewportVars);
+
+  // If a text field still leaves the page zoomed in after the keyboard closes, iOS never zooms back
+  // out and the layout stays cut off at the edges. Briefly cap the zoom to snap back to 1x, then
+  // restore the normal viewport so pinch-zoom stays available for accessibility.
+  const metaViewport = () => document.querySelector('meta[name="viewport"]');
+  document.addEventListener("focusout", () => {
+    setTimeout(() => {
+      const meta = metaViewport();
+      if (!meta || vv.scale <= 1.01) return;
+      const original = meta.getAttribute("content");
+      meta.setAttribute("content", `${original}, maximum-scale=1`);
+      setTimeout(() => meta.setAttribute("content", original), 300);
+    }, 150);
+  });
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -2175,7 +2189,7 @@ const styles = `
      the layout shifted sideways after the keyboard closed. Keep every text-entry field at 16px+. */
   @media (hover:none) and (pointer:coarse) {
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="color"]):not([type="file"]),
-    textarea, select { font-size:max(16px,1em); }
+    textarea, select { font-size:max(16px,1em) !important; } /* !important: several fields set a smaller inline fontSize */
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
@@ -2608,7 +2622,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
   const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(false);
   const [burnoutPattern,    setBurnoutPattern]   = useState("");
   const [arrivedBecause,    setArrivedBecause]   = useState("");
-  const [wantBack,          setWantBack]         = useState("");
+  const [wantBack,          setWantBack]         = useState([]);
   const [ndResonance,       setNdResonance]      = useState([]);
   const [quizAnswers,       setQuizAnswers]      = useState({});
   const [quizQuestion,      setQuizQuestion]     = useState(0);
@@ -2686,7 +2700,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
     { id:"goals",       icon:"bolt",    label:"Progress on what actually matters",      sub:"The projects that keep getting pushed to someday." },
   ];
 
-  const wantBackLabel = WANT_BACK_OPTIONS.find(o => o.id === wantBack)?.label || "";
+  const wantBackLabels = WANT_BACK_OPTIONS.filter(o => wantBack.includes(o.id)).map(o => o.label);
 
   const BURNOUT_SCIENCE = {
     "never-stop": [
@@ -3113,12 +3127,12 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
       <div className="onboard-card">
         <div className="onboard-eyebrow">Step 7 of {TOTAL} — Your reason</div>
         <div className="onboard-title">If you had your energy back —<br />what would you do with it?</div>
-        <div className="onboard-sub">This becomes your anchor. On hard days, it's the reason you protect your energy instead of spending it all.</div>
+        <div className="onboard-sub">This becomes your anchor. On hard days, it's the reason you protect your energy instead of spending it all. Choose as many as feel true.</div>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:8 }}>
           {WANT_BACK_OPTIONS.map(o => (
             <div key={o.id}
-              className={`profile-option ${wantBack===o.id?"selected":""}`}
-              onClick={() => setWantBack(o.id)}
+              className={`profile-option ${wantBack.includes(o.id)?"selected":""}`}
+              onClick={() => setWantBack(prev => prev.includes(o.id) ? prev.filter(id => id !== o.id) : [...prev, o.id])}
               style={{ display:"flex", alignItems:"flex-start", gap:16, padding:"15px 18px" }}
             >
               <div style={{ flexShrink:0, width:36, height:36, borderRadius:"50%", background:"rgba(90,122,90,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -3131,14 +3145,14 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
             </div>
           ))}
         </div>
-        {wantBack && (
+        {wantBack.length > 0 && (
           <div style={{ background:"rgba(90,122,90,0.06)", border:"1px solid rgba(90,122,90,0.18)", borderRadius:"var(--radius-sm)", padding:"14px 18px", fontSize:13, color:"var(--teal-dark)", lineHeight:1.65, marginTop:12, fontStyle:"italic" }}>
             That's worth protecting. Every choice MyBattery helps you make is in service of that.
           </div>
         )}
         <div className="onboard-actions">
           <button className="btn-back" onClick={() => setStep(6)}>← Back</button>
-          <button className="btn-primary" disabled={!wantBack} onClick={() => setStep(8)}>That's what I'm working toward →</button>
+          <button className="btn-primary" disabled={wantBack.length === 0} onClick={() => setStep(8)}>That's what I'm working toward →</button>
         </div>
       </div>
     </div>
@@ -3525,12 +3539,14 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           </div>
         )}
 
-        {wantBack && (
+        {wantBack.length > 0 && (
           <div style={{ background:"rgba(90,122,90,0.08)", border:"1.5px solid rgba(90,122,90,0.2)", borderRadius:"var(--radius-sm)", padding:"14px 18px", marginBottom:18, display:"flex", alignItems:"flex-start", gap:12 }}>
             <Icon name="heart" size={16} style={{color:"var(--teal-dark)", flexShrink:0, marginTop:2}} />
             <div>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--teal-dark)", marginBottom:4 }}>Your reason</div>
-              <div style={{ fontSize:13, color:"var(--ink)", lineHeight:1.5, fontStyle:"italic" }}>"{wantBackLabel}"</div>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--teal-dark)", marginBottom:4 }}>{wantBackLabels.length > 1 ? "Your reasons" : "Your reason"}</div>
+              {wantBackLabels.map(l => (
+                <div key={l} style={{ fontSize:13, color:"var(--ink)", lineHeight:1.5, fontStyle:"italic" }}>"{l}"</div>
+              ))}
             </div>
           </div>
         )}

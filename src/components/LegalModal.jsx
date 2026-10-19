@@ -9,7 +9,6 @@ const PRIVACY_CONTENT = [
 • Mood and journal entries
 • Mental health screening responses (PHQ-9, GAD-7)
 • Notification preferences and schedule
-• Anonymous usage analytics (errors, crashes)
 
 Task names and health notes are encrypted on your device before being stored. We cannot read them.`,
   },
@@ -17,7 +16,7 @@ Task names and health notes are encrypted on your device before being stored. We
     heading: "How we use it",
     body: `Your data is used only to operate the app — to show you your history, generate AI suggestions, and send your scheduled notifications. It is never sold, shared with advertisers, or used to train AI models.
 
-The AI Coach sends your task list and current battery level to Google Gemini to generate responses. Task content reaches Google's servers. If you prefer not to share task details with the AI, do not use the AI Coach feature.`,
+AI features (AI Coach, task breakdown, brain dump and smart scheduling) send your task names, current battery level and the text you type to Google Gemini to generate responses. We ask for your permission before this happens for the first time. Task content reaches Google's servers. If you prefer not to share task details with the AI, decline the prompt or do not use the AI features.`,
   },
   {
     heading: "Data storage & security",
@@ -41,7 +40,7 @@ MyBattery is not a medical device. It is not a substitute for professional menta
 
 You can export a copy of your history from Settings → General → Download history.
 
-For questions or requests, contact: privacy@mybatteryapp.com`,
+For questions or requests, contact: info@mybatteryapp.com`,
   },
   {
     heading: "Changes",
@@ -88,7 +87,7 @@ If you are experiencing a mental health crisis, please call or text 988 (US) or 
   },
   {
     heading: "Contact",
-    body: `For questions about these terms: legal@mybatteryapp.com
+    body: `For questions about these terms: info@mybatteryapp.com
 
 Last updated: May 2026`,
   },

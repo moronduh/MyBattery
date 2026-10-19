@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Capacitor } from "@capacitor/core";
+import { PrivacyPolicyModal, TermsModal } from "./LegalModal.jsx";
 
 const PRO_FEATURES = [
   { icon: "✦", label: "AI Coach", desc: "Unlimited multi-turn chat with your energy coach" },
@@ -18,6 +19,8 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
   const [selectedPkg, setSelectedPkg] = useState(() => annualPkg ?? packages[0] ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms,   setShowTerms]   = useState(false);
 
   const isNative = Capacitor.isNativePlatform();
 
@@ -110,7 +113,8 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
             </button>
 
             <div className="paywall-legal">
-              Payment charged to your Apple ID after the free trial. Cancel anytime in Settings&nbsp;→&nbsp;Subscriptions.
+              {selectedPkg?.displayPrice ? `${selectedPkg.displayPrice} per ${selectedPkg === annualPkg ? "year" : "month"} after the 14-day free trial. ` : ""}
+              Payment is charged to your Apple ID at the end of the trial. The subscription renews automatically unless canceled at least 24 hours before the end of the current period. Manage or cancel anytime in Settings&nbsp;→&nbsp;Apple&nbsp;ID&nbsp;→&nbsp;Subscriptions.
             </div>
 
             <div className="paywall-footer-links">
@@ -140,7 +144,15 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
             )}
           </div>
         )}
+
+        <div className="paywall-footer-links" style={{ marginTop: 14 }}>
+          <button className="paywall-dismiss-btn" onClick={() => setShowPrivacy(true)}>Privacy Policy</button>
+          <span className="paywall-footer-sep">·</span>
+          <button className="paywall-dismiss-btn" onClick={() => setShowTerms(true)}>Terms of Use</button>
+        </div>
       </div>
+      {showPrivacy && <PrivacyPolicyModal onClose={() => setShowPrivacy(false)} />}
+      {showTerms   && <TermsModal         onClose={() => setShowTerms(false)}   />}
     </div>
   );
 }

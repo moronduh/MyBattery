@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 
 const PRODUCT_IDS = ["mybattery_monthly", "mybattery_yearly"];
-const BYPASS_PAYWALL = true;
+const BYPASS_PAYWALL = false;
 
 const StoreKitIAP = registerPlugin("StoreKitIAP", {
   web: () => ({

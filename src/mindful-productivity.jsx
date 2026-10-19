@@ -8300,8 +8300,8 @@ function WeekPlanModal({ weekStartDay, userName, onClose, onSave }) {
 
 // ─── LegalTab ────────────────────────────────────────────────────────────────
 const PRIVACY_SECTIONS = [
-  { heading:"What we collect", body:`MyBattery stores the following data in your personal Firebase account:\n• Energy levels and battery readings you enter each day\n• Tasks you create, including names, buckets, and completion status\n• Mood and journal entries\n• Mental health screening responses (PHQ-9, GAD-7)\n• Notification preferences and schedule\n• Anonymous usage analytics (errors, crashes)\n\nTask names and health notes are encrypted on your device before being stored. We cannot read them.` },
-  { heading:"How we use it", body:`Your data is used only to operate the app — to show you your history, generate AI suggestions, and send your scheduled notifications. It is never sold, shared with advertisers, or used to train AI models.\n\nThe AI Coach sends your task list and current battery level to Google Gemini to generate responses. Task content reaches Google's servers. If you prefer not to share task details with the AI, do not use the AI Coach feature.` },
+  { heading:"What we collect", body:`MyBattery stores the following data in your personal Firebase account:\n• Energy levels and battery readings you enter each day\n• Tasks you create, including names, buckets, and completion status\n• Mood and journal entries\n• Mental health screening responses (PHQ-9, GAD-7)\n• Notification preferences and schedule\n\nTask names and health notes are encrypted on your device before being stored. We cannot read them.` },
+  { heading:"How we use it", body:`Your data is used only to operate the app — to show you your history, generate AI suggestions, and send your scheduled notifications. It is never sold, shared with advertisers, or used to train AI models.\n\nAI features (AI Coach, task breakdown, brain dump and smart scheduling) send your task names, current battery level and the text you type to Google Gemini to generate responses. We ask for your permission before this happens for the first time. Task content reaches Google's servers. If you prefer not to share task details with the AI, decline the prompt or do not use the AI features.` },
   { heading:"Data storage & security", body:`All data is stored in Google Firebase (Firestore), hosted in the United States (nam5 region). Firebase is SOC 2 Type II certified and GDPR-compliant.\n\nSensitive fields (task names, journal entries, health notes) are encrypted client-side using AES-GCM-256 with a key derived from your account. Only you can decrypt them.` },
   { heading:"Mental health data", body:`MyBattery includes mental health screening tools (PHQ-9, GAD-7) and mood tracking. This data is treated with the same encryption and access controls as all other personal data. It is never shared with third parties.\n\nMyBattery is not a medical device. It is not a substitute for professional mental health care. If you are in crisis, please contact a qualified professional or use the emergency resources available in the app's SOS section.` },
   { heading:"Notifications", body:`If you enable push notifications, your device's FCM token is stored in Firebase to route messages to your device. Notification times are processed on our servers to send reminders at the times you configure. Disabling notifications in Settings removes your token from our servers.` },
@@ -10744,8 +10744,8 @@ export default function App({ user, firebaseHelpers = {} }) {
     addTaskDoc,
     updateTaskDoc,
     deleteTaskDoc,
-    callAI,
-    callScheduleGenerator,
+    callAI: rawCallAI,
+    callScheduleGenerator: rawCallScheduleGenerator,
     callJoinWaitlist,
     saveCalendarDay,
     isPro: _isPro = false,
@@ -10757,6 +10757,22 @@ export default function App({ user, firebaseHelpers = {} }) {
     rcSignOut,
   } = firebaseHelpers;
   const isPro = _isPro;
+
+  // Apple 5.1.2(i): ask once, before any personal data is sent to a third-party AI (Google Gemini).
+  // Every AI call goes through this gate; declining rejects the call so the feature shows its normal error state.
+  const [aiConsentPrompt, setAiConsentPrompt] = useState(null);
+  const gateAI = useMemo(() => fn => !fn ? null : async payload => {
+    let granted = false;
+    try { granted = localStorage.getItem("mybattery-ai-consent") === "granted"; } catch {}
+    if (!granted) {
+      const ok = await new Promise(resolve => setAiConsentPrompt({ resolve }));
+      if (!ok) throw new Error("AI features need your permission to send your task details to Google Gemini.");
+      try { localStorage.setItem("mybattery-ai-consent", "granted"); } catch {}
+    }
+    return fn(payload);
+  }, []);
+  const callAI = useMemo(() => gateAI(rawCallAI), [gateAI, rawCallAI]);
+  const callScheduleGenerator = useMemo(() => gateAI(rawCallScheduleGenerator), [gateAI, rawCallScheduleGenerator]);
 
   const uid  = user?.uid ?? null;
   const hasPasswordAuth = !!user?.providerData?.some(p => p.providerId === "password");
@@ -12749,6 +12765,20 @@ export default function App({ user, firebaseHelpers = {} }) {
             onConfirm={handleClearData}
             onCancel={() => setShowClearModal(false)}
           />
+        )}
+        {aiConsentPrompt && (
+          <div className="modal-overlay" onClick={() => { aiConsentPrompt.resolve(false); setAiConsentPrompt(null); }}>
+            <div className="modal-box" onClick={e => e.stopPropagation()}>
+              <div className="modal-title">Share with Google Gemini?</div>
+              <div className="modal-body">
+                AI features send your task names, energy level and the text you type to Google Gemini, a third-party AI service, to generate a response. It is not used to train AI models or shared with advertisers. You can decline and keep using the rest of MyBattery.
+              </div>
+              <div className="modal-actions">
+                <button className="modal-cancel" onClick={() => { aiConsentPrompt.resolve(false); setAiConsentPrompt(null); }}>Not now</button>
+                <button className="modal-confirm-danger" style={{ background: "var(--teal-dark)" }} onClick={() => { aiConsentPrompt.resolve(true); setAiConsentPrompt(null); }}>Allow</button>
+              </div>
+            </div>
+          </div>
         )}
         {showDeleteModal && (
           <DeleteAccountModal

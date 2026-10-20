@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase.js";
+import { isProGrantActive } from "../proGrant.js";
 
 const PRODUCT_IDS = ["mybattery_monthly", "mybattery_yearly"];
 const BYPASS_PAYWALL = false;
@@ -17,11 +20,23 @@ function isActiveProduct(activeSubscriptions) {
   return PRODUCT_IDS.some(id => activeSubscriptions.includes(id));
 }
 
-export function useSubscription(_userId) {
+export function useSubscription(userId) {
   const [isPro, setIsPro]         = useState(false);
+  const [granted, setGranted]     = useState(false);
   const [loading, setLoading]     = useState(true);
   const [packages, setPackages]   = useState([]);
   const [offeringsError, setOfferingsError] = useState(null);
+
+  // Hand-granted Pro (see proGrant.js). Live-updates, so a grant or revoke applies without a relaunch.
+  // A missing doc, a denied read, or being signed out all just mean "not granted".
+  useEffect(() => {
+    if (!userId) { setGranted(false); return; }
+    return onSnapshot(
+      doc(db, "proGrants", userId),
+      snap => setGranted(snap.exists() && isProGrantActive(snap.data())),
+      () => setGranted(false),
+    );
+  }, [userId]);
 
   useEffect(() => {
     if (BYPASS_PAYWALL || !Capacitor.isNativePlatform()) { setLoading(false); return; }
@@ -101,7 +116,7 @@ export function useSubscription(_userId) {
   function signOut() { setIsPro(false); }
 
   return {
-    isPro: BYPASS_PAYWALL ? true : isPro,
+    isPro: BYPASS_PAYWALL || granted || isPro,
     loading: BYPASS_PAYWALL ? false : loading,
     packages: BYPASS_PAYWALL ? [] : packages,
     offeringsError,

@@ -79,6 +79,14 @@ service cloud.firestore {
       allow write: if false; // written only via savePrefs Cloud Function (Admin SDK)
     }
 
+    // ── proGrants (hand-granted Pro access for testers; see src/proGrant.js) ──
+    // Users may read only their own grant. Nobody can write from a client, so
+    // entries are created in the Firebase console / Admin SDK only.
+    match /proGrants/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
     // ── errors (client error reports; authenticated write-only) ─────────────
     match /errors/{docId} {
       allow create: if request.auth != null

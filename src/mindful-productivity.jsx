@@ -13,6 +13,7 @@ import { logClientError } from "./firebase.js";
 import { CapacitorApp, syncEnergyLevel, syncTasks, getEnergyLevel, getPendingTask, clearPendingTask, getPendingDeepLink, clearPendingDeepLink } from "./shared-data-plugin.js";
 import { PrivacyPolicyModal, TermsModal } from "./components/LegalModal.jsx";
 import PaywallScreen from "./components/PaywallScreen.jsx";
+import { buildTaskNotifs, loadTaskReminderPrefs, saveTaskReminderPrefs, TASK_REMINDER_PREFS_EVENT } from "./taskReminders.js";
 import WaitlistScreen from "./components/WaitlistScreen.jsx";
 
 const fontLink = document.createElement("link");
@@ -7352,13 +7353,17 @@ async function _scheduleHabitNotifsIosNow(routines) {
   } catch (err) { console.warn("Routine iOS notifications:", err); }
 }
 
-// IDs 5001–5500 reserved for task reminders. Mirrors the in-browser timer: a task with a due date
-// alerts once at that date + time; one without a due date alerts daily until it's done.
+// IDs 5001–5500 reserved for task reminders (rules live in taskReminders.js). The iOS permission
+// prompt only appears right after the user sets a reminder or turns task reminders on — never from
+// a background reschedule — so it doesn't greet people on first launch.
 const TASK_NOTIF_ID_BASE = 5001, TASK_NOTIF_MAX = 500;
 let _taskNotifQueue  = Promise.resolve();
 let _taskNotifLatest = null;
-function scheduleTaskNotifsIos(tasks) {
+let _taskNotifAsk    = false;
+function askTaskNotifPermissionNext() { _taskNotifAsk = true; }
+function scheduleTaskNotifsIos(tasks, { askPermission = false } = {}) {
   _taskNotifLatest = tasks;
+  if (askPermission) _taskNotifAsk = true;
   _taskNotifQueue = _taskNotifQueue.then(() =>
     tasks === _taskNotifLatest ? _scheduleTaskNotifsIosNow(tasks) : undefined);
   return _taskNotifQueue;
@@ -7367,27 +7372,14 @@ function scheduleTaskNotifsIos(tasks) {
 async function _scheduleTaskNotifsIosNow(tasks) {
   const ln = _localNotifs();
   if (!ln || !_isNative()) return;
+  const ask = _taskNotifAsk;
+  _taskNotifAsk = false;
   try {
     await ln.cancel({ notifications: Array.from({ length: TASK_NOTIF_MAX }, (_, i) => ({ id: TASK_NOTIF_ID_BASE + i })) }).catch(() => {});
-    const now = new Date();
-    const notifs = [];
-    tasks.forEach(t => {
-      if (notifs.length >= TASK_NOTIF_MAX || !t.reminderTime || t.done) return;
-      const [hour, minute] = t.reminderTime.split(":").map(Number);
-      if (!Number.isFinite(hour) || !Number.isFinite(minute)) return;
-      const id = TASK_NOTIF_ID_BASE + notifs.length;
-      const body = `⏰ ${t.name}`;
-      if (t.dueDate) {
-        const [y, mo, d] = t.dueDate.split("-").map(Number);
-        const at = new Date(y, mo - 1, d, hour, minute, 0, 0);
-        if (!(at > now)) return;
-        notifs.push({ id, title:"MyBattery", body, schedule:{ at, allowWhileIdle:true } });
-      } else {
-        notifs.push({ id, title:"MyBattery", body, schedule:{ on:{ hour, minute }, repeats:true, allowWhileIdle:true } });
-      }
-    });
+    const notifs = buildTaskNotifs(tasks, loadTaskReminderPrefs(), new Date(), { idBase: TASK_NOTIF_ID_BASE, max: TASK_NOTIF_MAX });
     if (!notifs.length) return;
-    const { display } = await ln.requestPermissions();
+    let { display } = await ln.checkPermissions();
+    if (display === "prompt" && ask) ({ display } = await ln.requestPermissions());
     if (display !== "granted") return;
     await ln.schedule({ notifications: notifs });
   } catch (err) { console.warn("Task iOS notifications:", err); }
@@ -7519,6 +7511,13 @@ function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggle
     setPrefs(p => ({ ...p, [key]: value }));
   }
 
+  const [taskReminderPrefs, setTaskReminderPrefs] = useState(loadTaskReminderPrefs);
+  function updateTaskReminderPrefs(patch) {
+    const next = { ...taskReminderPrefs, ...patch };
+    setTaskReminderPrefs(next);
+    saveTaskReminderPrefs(next);
+  }
+
   async function savePrefs() {
     localStorage.setItem("mindfull-notif-prefs", JSON.stringify(prefs));
     savedPrefsRef.current = { ...prefs };
@@ -7603,6 +7602,29 @@ function NotificationsView({ onToast, firebaseHelpers = {}, gentleMode, onToggle
           </button>
         </div>
       )}
+
+      {/* Task reminders — applied immediately, stored on this device (not part of the Save schedule below) */}
+      <div className="notif-section">
+        <div className="notif-section-title">Task reminders</div>
+        <div className="notif-section-sub">A quiet note when a task you've given a time comes around, and once on the morning a task is due. Turning this off keeps your task times; they just stay silent.</div>
+        <div className="notif-row">
+          <div><div className="notif-row-label">Remind me about tasks</div></div>
+          <label className="notif-toggle">
+            <input type="checkbox" checked={taskReminderPrefs.enabled} disabled={!granted}
+              onChange={e => updateTaskReminderPrefs({ enabled: e.target.checked })} />
+            <span className="notif-toggle-slider" />
+          </label>
+        </div>
+        <div className="notif-row">
+          <div>
+            <div className="notif-row-label">Due-day morning note</div>
+            <div className="notif-row-hint">For tasks with a due date but no time</div>
+          </div>
+          <input type="time" className="notif-time-input" value={taskReminderPrefs.dueMorningTime}
+            disabled={!granted || !taskReminderPrefs.enabled}
+            onChange={e => e.target.value && updateTaskReminderPrefs({ dueMorningTime: e.target.value })} />
+        </div>
+      </div>
 
       {/* Morning check-in */}
       <div className="notif-section">
@@ -11445,7 +11467,14 @@ export default function App({ user, firebaseHelpers = {} }) {
   }
 
   // Native app: schedule task reminders as iOS notifications so they fire when the app is closed
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
   useEffect(() => { scheduleTaskNotifsIos(tasks); }, [tasks]);
+  useEffect(() => {
+    const onPrefs = e => scheduleTaskNotifsIos([...tasksRef.current], { askPermission: !!e.detail?.enabled });
+    window.addEventListener(TASK_REMINDER_PREFS_EVENT, onPrefs);
+    return () => window.removeEventListener(TASK_REMINDER_PREFS_EVENT, onPrefs);
+  }, []);
 
   // Task reminder scheduler — fires when a task's reminderTime matches current time
   useEffect(() => {
@@ -11455,11 +11484,17 @@ export default function App({ user, firebaseHelpers = {} }) {
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
       const today = now.toLocaleDateString("en-CA");
+      const trPrefs = loadTaskReminderPrefs();
+      if (!trPrefs.enabled) { timer = setTimeout(tick, (60 - now.getSeconds()) * 1000 + 200); return; }
       tasks.forEach(t => {
-        if (!t.reminderTime || t.reminderTime !== timeStr) return;
         if (t.done) return;
-        if (t.dueDate && t.dueDate !== today) return;
-        _fireGentleNotif("MyBattery", `⏰ ${t.name}`);
+        if (t.reminderTime) {
+          if (t.reminderTime !== timeStr) return;
+          if (t.dueDate && t.dueDate !== today) return;
+          _fireGentleNotif("MyBattery", `⏰ ${t.name}`);
+        } else if (t.dueDate === today && trPrefs.dueMorningTime === timeStr) {
+          _fireGentleNotif("MyBattery", `Due today: ${t.name}`);
+        }
       });
       const msToNext = (60 - new Date().getSeconds()) * 1000 - new Date().getMilliseconds() + 200;
       timer = setTimeout(tick, msToNext);
@@ -11694,6 +11729,8 @@ export default function App({ user, firebaseHelpers = {} }) {
   function addTask() {
     if (!newTask.trim()) return;
     const energyImpact = impactMode === "drain" ? -impactIntensity : impactIntensity;
+    // First reminder the user sets is the natural moment for the iOS permission prompt
+    if (newTaskTime || newDueDate) askTaskNotifPermissionNext();
 
     if (editingTaskId) {
       // Update existing task

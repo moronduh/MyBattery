@@ -2760,7 +2760,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
         <div className="onboard-sub" style={{ marginBottom:8 }}>Most productivity apps tell you to do more.<br />MyBattery tells you when to stop — and the science to back it up.</div>
         <div style={{ display:"flex", flexDirection:"column", gap:10, margin:"28px auto 0", maxWidth:340 }}>
           {[
-            { icon:"shield",  text:"100% private — your data never leaves your device" },
+            { icon:"shield",  text:"Private by design — task names and notes are encrypted on your device" },
             { icon:"leaf",    text:"Built on peer-reviewed research, not hustle culture" },
             { icon:"heart",   text:"Designed to protect, not push" },
             { icon:"bolt",    text:"Built with neurodivergent minds in mind — ADHD, autism & sensory differences welcome" },
@@ -3389,13 +3389,13 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           </div>
         </div>
         <div className="onboard-eyebrow">Step 12 of {TOTAL} — Your privacy</div>
-        <div className="onboard-title">Everything you share<br />stays with you.</div>
+        <div className="onboard-title">You stay in control<br />of what you share.</div>
         <div className="onboard-sub">Before you go further, we want to be completely transparent about where your data goes — and where it doesn't.</div>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
           {[
-            { icon:"lock",    heading:"Stays on your device", body:"Your moods, tasks, battery levels, and personal reflections are stored locally. Nothing is uploaded to a server." },
-            { icon:"eye",     heading:"Never sold or shared", body:"We don't sell data to advertisers. We don't share it with third parties. Full stop." },
-            { icon:"leaf",    heading:"No account required", body:"You don't need to create an account or verify an email. There's no profile to breach." },
+            { icon:"lock",    heading:"Protected on your device", body:"Task names, journal entries, and health notes are encrypted on your device before anything is saved. Without an account, everything stays on this phone." },
+            { icon:"eye",     heading:"Never sold", body:"We don't sell your data or share it with advertisers. If you use the AI features, the task names and text in that request go to Google Gemini, and only after you say yes." },
+            { icon:"leaf",    heading:"No account required", body:"You can use MyBattery without creating an account or verifying an email. Without one, your data never leaves this phone." },
             { icon:"trash",   heading:"Delete it anytime",   body:"You control your data completely. Reset or wipe it from settings at any time — permanently and immediately." },
           ].map(({ icon, heading, body }) => (
             <div key={heading} style={{ display:"flex", alignItems:"flex-start", gap:14, padding:"14px 16px", background:"rgba(90,122,90,0.05)", border:"1px solid rgba(90,122,90,0.12)", borderRadius:"var(--radius-sm)" }}>
@@ -3505,8 +3505,8 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
         </div>
 
         <div style={{ background:"rgba(90,122,90,0.07)", border:"1px solid rgba(90,122,90,0.2)", borderRadius:"var(--radius-sm)", padding:"14px 16px", marginBottom:28 }}>
-          <div style={{ fontSize:12, color:"var(--teal-dark)", fontWeight:500, marginBottom:4, display:"flex", alignItems:"center", gap:6 }}><Icon name="shield" size={13} />Fully protected — stays on your device</div>
-          <div style={{ fontSize:12, color:"var(--ink-soft)", lineHeight:1.65 }}>These answers are stored locally and never transmitted, sold, or shared. They help us understand our community in aggregate — never individually. You're anonymous to us.</div>
+          <div style={{ fontSize:12, color:"var(--teal-dark)", fontWeight:500, marginBottom:4, display:"flex", alignItems:"center", gap:6 }}><Icon name="shield" size={13} />Private to you</div>
+          <div style={{ fontSize:12, color:"var(--ink-soft)", lineHeight:1.65 }}>These answers are only used to personalize your plan. They're never sold or shared with advertisers, and you can delete them anytime.</div>
         </div>
 
         <div className="onboard-actions">

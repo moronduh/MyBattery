@@ -61,7 +61,7 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
         <div className="paywall-header">
           <div className="paywall-eyebrow">MyBattery</div>
           <div className="paywall-title">Unlock Pro</div>
-          <div className="paywall-sub">AI-powered energy management. 14 days free, then just {monthlyPkg?.displayPrice ?? "$6.99"}/mo.</div>
+          <div className="paywall-sub">AI-powered energy management. {monthlyPkg?.displayPrice ? `14 days free, then just ${monthlyPkg.displayPrice}/mo.` : "Start with 14 days free."}</div>
         </div>
 
         <div className="paywall-features">
@@ -87,9 +87,9 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
                   <div className="paywall-plan-badge">Best value</div>
                   <div className="paywall-plan-name">Annual</div>
                   <div className="paywall-plan-price">
-                    {annualPkg.displayPrice ?? "$39.99"}<span className="paywall-plan-per"> / yr</span>
+                    {annualPkg.displayPrice}<span className="paywall-plan-per"> / yr</span>
                   </div>
-                  <div className="paywall-plan-note">~${annualPkg.price ? (annualPkg.price / 12).toFixed(2) : "3.33"}/mo</div>
+                  <div className="paywall-plan-note">Billed yearly</div>
                 </button>
               )}
               {monthlyPkg && (
@@ -99,7 +99,7 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
                 >
                   <div className="paywall-plan-name">Monthly</div>
                   <div className="paywall-plan-price">
-                    {monthlyPkg.displayPrice ?? "$6.99"}<span className="paywall-plan-per"> / mo</span>
+                    {monthlyPkg.displayPrice}<span className="paywall-plan-per"> / mo</span>
                   </div>
                   <div className="paywall-plan-note">Billed monthly</div>
                 </button>
@@ -130,7 +130,7 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
             {!isNative
               ? "Subscriptions are available in the iOS app."
               : offeringsError
-                ? `Couldn't load subscription options. (${offeringsError})`
+                ? "We couldn't load the subscription options right now. Please check your connection and try again."
                 : "Loading subscription options…"}
             {isNative && offeringsError && onRetry && (
               <button className="paywall-cta" style={{ marginTop: 20 }} onClick={onRetry}>

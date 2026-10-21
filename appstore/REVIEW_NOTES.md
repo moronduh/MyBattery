@@ -15,7 +15,7 @@ Password: <set in App Store Connect only>
 Sign-in is email + password only. There is no third-party / social login in the iOS app, so Sign in with Apple is not required (Guideline 4.8).
 
 SUBSCRIPTION (Guideline 3.1)
-"MyBattery Pro" auto-renewable subscription, monthly ($6.99) and yearly ($39.99), with a 14-day free trial.
+"MyBattery Pro" auto-renewable subscription, monthly ($4.99) and yearly ($29.99), with a 14-day free trial.
 Open Settings → "Unlock Pro" (or tap any locked Pro feature) to see the paywall. The paywall shows price, length, auto-renewal terms, Restore Purchases, and links to the Privacy Policy and Terms of Use.
 Pro features: AI Coach, AI task breakdown, smart scheduling, full journal history, analytics, recurring events, calendar export.
 

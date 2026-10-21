@@ -67,7 +67,7 @@ MyBattery doesn't assume you have full capacity every day. It's built for people
 
 MYBATTERY PRO (OPTIONAL SUBSCRIPTION)
 • AI Coach, AI task breakdown, smart scheduling, full journal history, analytics, recurring events and calendar export
-• Monthly ($6.99) or yearly ($39.99), with a 14-day free trial
+• Monthly ($4.99) or yearly ($29.99), with a 14-day free trial
 • Payment is charged to your Apple ID at the end of the trial. The subscription renews automatically unless canceled at least 24 hours before the end of the current period. Manage or cancel in Settings → Apple ID → Subscriptions.
 • AI features send your task names and typed text to Google Gemini, only after you give permission.
 Privacy Policy: https://mindfulstillflow.web.app/privacy

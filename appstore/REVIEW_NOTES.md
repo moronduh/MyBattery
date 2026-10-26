@@ -1,6 +1,7 @@
 # MyBattery — App Review Notes
 > Paste the "Notes" block into App Store Connect → App Review Information → Notes.
-> Fill in the demo account before submitting (create it in the app, then keep the password here only in App Store Connect, not in git).
+> Put the demo account's email and password in App Store Connect → App Review Information → "Sign-in required" (never in git).
+> Give the demo account Pro: Firebase console → Firestore → collection `proGrants` → document ID = its Auth UID → field `pro` (boolean) = true.
 
 ## Notes (paste this)
 ```
@@ -10,8 +11,7 @@ HOW TO TEST WITHOUT AN ACCOUNT
 Tap "Try without an account" on the sign-in screen to use the full app (tasks, battery, calendar, wellness tools). Guest data stays on the device.
 
 DEMO ACCOUNT (for AI features, sync, account deletion)
-Email: <demo email>
-Password: <set in App Store Connect only>
+Credentials are in the "Sign-in required" fields above. This account has MyBattery Pro enabled so every Pro feature (AI Coach, AI task breakdown, smart scheduling, analytics) can be tried without a purchase. To see the purchase flow itself, use guest mode ("Try without an account") — guests are not Pro, so Settings → "Unlock Pro" shows the real paywall and App Store purchase sheet.
 Sign-in is email + password only. There is no third-party / social login in the iOS app, so Sign in with Apple is not required (Guideline 4.8).
 
 SUBSCRIPTION (Guideline 3.1)
@@ -37,12 +37,22 @@ Calendar/Reminders: optional, requested only when the user turns on calendar syn
 ```
 
 ## Pre-submission checklist (things only you can do)
-- [ ] App Store Connect → Subscriptions: create group "MyBattery Pro" with `mybattery_monthly` and `mybattery_yearly`; add the 14-day free-trial introductory offer; add localized display names + a review screenshot of the paywall.
+- [x] App Store Connect → Subscriptions: create group "MyBattery Pro" with `mybattery_monthly` and `mybattery_yearly`; add the 14-day free-trial introductory offer; add localized display names + a review screenshot of the paywall.
 - [ ] Attach both subscriptions to the app version being submitted ("In-App Purchases and Subscriptions" section).
-- [ ] Paid Apps Agreement + tax/banking active.
-- [ ] Test purchase + Restore with a sandbox Apple ID on a TestFlight build (paywall bypass is now OFF).
-- [ ] App Privacy questionnaire matches `ios/App/App/PrivacyInfo.xcprivacy`: Email, User ID, Device ID (push token), Health (mood/energy/PHQ-9/GAD-7), Other User Content (tasks/journal/AI text), Customer Support (feedback). None used for tracking.
-- [ ] Deploy the updated website (`npm run deploy:live`) so https://mindfulstillflow.web.app/privacy matches the in-app policy (analytics line removed, AI consent sentence added).
-- [ ] Privacy Policy URL, Support URL, and info@mybatteryapp.com all load/receive mail.
+- [x] Paid Apps Agreement + tax/banking active.
+- [x] Test purchase with a sandbox Apple ID (real prices loaded on device, bypass is OFF).
+- [x] App Privacy questionnaire (done earlier) — re-check it matches `ios/App/App/PrivacyInfo.xcprivacy`: Email, User ID, Device ID (push token), Health (mood/energy/PHQ-9/GAD-7), Other User Content (tasks/journal/AI text), Customer Support (feedback). None used for tracking.
+- [x] Deploy the updated website (done 2026-10-20) so https://mindfulstillflow.web.app/privacy matches the in-app policy (analytics line removed, AI consent sentence added).
+- [x] Privacy Policy URL, Support URL, and info@mybatteryapp.com all load/receive mail.
 - [ ] Add the subscription terms block from LISTING.md to the App Description.
-- [ ] Fill in demo account above; confirm it can sign in and delete itself.
+- [ ] Create the demo account (email + password sign-up in the app), grant it Pro via `proGrants`, put its credentials in App Store Connect, and confirm it can sign in and delete itself.
+
+## Final submission steps (in order)
+1. [ ] Create the demo account in the app, grant it Pro (`proGrants/{uid}` → `pro: true`), and confirm it signs in.
+2. [ ] App Store Connect → the version → select build **202610203** (wait until it finishes processing).
+3. [ ] "In-App Purchases and Subscriptions" on the version: both subscriptions attached.
+4. [ ] App Review Information → Sign-in required: demo email + password.
+5. [ ] App Review Information → Notes: paste the "Notes" block above.
+6. [ ] App Description: add the MyBattery Pro subscription terms block from LISTING.md (price, auto-renewal, Privacy Policy + Terms links).
+7. [ ] Screenshots, subtitle, keywords and age rating present for the version.
+8. [ ] Submit for Review.

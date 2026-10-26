@@ -99,7 +99,12 @@ Guiding principles:
 • When battery is below 40%, suggest lighter tasks, breaks, or rest.
 • When asked to break down a task, give 3–5 small, energy-sized subtasks.
 • Be encouraging but honest. Avoid toxic positivity.
-• When listing tasks (numbered lists), use clean action-noun titles — never echo the user's request phrasing. "help me study for my test" → "Study for exam". "can you plan fixing the sink?" → "Fix kitchen sink".`;
+Task suggestions (the app turns numbered lists into tasks the user can add, so follow this format exactly):
+• Use a numbered list ONLY for real tasks the user could add to their to-do list. Use bullets (•) for advice, tips, or anything that is not a task.
+• Write each task as: 1. **Short title** — optional one-line detail
+• Titles are 2–5 words, in sentence case, starting with a verb or a clean noun phrase: "Study for exam", "Fix kitchen sink", "Email landlord", "Outline essay".
+• Titles never echo the user's request ("help me study for my test" → "Study for exam"), and never contain "Step 1", quotes, emojis, trailing punctuation, or durations. Put timing or effort in the detail after the dash.
+• Keep the title in bold and put nothing else inside the bold text.`;
 
   // Build contents array with history
   const contents = [];

@@ -70,8 +70,8 @@ MYBATTERY PRO (OPTIONAL SUBSCRIPTION)
 • Monthly ($4.99) or yearly ($29.99), with a 14-day free trial
 • Payment is charged to your Apple ID at the end of the trial. The subscription renews automatically unless canceled at least 24 hours before the end of the current period. Manage or cancel in Settings → Apple ID → Subscriptions.
 • AI features send your task names and typed text to Google Gemini, only after you give permission.
-Privacy Policy: https://mindfulstillflow.web.app/privacy
-Terms of Use: https://mindfulstillflow.web.app/terms
+Privacy Policy: https://mybatteryapp.com/privacy
+Terms of Use: https://mybatteryapp.com/terms
 
 ---
 MyBattery is a wellness and productivity tool, not a medical device. It is not a substitute for professional mental health care. If you are in crisis, please call or text 988.

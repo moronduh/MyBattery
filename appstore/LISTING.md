@@ -45,7 +45,7 @@ TRACK YOUR ENERGY THROUGHOUT THE DAY
 
 CALENDAR & SCHEDULING
 • Hourly day view with peak, dip, and wind-down time blocks
-• Power Mode unlocks auto-scheduling and ICS calendar export
+• MyBattery Pro adds auto-scheduling and ICS calendar export
 • Recurring events and task due dates shown in context
 
 BUILT-IN WELLNESS TOOLS
@@ -81,7 +81,7 @@ MyBattery is a wellness and productivity tool, not a medical device. It is not a
 
 ## KEYWORDS (100 chars max, comma-separated, no spaces)
 ```
-energy,task manager,burnout,ADHD,chronic illness,pacing,wellness,productivity,battery,fatigue
+energy,task manager,planner,pacing,wellness,productivity,battery,focus,routine,habits,to do,calendar
 ```
 *(93 chars)*
 
@@ -89,22 +89,22 @@ energy,task manager,burnout,ADHD,chronic illness,pacing,wellness,productivity,ba
 
 ## SUPPORT URL
 ```
-https://mindfulstillflow.web.app
+https://mybatteryapp.com/support
 ```
-*(Update this to a dedicated support page or email link when available — e.g. https://mindfulstillflow.web.app/support)*
+*(Must be a live page showing the contact email info@mybatteryapp.com. Create/deploy it before submitting.)*
 
 ---
 
 ## PRIVACY POLICY URL
 ```
-https://mindfulstillflow.web.app/privacy
+https://mybatteryapp.com/privacy
 ```
 
 ---
 
 ## MARKETING URL (optional)
 ```
-https://mindfulstillflow.web.app
+https://mybatteryapp.com
 ```
 
 ---
@@ -127,7 +127,7 @@ Click "Edit" and set the following:
 | Realistic Violence | None |
 | Prolonged Graphic Violence | None |
 
-**Expected result: 12+**
+**Expected result: 13+ or higher (Apple's scale is now 4+/9+/13+/16+/18+). Answer the updated questionnaire honestly (health/medical and mental-health topics) and accept whatever rating it computes.**
 
 The PHQ-9/GAD-7 screening tools trigger the "Medical/Treatment Information" flag. Selecting Infrequent/Mild is correct because they are educational self-assessments, not treatment tools. The 988 crisis resource triggers nothing on its own.
 

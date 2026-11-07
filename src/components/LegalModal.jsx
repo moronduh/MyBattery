@@ -26,7 +26,7 @@ Sensitive fields (task names, journal entries, health notes) are encrypted clien
   },
   {
     heading: "Mental health data",
-    body: `MyBattery includes mental health screening tools (PHQ-9, GAD-7) and mood tracking. This data is treated with the same encryption and access controls as all other personal data. It is never shared with third parties.
+    body: `MyBattery includes mental health screening tools (PHQ-9, GAD-7) and mood tracking. This data is treated with the same encryption and access controls as all other personal data. It is never sold or shared with advertisers. The only time any of it leaves our servers is text you choose to send to the AI features (AI Coach, task breakdown, brain dump, smart scheduling), which goes to Google Gemini after you give permission.
 
 MyBattery is not a medical device. It is not a substitute for professional mental health care. If you are in crisis, please contact a qualified professional or use the emergency resources available in the app's SOS section.`,
   },

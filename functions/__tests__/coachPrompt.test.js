@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import coach from "../coachPrompt.js";
 
-const { normalizeStyle, extractTasks, buildSystemPrompt, parseBrainDump } = coach;
+const { normalizeStyle, extractTasks, cleanReply, buildSystemPrompt, parseBrainDump } = coach;
 
 describe("normalizeStyle", () => {
   it("accepts the three styles and defaults everything else", () => {
@@ -78,5 +78,22 @@ describe("parseBrainDump", () => {
   it("returns [] for garbage", () => {
     expect(parseBrainDump("sorry")).toEqual([]);
     expect(parseBrainDump(undefined)).toEqual([]);
+  });
+});
+
+describe("cleanReply", () => {
+  it("turns markdown bullets into • and drops emphasis markers", () => {
+    const out = cleanReply("**Try this:**\n* Take a *short* walk\n- Drink water\n  * Stretch");
+    expect(out).toBe("Try this:\n• Take a short walk\n• Drink water\n  • Stretch");
+    expect(out).not.toContain("*");
+  });
+
+  it("strips headings and leaves numbered lists and plain prose alone", () => {
+    expect(cleanReply("## Plan\n1. Rest\n2. Reply to Sam")).toBe("Plan\n1. Rest\n2. Reply to Sam");
+    expect(cleanReply("You've got 3 * 4 things.")).toBe("You've got 3 * 4 things.");
+  });
+
+  it("is applied to the reply returned by extractTasks", () => {
+    expect(extractTasks("* one\n* two").reply).toBe("• one\n• two");
   });
 });

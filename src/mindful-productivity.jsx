@@ -54,7 +54,7 @@ if (typeof window !== "undefined" && window.visualViewport) {
 const styles = `
   :root {
     --teal: #4a9e8e; --teal-light: #b8ddd8; --teal-dark: #1c7562;
-    --cream: #f4f7f7; --warm: #e6efee;
+    --cream: #f4f7f7; --warm: #e6efee; --teal-pale: rgba(28,117,98,0.1);
     /* Minimal: sections sit flat on the page (--card), only true surfaces are raised */
     --card: var(--cream); --surface: #ffffff; --line: rgba(20,30,30,0.10);
     --control-line: rgba(20,30,30,0.30); /* outline of empty checkboxes */
@@ -65,6 +65,8 @@ const styles = `
     --glow: transparent;
     --radius: 8px; --radius-sm: 6px;
     --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    /* Spacing scale: use these instead of ad-hoc 6/10/14/18/22px values */
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:48px;
   }
   [data-theme="dark"] {
     /* Soft near-black with a hint of green (not pure black, which smears on OLED); text ≈ 14:1,
@@ -72,7 +74,7 @@ const styles = `
     --cream: #121514; --warm: #1a1e1c; --card: var(--cream); --surface: #1b1f1d; --line: rgba(223,230,228,0.14);
     --control-line: rgba(223,230,228,0.45);
     --ink: #dfe6e4; --ink-soft: #bccac7; --ink-mute: #93a6a2;
-    --teal-light: #1d3a34; --teal-dark: #3ecfb0;
+    --teal-light: #1d3a34; --teal-dark: #3ecfb0; --teal-pale: rgba(62,207,176,0.12);
     --slate-dark: #4a9aba;
     --error: #e07070;
     --focus-blue: #5aaaca; --focus-blue-light: rgba(90,170,202,0.2);
@@ -89,7 +91,7 @@ const styles = `
   [data-theme="dark"] .app[data-view="shutdown"] {
     --cream:#faf7f2; --warm:#f0ebe0; --card:var(--cream); --surface:white; --line:rgba(42,42,37,0.12);
     --ink:#2a2a25; --ink-soft:#5a5a52; --ink-mute:#9a9a8a;
-    --teal-light:#c4d4c4; --teal-dark:#5a7a5a; --slate-dark:#9a7c5a;
+    --teal-light:#c4d4c4; --teal-dark:#5a7a5a; --teal-pale:rgba(90,122,90,0.12); --slate-dark:#9a7c5a;
     --error:#c4726a; --focus-blue:#6a8aaa; --focus-blue-light:rgba(106,138,170,0.12);
     --glow:transparent;
   }
@@ -904,12 +906,12 @@ const styles = `
   .notif-save-row { display:flex; justify-content:flex-end; margin-top:8px; }
 
   /* TUTORIAL */
-  .tutorial-overlay { position:fixed; inset:0; background:rgba(20,28,20,0.6); z-index:1100; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease both; }
+  .tutorial-overlay { position:fixed; inset:0; background:rgba(10,18,16,0.6); z-index:1100; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease both; }
   @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
   .tutorial-card { background:var(--surface); border-radius:24px; padding:40px 44px; max-width:520px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.25); animation:fadeUp 0.4s ease both; max-height:90vh; overflow-y:auto; }
   .tutorial-visual { background:var(--cream); border-radius:var(--radius); padding:20px; margin-bottom:24px; border:1px solid var(--warm); min-height:120px; }
   .tutorial-dots { display:flex; gap:6px; justify-content:center; margin-bottom:24px; }
-  .tutorial-dot { width:24px; height:3px; border-radius:2px; background:var(--warm); transition:var(--transition); }
+  .tutorial-dot { width:24px; height:3px; border-radius:2px; background:var(--control-line); transition:var(--transition); }
   .tutorial-dot.active { background:var(--teal-dark); }
   .tutorial-dot.done   { background:var(--teal-light); }
   .tutorial-step { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--teal-dark); margin-bottom:8px; }
@@ -920,7 +922,7 @@ const styles = `
   .tutorial-help-btn:hover { border-color:var(--teal-light); color:var(--teal-dark); }
   .nav-privacy-btn { background:none; border:1.5px solid var(--warm); border-radius:50%; width:32px; height:32px; cursor:pointer; color:var(--ink-mute); transition:var(--transition); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .nav-privacy-btn:hover { border-color:var(--teal-light); color:var(--teal-dark); }
-  .nav-privacy-btn.active { border-color:var(--teal-dark); color:var(--teal-dark); background:var(--teal-pale,rgba(107,142,90,0.12)); }
+  .nav-privacy-btn.active { border-color:var(--teal-dark); color:var(--teal-dark); background:var(--teal-pale); }
   .nav-sos-btn { background:none; border:1.5px solid rgba(196,114,106,0.4); border-radius:20px; padding:0 13px; height:34px; cursor:pointer; color:var(--error); font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px; font-weight:500; transition:var(--transition); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .nav-sos-btn:hover { border-color:var(--error); background:rgba(196,114,106,0.08); }
 
@@ -1640,6 +1642,10 @@ const styles = `
   .ai-panel-close:hover { color:var(--ink); }
   .ai-panel-messages { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:10px; scroll-behavior:smooth; }
   .ai-message { max-width:85%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.6; font-family:'DM Sans',sans-serif; }
+  .ai-message p { margin:0; }
+  .ai-message p + p, .ai-message p + .ai-li, .ai-message .ai-li + p { margin-top:6px; }
+  .ai-li { display:flex; gap:8px; margin-top:4px; }
+  .ai-li-dot { flex-shrink:0; color:var(--ink-mute); }
   .ai-message-user { align-self:flex-end; background:var(--teal-dark); color:white; border-bottom-right-radius:5px; }
   .ai-message-assistant { align-self:flex-start; background:rgba(228,224,212,0.85); color:var(--ink); border-bottom-left-radius:5px; }
   .ai-message-loading { display:flex; gap:5px; align-items:center; padding:12px 16px; }
@@ -2192,6 +2198,68 @@ const styles = `
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="color"]):not([type="file"]),
     textarea, select { font-size:max(16px,1em) !important; } /* !important: several fields set a smaller inline fontSize */
   }
+
+  /* Labels: sentence-case DM Sans everywhere, never tiny uppercase letter-spaced text (see design rules) */
+  .panel-title, .section-label, .node-list-label, .cal-section-title, .goals-title, .frec-title,
+  .el-insights-title, .suggest-title, .readiness-quickcheck-title, .ml-event-title, .battery-panel-label,
+  .settings-advanced-toggle {
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; text-transform:none; letter-spacing:0;
+  }
+  .onboard-eyebrow, .readiness-eyebrow, .wplan-eyebrow, .wellness-prompt-eyebrow, .wellness-fact-eyebrow,
+  .auth-eyebrow, .checkin-eyebrow, .paywall-eyebrow, .tutorial-step, .jumpstart-eyebrow, .ai-breakdown-label,
+  .tpm-eyebrow, .tpm-section-label, .tpm-focus-eyebrow, .tpm-focus-label, .ios-picker-label, .el-group-label,
+  .ml-time-card-label, .ml-impact-label-text, .journal-prompt-label, .pomo-mode-label, .pomo-setting-label,
+  .shutdown-undone-label, .breath-gate-eyebrow, .stern-modal-eyebrow {
+    font-family:'DM Sans',sans-serif; font-size:12px; text-transform:none; letter-spacing:0;
+  }
+
+  /* Spotlight tour button: same teal as every other primary button (deeper green in dark mode so white text stays readable) */
+  .coach-next { background:var(--teal-dark); color:#fff; }
+  [data-theme="dark"] .coach-next { background:#1f7a68; }
+
+  /* Empty Today: one quiet line with the mascot */
+  .empty-today { display:flex; flex-direction:column; align-items:center; gap:6px; padding:44px 0 36px; text-align:center; }
+  .empty-today > svg { margin-bottom:10px; }
+  .empty-today-title { font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; color:var(--ink-soft); }
+  .empty-today-sub { font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-mute); }
+
+
+  /* Motion: rows ease in; a completed row ticks itself off and slips away (see FINISH_MS) */
+  .new-task-row { animation:taskIn 0.25s ease-out; } /* no fill mode: it would pin transform and break swipe-to-delete */
+  @keyframes taskIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+  .new-task-row.finishing { animation:taskFinish 0.28s ease-in forwards; pointer-events:none; }
+  .new-task-row.finishing .new-task-check { background:var(--teal-dark); border-color:var(--teal-dark); }
+  .new-task-row.finishing .new-task-title-text { text-decoration:line-through; color:var(--ink-mute); transition:color 0.15s; }
+  @keyframes taskFinish { 0% { opacity:1; transform:none; } 45% { opacity:0.75; transform:none; } 100% { opacity:0; transform:translateX(10px); } }
+
+  /* Spacing: Today follows the --space-* scale (4 / 8 / 12 / 16 / 24 / 32 / 48) */
+  .greeting { margin-bottom:var(--space-2); }
+  .grid-2 { gap:var(--space-5); }
+  .task-columns { gap:var(--space-4); }
+  .side-panel { gap:var(--space-4); }
+  .side-panel .panel-card { margin-bottom:0; padding-top:var(--space-4); padding-bottom:var(--space-4); }
+  .bucket-tabs-row { margin-bottom:var(--space-2); }
+  .bucket-all-view { gap:var(--space-5); }
+  .bucket-all-section { padding:0; }
+  .bucket-all-header { margin-bottom:var(--space-2); }
+  .bucket-empty-label { padding:var(--space-1) 0 var(--space-2); }
+  .new-task-row, [data-theme="dark"] .new-task-row { padding:var(--space-3) var(--space-1); }
+  .battery-nudge { padding:var(--space-3) 0; margin-bottom:var(--space-4); }
+  .wins-card { padding:0; margin-top:var(--space-5); }
+  .wins-card-title { font-size:13px; color:var(--ink-soft); padding-bottom:var(--space-2); }
+  .wins-item { padding:var(--space-3) 0; }
+  .empty-today { gap:var(--space-1); padding:var(--space-7) 0 var(--space-6); }
+  .empty-today > svg { margin-bottom:var(--space-3); }
+
+  /* Mascot: slow blink, brief pop when celebrating (reduced-motion is handled globally below) */
+  .bm-eyes { transform-box:fill-box; transform-origin:center; animation:bmBlink 6s ease-in-out infinite; }
+  .bm-squint { animation:bmSquint 7s ease-in-out infinite; }
+  .bm-open { opacity:0; animation:bmOpen 7s ease-in-out infinite; }
+  @keyframes bmSquint { 0%, 90%, 98%, 100% { opacity:1; } 92%, 96% { opacity:0; } }
+  @keyframes bmOpen { 0%, 90%, 98%, 100% { opacity:0; } 92%, 96% { opacity:1; } }
+  @keyframes bmBlink { 0%, 94%, 100% { transform:scaleY(1); } 97% { transform:scaleY(0.1); } }
+  .bm-pop { transform-box:fill-box; transform-origin:center bottom; animation:bmPop 0.6s ease-out; }
+  @keyframes bmPop { 0% { transform:scale(0.94); } 55% { transform:scale(1.08); } 100% { transform:scale(1); } }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
   }
@@ -2889,7 +2957,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
             );
           })}
         </div>
-        <div style={{ background:"rgba(196,168,130,0.1)", borderLeft:"3px solid var(--slate-light)", borderRadius:"var(--radius-sm)", padding:"13px 16px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.65, marginBottom:28 }}>
+        <div style={{ background:"var(--teal-pale)", borderLeft:"3px solid var(--teal)", borderRadius:"var(--radius-sm)", padding:"13px 16px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.65, marginBottom:28 }}>
           Whether or not any of these fit a label — MyBattery adapts to <em>your</em> nervous system. Not the other way around.
         </div>
         <div className="onboard-actions">
@@ -2994,7 +3062,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
                   <Icon name={currentTier?.icon || "leaf"} size={32} style={{color: currentTier?.color || "var(--teal-dark)"}} />
                 </div>
               </div>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:"2px", textTransform:"uppercase", color: currentTier?.color || "var(--teal-dark)", marginBottom:8 }}>{currentTier?.label}</div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color: currentTier?.color || "var(--teal-dark)", marginBottom:8 }}>{currentTier?.label}</div>
               <div style={{ fontFamily:"'Playfair Display',serif", fontSize:52, lineHeight:1, color: currentTier?.color || "var(--teal-dark)", marginBottom:4 }}>{quizScore?.toFixed(1)}</div>
               <div style={{ fontSize:12, color:"var(--ink-mute)", fontFamily:"'DM Mono',monospace" }}>average out of 5.0</div>
             </div>
@@ -3016,7 +3084,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
                 );
               })}
             </div>
-            <div style={{ background:"rgba(196,168,130,0.1)", borderLeft:"3px solid var(--slate-light)", borderRadius:"var(--radius-sm)", padding:"12px 16px", fontSize:12, color:"var(--ink-soft)", lineHeight:1.6, marginBottom:28 }}>
+            <div style={{ background:"var(--teal-pale)", borderLeft:"3px solid var(--teal)", borderRadius:"var(--radius-sm)", padding:"12px 16px", fontSize:12, color:"var(--ink-soft)", lineHeight:1.6, marginBottom:28 }}>
               This isn't a clinical diagnosis — it's a starting point. MyBattery will calibrate your plan around this score and adjust as you use it. <em>Based on the Burnout Assessment Tool (BAT-12); Schaufeli, De Witte & Desart, 2019.</em>
             </div>
             <div className="onboard-actions">
@@ -3050,7 +3118,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
             </div>
           ))}
         </div>
-        <div style={{ background:"rgba(196,168,130,0.1)", borderRadius:"var(--radius-sm)", padding:"14px 18px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.65, marginBottom:28, borderLeft:"3px solid var(--slate-light)" }}>
+        <div style={{ background:"var(--teal-pale)", borderRadius:"var(--radius-sm)", padding:"14px 18px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.65, marginBottom:28, borderLeft:"3px solid var(--teal)" }}>
           <strong style={{color:"var(--ink)"}}>The most powerful thing you can do isn't hustle harder.</strong> It's learning to read your own depletion signals — before they become irreversible.
         </div>
         <div className="onboard-actions">
@@ -3220,7 +3288,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           <>
             <div style={{ borderTop:"1px solid var(--warm)", margin:"0 0 24px" }} />
             <div style={{ background:"rgba(90,122,90,0.07)", border:"1px solid rgba(90,122,90,0.18)", borderLeft:"3px solid var(--teal-dark)", borderRadius:"var(--radius-sm)", padding:"12px 14px", marginBottom:20 }}>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--teal-dark)", marginBottom:6 }}>The science behind your limit</div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"var(--teal-dark)", marginBottom:6 }}>The science behind your limit</div>
               <div style={{ fontSize:13, color:"var(--ink-soft)", lineHeight:1.65 }}>{prof.science}</div>
               {prof.scienceUrl && <a href={prof.scienceUrl} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", marginTop:8, fontFamily:"'DM Mono',monospace", fontSize:10, color:"var(--teal-dark)", letterSpacing:"0.5px", textDecoration:"underline", textUnderlineOffset:3 }}>View source →</a>}
             </div>
@@ -3352,7 +3420,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
 
         {previewMap && (
           <div style={{ marginBottom:28 }}>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--teal-dark)", marginBottom:12, textAlign:"center" }}>Your energy map — auto-filled</div>
+            <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"var(--teal-dark)", marginBottom:12, textAlign:"center" }}>Your energy map — auto-filled</div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:6 }}>
               {previewMap.map(({ time, level }) => (
                 <div key={time} style={{ background:LEVEL_BG[level], border:`1.5px solid ${LEVEL_COLOR[level]}33`, borderRadius:8, padding:"8px 4px", textAlign:"center", transition:"all 0.3s ease" }}>
@@ -3409,7 +3477,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
             </div>
           ))}
         </div>
-        <div style={{ background:"rgba(196,168,130,0.1)", borderLeft:"3px solid var(--slate-light)", borderRadius:"var(--radius-sm)", padding:"13px 16px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.6, marginBottom:28 }}>
+        <div style={{ background:"var(--teal-pale)", borderLeft:"3px solid var(--teal)", borderRadius:"var(--radius-sm)", padding:"13px 16px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.6, marginBottom:28 }}>
           The things you share here are personal. That's why we built this so nothing has to leave your hands.
         </div>
         <div className="onboard-actions">
@@ -3530,7 +3598,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           <div style={{ background:"rgba(90,122,90,0.06)", border:"1.5px solid rgba(90,122,90,0.15)", borderRadius:"var(--radius-sm)", padding:"14px 18px", marginBottom:18, display:"flex", alignItems:"flex-start", gap:12 }}>
             <Icon name="sparkle" size={16} style={{color:"var(--teal-dark)", flexShrink:0, marginTop:2}} />
             <div>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--teal-dark)", marginBottom:6 }}>What matters to you</div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"var(--teal-dark)", marginBottom:6 }}>What matters to you</div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
                 {identityValues.map(v => (
                   <span key={v} style={{ fontSize:12, padding:"3px 10px", borderRadius:20, background:"rgba(90,122,90,0.12)", color:"var(--teal-dark)", fontWeight:500 }}>{v}</span>
@@ -3544,7 +3612,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           <div style={{ background:"rgba(90,122,90,0.08)", border:"1.5px solid rgba(90,122,90,0.2)", borderRadius:"var(--radius-sm)", padding:"14px 18px", marginBottom:18, display:"flex", alignItems:"flex-start", gap:12 }}>
             <Icon name="heart" size={16} style={{color:"var(--teal-dark)", flexShrink:0, marginTop:2}} />
             <div>
-              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--teal-dark)", marginBottom:4 }}>{wantBackLabels.length > 1 ? "Your reasons" : "Your reason"}</div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"var(--teal-dark)", marginBottom:4 }}>{wantBackLabels.length > 1 ? "Your reasons" : "Your reason"}</div>
               {wantBackLabels.map(l => (
                 <div key={l} style={{ fontSize:13, color:"var(--ink)", lineHeight:1.5, fontStyle:"italic" }}>"{l}"</div>
               ))}
@@ -3592,7 +3660,7 @@ function Onboarding({ onComplete, initialProfile = null, initialPeak = null, ini
           </>
         )}
 
-        <div style={{ background:"rgba(196,168,130,0.1)", borderLeft:"3px solid var(--slate-light)", borderRadius:"var(--radius-sm)", padding:"13px 16px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.65, marginTop:16, marginBottom:8 }}>
+        <div style={{ background:"var(--teal-pale)", borderLeft:"3px solid var(--teal)", borderRadius:"var(--radius-sm)", padding:"13px 16px", fontSize:13, color:"var(--ink-soft)", lineHeight:1.65, marginTop:16, marginBottom:8 }}>
           You can adjust any of this anytime in settings. But today, the system is calibrated for exactly where you are — and where you want to go.
         </div>
 
@@ -4201,6 +4269,7 @@ function TaskColumn({ title, pillClass, tasks, onToggle, onDelete, onEdit, onOpe
 
 // ─── NewTaskRow ───────────────────────────────────────────────────────────────
 const HOLD_DURATION = 600;
+const FINISH_MS = 280; // soft check-off before a completed row leaves the list
 
 // Shared by the hold, tap and drag gestures on task rows. A hold or drag that just ended
 // must not also register as a tap that opens Edit.
@@ -4225,6 +4294,7 @@ function useHoldToggle(onComplete, active = true, onShortPress) {
     e.preventDefault();
     startRef.current = { x: e.clientX, y: e.clientY };
     setHolding(true);
+    haptic.light(); // a soft tick as the press registers; success fires when the task is done
     timerRef.current = setTimeout(() => {
       setHolding(false);
       timerRef.current = null;
@@ -4272,7 +4342,13 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis, onDelete 
   const subs   = task.subtasks || [];
   const energy = task.energyImpact ?? 0;
   // Completing is press-and-hold. A quick tap only nudges the ring (see HoldRing); the tutorial explains it too.
-  const { holding, nudge, handlers } = useHoldToggle(() => onToggle(task.id), !task.done);
+  // When the hold finishes the row ticks itself off and slips away for FINISH_MS before the task is actually completed.
+  const [finishing, setFinishing] = useState(false);
+  const { holding, nudge, handlers } = useHoldToggle(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { onToggle(task.id); return; }
+    setFinishing(true);
+    setTimeout(() => { onToggle(task.id); setFinishing(false); }, FINISH_MS);
+  }, !task.done && !finishing);
 
   function formatDue(ds) {
     if (!ds) return null;
@@ -4344,7 +4420,7 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis, onDelete 
           aria-label={`Delete "${task.name}"`} tabIndex={open ? 0 : -1} onClick={removeTask}>Delete</button>
       )}
     <div
-      className={`new-task-row${holding ? " holding" : ""}${task.priority === "urgent" ? " urgency-urgent" : task.priority === "high" ? " urgency-high" : ""}${offset !== 0 ? " swiped" : ""}`}
+      className={`new-task-row${holding ? " holding" : ""}${finishing ? " finishing" : ""}${task.priority === "urgent" ? " urgency-urgent" : task.priority === "high" ? " urgency-high" : ""}${offset !== 0 ? " swiped" : ""}`}
       style={{ transform: offset ? `translateX(${offset}px)` : undefined, transition: swiping ? "none" : "transform 0.2s ease, opacity 0.18s ease", opacity: leaving ? 0 : 1, touchAction: onDelete && !task.done ? "pan-y" : undefined }}
       onPointerDown={e => { e.stopPropagation(); pressRef.current = { x: e.clientX, y: e.clientY, t: Date.now() }; swipeStart(e); }}
       onPointerMove={e => {
@@ -4364,7 +4440,7 @@ function NewTaskRow({ task, onToggle, onOpenEdit, onEdit, onParalysis, onDelete 
         onClick={e => { e.stopPropagation(); if (task.done) onToggle(task.id); }}
       >
         <HoldRing holding={holding} size={HOLD_DURATION} nudge={nudge} />
-        {task.done && (
+        {(task.done || finishing) && (
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
@@ -4504,7 +4580,18 @@ function WinsCardSection({ wins, onUncomplete }) {
   );
 }
 
-function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], onUncomplete, onToggle, onDelete, onOpenEdit, onEdit, onChangeBucket, onParalysis, onAddSubtask, onToggleSubtask, onDeleteSubtask, gentleMode, sternMode }) {
+// One calm line (and the mascot) instead of three empty "Nothing here." sections.
+function EmptyToday({ battery, done }) {
+  return (
+    <div className="empty-today">
+      <BatteryMascot level={battery ?? 70} size={40} mood={done ? "celebrate" : (battery ?? 70) <= 15 ? "sleeping" : null} />
+      <div className="empty-today-title">{done ? "All done for now." : "Nothing planned."}</div>
+      <div className="empty-today-sub">{done ? "Rest is part of the plan." : "Enjoy the room."}</div>
+    </div>
+  );
+}
+
+function BucketCarousel({ battery, mustTasks, shouldTasks, couldTasks, sessionWins = [], onUncomplete, onToggle, onDelete, onOpenEdit, onEdit, onChangeBucket, onParalysis, onAddSubtask, onToggleSubtask, onDeleteSubtask, gentleMode, sternMode }) {
   const [tabIdx,      setTabIdx]     = useState(0);
   const [viewAll,     setViewAll]    = useState(true);
   const [drag,        setDrag]       = useState(null);
@@ -4560,6 +4647,8 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
   const allByTab = [mustTasks, shouldTasks, couldTasks].map(sortByPriority);
   const active   = BUCKET_TABS[tabIdx];
   const pending  = (allByTab[tabIdx] || []).filter(t => !t.done);
+  const totalPending = allByTab.reduce((n, list) => n + list.filter(t => !t.done).length, 0);
+  const showEmptyToday = totalPending === 0 && !ptrDrag?.moved;
 
   function go(next) { setTabIdx(Math.max(0, Math.min(TOTAL - 1, next))); }
 
@@ -4619,11 +4708,15 @@ function BucketCarousel({ mustTasks, shouldTasks, couldTasks, sessionWins = [], 
         </button>
       </div>
 
-      {viewAll ? (
+      {showEmptyToday ? (
+        <EmptyToday battery={battery} done={sessionWins.length > 0} />
+      ) : viewAll ? (
         /* All-buckets view */
         <div className="bucket-all-view" style={{ userSelect:"none", WebkitUserSelect:"none" }}>
           {BUCKET_TABS.map((tab, i) => {
             const tasks = allByTab[i].filter(t => !t.done);
+            // Empty sections stay hidden, except while dragging so every bucket remains a drop target.
+            if (tasks.length === 0 && !ptrDrag?.moved) return null;
             return (
               <div
                 key={tab.key}
@@ -6482,7 +6575,7 @@ function MentalHealthScreening() {
     return (
       <div className="screening-wrap">
         <div style={{ background:"rgba(106,138,170,0.08)", border:"1.5px solid rgba(106,138,170,0.25)", borderRadius:"var(--radius-sm)", padding:"20px 20px 16px", marginBottom:20 }}>
-          <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--focus-blue)", marginBottom:10 }}>Before you continue</div>
+          <div style={{ fontSize:12, fontFamily:"'DM Sans',sans-serif", color:"var(--focus-blue)", marginBottom:10 }}>Before you continue</div>
           <div style={{ fontSize:14, color:"var(--ink)", lineHeight:1.65, marginBottom:16 }}>
             The PHQ-9 and GAD-7 are <strong>self-administered educational questionnaires</strong>, not clinical assessments. They are not a substitute for professional evaluation and do not constitute a diagnosis.
           </div>
@@ -6569,7 +6662,7 @@ function MentalHealthScreening() {
       {result ? (
         /* ── Results ── */
         <div className="screening-result">
-          <div style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", textTransform:"uppercase", letterSpacing:"0.8px", marginBottom:12 }}>
+          <div style={{ fontSize:12, fontFamily:"'DM Sans',sans-serif", color:"var(--ink-mute)", marginBottom:12 }}>
             {current.name} · {current.about} Screening
           </div>
           <div className="screening-score-row">
@@ -8325,7 +8418,7 @@ const PRIVACY_SECTIONS = [
   { heading:"What we collect", body:`MyBattery stores the following data in your personal Firebase account:\n• Energy levels and battery readings you enter each day\n• Tasks you create, including names, buckets, and completion status\n• Mood and journal entries\n• Mental health screening responses (PHQ-9, GAD-7)\n• Notification preferences and schedule\n\nTask names and health notes are encrypted on your device before being stored. We cannot read them.` },
   { heading:"How we use it", body:`Your data is used only to operate the app — to show you your history, generate AI suggestions, and send your scheduled notifications. It is never sold, shared with advertisers, or used to train AI models.\n\nAI features (AI Coach, task breakdown, brain dump and smart scheduling) send your task names, current battery level and the text you type to Google Gemini to generate responses. We ask for your permission before this happens for the first time. Task content reaches Google's servers. If you prefer not to share task details with the AI, decline the prompt or do not use the AI features.` },
   { heading:"Data storage & security", body:`All data is stored in Google Firebase (Firestore), hosted in the United States (nam5 region). Firebase is SOC 2 Type II certified and GDPR-compliant.\n\nSensitive fields (task names, journal entries, health notes) are encrypted client-side using AES-GCM-256 with a key derived from your account. Only you can decrypt them.` },
-  { heading:"Mental health data", body:`MyBattery includes mental health screening tools (PHQ-9, GAD-7) and mood tracking. This data is treated with the same encryption and access controls as all other personal data. It is never shared with third parties.\n\nMyBattery is not a medical device. It is not a substitute for professional mental health care. If you are in crisis, please contact a qualified professional or use the emergency resources available in the app's SOS section.` },
+  { heading:"Mental health data", body:`MyBattery includes mental health screening tools (PHQ-9, GAD-7) and mood tracking. This data is treated with the same encryption and access controls as all other personal data. It is never sold or shared with advertisers. The only time any of it leaves our servers is text you choose to send to the AI features (AI Coach, task breakdown, brain dump, smart scheduling), which goes to Google Gemini after you give permission.\n\nMyBattery is not a medical device. It is not a substitute for professional mental health care. If you are in crisis, please contact a qualified professional or use the emergency resources available in the app's SOS section.` },
   { heading:"Notifications", body:`If you enable push notifications, your device's FCM token is stored in Firebase to route messages to your device. Notification times are processed on our servers to send reminders at the times you configure. Disabling notifications in Settings removes your token from our servers.` },
   { heading:"Your rights", body:`You can delete all your data at any time from Settings → Account → Delete My Account. This permanently removes your Firestore documents and Firebase Authentication account.\n\nYou can export a copy of your history from Settings → General → Download history.\n\nFor questions or requests, contact: info@mybatteryapp.com` },
   { heading:"Changes", body:`We will notify you within the app if this policy changes in a material way. Continued use after notice constitutes acceptance.` },
@@ -9186,6 +9279,27 @@ function ScheduleGeneratorMode({ battery, tasks, energyMap, userProfile, callSch
   );
 }
 
+// The model sometimes answers in markdown (**bold**, "* " bullets, # headings). Users should never see
+// that syntax, so turn bullets into "• " and drop the emphasis markers before display.
+function cleanCoachText(text) {
+  return String(text ?? "")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^([ \t]*)[*\-+][ \t]+/gm, "$1• ")
+    .replace(/(\*\*|__)(.+?)\1/g, "$2")
+    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, "$1$2")
+    .replace(/`([^`\n]+)`/g, "$1")
+    .trim();
+}
+
+// Renders a coach message: "• " lines become real bullets with a hanging indent, other lines are paragraphs.
+function AiText({ text }) {
+  return String(text ?? "").split("\n").map(l => l.trim()).filter(Boolean).map((line, i) =>
+    line.startsWith("• ")
+      ? <div key={i} className="ai-li"><span className="ai-li-dot" aria-hidden="true">•</span><span>{line.slice(2)}</span></div>
+      : <p key={i}>{line}</p>
+  );
+}
+
 function parseTasksFromReply(text) {
   // Match: "1. **Bold title:**" or "1. **Bold title**" or "1. Plain title:"
   const boldMatches = [...text.matchAll(/\d+\.\s+\*\*([^*:\n]+)[*:]/g)];
@@ -9232,12 +9346,13 @@ function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTa
         style: sternMode ? "stern" : gentleMode ? "gentle" : "default",
       };
       const result = await callAI({ message: trimmed, context: ctx, history: nextHistory.slice(-10) });
-      const reply = result?.reply || "Sorry, I couldn't connect. Try again in a moment.";
+      const rawReply = result?.reply || "Sorry, I couldn't connect. Try again in a moment.";
+      const reply = cleanCoachText(rawReply);
       // Prefer the server's structured tasks; fall back to scraping a numbered list.
       const structured = Array.isArray(result?.tasks) && result.tasks.length >= 2
         ? result.tasks.filter(t => t?.title).map(t => ({ title: String(t.title), detail: t.detail ? String(t.detail) : "" }))
         : null;
-      const scraped = structured ? null : parseTasksFromReply(reply)?.map(title => ({ title, detail: "" }));
+      const scraped = structured ? null : parseTasksFromReply(rawReply)?.map(title => ({ title, detail: "" }));
       const suggested = structured ?? scraped ?? null;
       const asstMsg = { role: "assistant", text: reply, suggestedTasks: suggested, parentName: structured ? (result.parent || null) : null, skipped: [], tasksAdded: false };
       setMessages(prev => [...prev, asstMsg]);
@@ -9308,7 +9423,7 @@ function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTa
             <div className="ai-panel-messages">
               {messages.map((m, i) => (
                 <div key={i}>
-                  <div className={`ai-message ai-message-${m.role}`}>{m.text}</div>
+                  <div className={`ai-message ai-message-${m.role}`}>{m.role === "assistant" ? <AiText text={m.text} /> : m.text}</div>
                   {m.role === "assistant" && m.suggestedTasks && m.tasksAdded === false && (
                     <div className="ai-add-tasks-card">
                       <div className="ai-add-tasks-label">Want to add these to your tasks?</div>
@@ -9437,6 +9552,7 @@ function AIBreakdownCard({ items, onAddOne, onAddAll, onDismiss, onRetry, taskNa
 // ─── Battery Panel Component ──────────────────────────────────────────────────
 function BatteryMascot({ level = 100, size = 44, mood = null }) {
   // mood overrides: "sleeping" | "celebrate" | "thinking" | null (auto from level)
+  // Open-eyed faces (critical/low/high/thinking) blink slowly via CSS .bm-eyes; the squint-arc faces (med/celebrate) look closed already, so med instead opens its eyes briefly; "celebrate" is a brief, quiet reaction, e.g. after clearing every Must do.
   const tier = mood || (level < BATTERY_THRESHOLDS.CRITICAL ? "critical" : level < BATTERY_THRESHOLDS.LOW ? "low" : level < BATTERY_THRESHOLDS.GOOD ? "med" : "high");
   const fillColor = level < BATTERY_THRESHOLDS.CRITICAL ? "#d94f4f" : level < BATTERY_THRESHOLDS.MID ? "#c8903a" : "#5a7a5a";
   const clipId = "bm-fill-" + tier;
@@ -9449,13 +9565,14 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
   const eyeLx = 12, eyeRx = 28;
 
   // 4-pointed sparkle star helper
-  function Sparkle({ cx, cy, r }) {
+  function Sparkle({ cx, cy, r, fill = "#333" }) {
     const d = `M${cx},${cy-r} L${cx+r*.28},${cy-r*.28} L${cx+r},${cy} L${cx+r*.28},${cy+r*.28} L${cx},${cy+r} L${cx-r*.28},${cy+r*.28} L${cx-r},${cy} L${cx-r*.28},${cy-r*.28} Z`;
-    return <path d={d} fill="#333" />;
+    return <path d={d} fill={fill} />;
   }
 
   return (
     <svg aria-hidden="true"
+      className={tier === "celebrate" ? "bm-pop" : undefined}
       width={size}
       height={Math.round(size * 54 / 40)}
       viewBox="0 0 40 54"
@@ -9473,7 +9590,7 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
       {/* Body */}
       <rect x={bX} y={bY} width={bW} height={bH} rx={bRx} fill="#fafafa" stroke="#3d3d3d" strokeWidth="2.2" />
       {/* Energy fill */}
-      <rect x={bX} y={fillY} width={bW} height={fillH} fill={fillColor} opacity="0.22" clipPath={`url(#${clipId})`} />
+      <rect x={bX} y={fillY} width={bW} height={fillH} fill={fillColor} opacity="0.22" clipPath={`url(#${clipId})`} style={{ y: fillY, height: fillH, transition: "y 0.6s ease, height 0.6s ease" }} />
       {level > 3 && <line x1={bX + 2} y1={fillY} x2={bX + bW - 2} y2={fillY} stroke={fillColor} strokeWidth="2" opacity="0.5" clipPath={`url(#${clipId})`} />}
 
       {/* ── Arms down (tiers that don't draw their own arms) ── */}
@@ -9490,8 +9607,10 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
           <line x1="10" y1={bY+1} x2="10" y2={bY+8} stroke="#333" strokeWidth="1.6" strokeLinecap="round" />
           <line x1="13" y1={bY+2} x2="13" y2={bY+7} stroke="#333" strokeWidth="1.6" strokeLinecap="round" />
           {/* Droopy half-circle eyes */}
-          <path d={`M${eyeLx-4.5},${eyeY} A4.5,4.5 0 0,1 ${eyeLx+4.5},${eyeY} Z`} fill="#333" />
-          <path d={`M${eyeRx-4.5},${eyeY} A4.5,4.5 0 0,1 ${eyeRx+4.5},${eyeY} Z`} fill="#333" />
+          <g className="bm-eyes">
+            <path d={`M${eyeLx-4.5},${eyeY} A4.5,4.5 0 0,1 ${eyeLx+4.5},${eyeY} Z`} fill="#333" />
+            <path d={`M${eyeRx-4.5},${eyeY} A4.5,4.5 0 0,1 ${eyeRx+4.5},${eyeY} Z`} fill="#333" />
+          </g>
           {/* Frown */}
           <path d={`M14,${mouthY+5} Q20,${mouthY} 26,${mouthY+5}`} stroke="#333" strokeWidth="2" strokeLinecap="round" fill="none" />
         </>
@@ -9500,8 +9619,10 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
       {/* ── LOW: small dot eyes + flat filled rectangle mouth ── */}
       {tier === "low" && (
         <>
-          <circle cx={eyeLx} cy={eyeY} r="3.5" fill="#333" />
-          <circle cx={eyeRx} cy={eyeY} r="3.5" fill="#333" />
+          <g className="bm-eyes">
+            <circle cx={eyeLx} cy={eyeY} r="3.5" fill="#333" />
+            <circle cx={eyeRx} cy={eyeY} r="3.5" fill="#333" />
+          </g>
           {/* Grimace rectangle */}
           <rect x="13" y={mouthY - 2} width="14" height="5" rx="1.5" fill="white" stroke="#333" strokeWidth="1.8" />
         </>
@@ -9510,9 +9631,15 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
       {/* ── MED: happy squint arc eyes + small smile ── */}
       {tier === "med" && (
         <>
-          {/* Upward arc eyes = happy squint */}
-          <path d={`M${eyeLx-4.5},${eyeY+1} Q${eyeLx},${eyeY-4} ${eyeLx+4.5},${eyeY+1}`} stroke="#333" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          <path d={`M${eyeRx-4.5},${eyeY+1} Q${eyeRx},${eyeY-4} ${eyeRx+4.5},${eyeY+1}`} stroke="#333" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          {/* Upward arc eyes = happy squint; every few seconds they open into round eyes for a moment (CSS .bm-squint / .bm-open) */}
+          <g className="bm-squint">
+            <path d={`M${eyeLx-4.5},${eyeY+1} Q${eyeLx},${eyeY-4} ${eyeLx+4.5},${eyeY+1}`} stroke="#333" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <path d={`M${eyeRx-4.5},${eyeY+1} Q${eyeRx},${eyeY-4} ${eyeRx+4.5},${eyeY+1}`} stroke="#333" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          </g>
+          <g className="bm-open">
+            <circle cx={eyeLx} cy={eyeY} r="3.8" fill="#333" />
+            <circle cx={eyeRx} cy={eyeY} r="3.8" fill="#333" />
+          </g>
           <path d={`M14,${mouthY} Q20,${mouthY+4} 26,${mouthY}`} stroke="#333" strokeWidth="2" strokeLinecap="round" fill="none" />
         </>
       )}
@@ -9520,13 +9647,27 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
       {/* ── HIGH: wide open mouth + sparkle stars + arm ── */}
       {tier === "high" && (
         <>
-          <circle cx={eyeLx} cy={eyeY} r="4.5" fill="#333" />
-          <circle cx={eyeRx} cy={eyeY} r="4.5" fill="#333" />
-          <circle cx={eyeLx + 1.2} cy={eyeY - 1.2} r="1.5" fill="white" />
-          <circle cx={eyeRx + 1.2} cy={eyeY - 1.2} r="1.5" fill="white" />
+          <g className="bm-eyes">
+            <circle cx={eyeLx} cy={eyeY} r="4.5" fill="#333" />
+            <circle cx={eyeRx} cy={eyeY} r="4.5" fill="#333" />
+            <circle cx={eyeLx + 1.2} cy={eyeY - 1.2} r="1.5" fill="white" />
+            <circle cx={eyeRx + 1.2} cy={eyeY - 1.2} r="1.5" fill="white" />
+          </g>
           <path d={`M11,${mouthY} L29,${mouthY} C29,${mouthY+13} 11,${mouthY+13} 11,${mouthY} Z`} fill="#333" />
           <line x1={bX}      y1={bY + 18} x2={bX - 7}      y2={bY + 9} stroke="#3d3d3d" strokeWidth="2.2" strokeLinecap="round" />
           <line x1={bX + bW} y1={bY + 18} x2={bX + bW + 7} y2={bY + 9} stroke="#3d3d3d" strokeWidth="2.2" strokeLinecap="round" />
+        </>
+      )}
+
+      {/* ── CELEBRATE: content squint, wide smile, arms up, one small sparkle (quiet, no confetti) ── */}
+      {tier === "celebrate" && (
+        <>
+          <line x1={bX}      y1={bY + 18} x2={bX - 7}      y2={bY + 9} stroke="#3d3d3d" strokeWidth="2.2" strokeLinecap="round" />
+          <line x1={bX + bW} y1={bY + 18} x2={bX + bW + 7} y2={bY + 9} stroke="#3d3d3d" strokeWidth="2.2" strokeLinecap="round" />
+          <path d={`M${eyeLx-4.5},${eyeY+1} Q${eyeLx},${eyeY-4} ${eyeLx+4.5},${eyeY+1}`} stroke="#333" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <path d={`M${eyeRx-4.5},${eyeY+1} Q${eyeRx},${eyeY-4} ${eyeRx+4.5},${eyeY+1}`} stroke="#333" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <path d={`M12,${mouthY} Q20,${mouthY+8} 28,${mouthY}`} stroke="#333" strokeWidth="2" strokeLinecap="round" fill="none" />
+          <Sparkle cx={36} cy={bY + 2} r={3.4} fill="#c8903a" />
         </>
       )}
 
@@ -9555,10 +9696,12 @@ function BatteryMascot({ level = 100, size = 44, mood = null }) {
           <line x1={bX}      y1={bY+20} x2={bX-6}      y2={bY+30} stroke="#3d3d3d" strokeWidth="2.2" strokeLinecap="round" />
           <line x1={bX+bW}   y1={bY+20} x2={bX+bW+6}   y2={bY+30} stroke="#3d3d3d" strokeWidth="2.2" strokeLinecap="round" />
           {/* Eyes shifted up-left */}
-          <circle cx={eyeLx-1} cy={eyeY-2} r="3.5" fill="#333" />
-          <circle cx={eyeRx-1} cy={eyeY-2} r="3.5" fill="#333" />
-          <circle cx={eyeLx}   cy={eyeY-3} r="1.2" fill="white" />
-          <circle cx={eyeRx}   cy={eyeY-3} r="1.2" fill="white" />
+          <g className="bm-eyes">
+            <circle cx={eyeLx-1} cy={eyeY-2} r="3.5" fill="#333" />
+            <circle cx={eyeRx-1} cy={eyeY-2} r="3.5" fill="#333" />
+            <circle cx={eyeLx}   cy={eyeY-3} r="1.2" fill="white" />
+            <circle cx={eyeRx}   cy={eyeY-3} r="1.2" fill="white" />
+          </g>
           {/* Slight smile */}
           <path d={`M15,${mouthY+1} Q20,${mouthY+4} 25,${mouthY+1}`} stroke="#333" strokeWidth="1.8" strokeLinecap="round" fill="none" />
           {/* Thought bubble */}
@@ -9762,7 +9905,7 @@ function LogEnergyModal({ battery, onSave, onClose }) {
           <div style={{ fontFamily:"'Playfair Display',serif", fontSize:44, color:colorFor(val), lineHeight:1 }}>
             {val}<span style={{ fontSize:20 }}>%</span>
           </div>
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"var(--ink-mute)", marginTop:6, textTransform:"uppercase", letterSpacing:"0.8px" }}>
+          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"var(--ink-mute)", marginTop:6 }}>
             {feeling.label}
           </div>
           <div style={{ fontSize:12, color:"var(--ink-mute)", marginTop:4 }}>
@@ -10936,6 +11079,14 @@ export default function App({ user, firebaseHelpers = {} }) {
   const [fumesDismissed,  setFumesDismissed]  = useState(false);
   // Mascot override mood
   const [mascotMood,      setMascotMood]      = useState(null);
+  const mascotTimer = useRef(null);
+  // A brief, quiet reaction from the header mascot (e.g. after the last Must do is finished).
+  function celebrateMascot() {
+    setMascotMood("celebrate");
+    clearTimeout(mascotTimer.current);
+    mascotTimer.current = setTimeout(() => setMascotMood(null), 5000);
+  }
+  useEffect(() => () => clearTimeout(mascotTimer.current), []);
   const [view,        setView]        = useState(() => {
     if (localStorage.getItem("reflow-onboarded") !== "true") return "onboarding";
     const checkedInToday = localStorage.getItem("reflow-checkin-date") === new Date().toLocaleDateString("en-CA");
@@ -11656,6 +11807,7 @@ export default function App({ user, firebaseHelpers = {} }) {
     // Non-recurring: remove from local state immediately (optimistic)
     setTasks(prev => prev.filter(t => t.id !== id));
     haptic.success();
+    if (task.bucket === "must" && !tasks.some(t => t.id !== id && t.bucket === "must" && !t.done)) celebrateMascot();
     setSessionWins(prev => {
       const next = [...prev, { ...task, done: true }];
       // XP: +1 per task; +3 bonus if this clears all Must tasks
@@ -12151,7 +12303,7 @@ export default function App({ user, firebaseHelpers = {} }) {
             title={`Energy ${battery}% — tap to log`}
             aria-label={`Energy ${battery}%. Log energy`}
           >
-            <BatteryMascot level={battery} size={32} mood={battery <= 15 ? "sleeping" : mascotMood} />
+            <BatteryMascot level={battery} size={32} mood={mascotMood || (battery <= 15 ? "sleeping" : null)} />
           </button>
           {false && (
             <span className="streak-badge">🔥 {checkinStreak}d</span>
@@ -12441,6 +12593,7 @@ export default function App({ user, firebaseHelpers = {} }) {
                 <div className="task-columns">
                   <ErrorBoundary>
                   <BucketCarousel
+                      battery={battery}
                       mustTasks={mustTasks} shouldTasks={shouldTasks} couldTasks={couldTasks}
                       sessionWins={sessionWins} onUncomplete={uncompleteTask}
                       onToggle={toggleTask} onDelete={deleteTask} onEdit={editTask} onOpenEdit={openEditModal} onReschedule={rescheduleTask}
@@ -12749,7 +12902,7 @@ export default function App({ user, firebaseHelpers = {} }) {
             )}
             <button
               className={`ai-fab${showFabMenu ? " open" : ""}`}
-              onClick={() => { setShowFabMenu(v => !v); setShowAICoach(false); }}
+              onClick={() => { haptic.light(); setShowFabMenu(v => !v); setShowAICoach(false); }}
               aria-label="Open menu"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -12946,6 +13099,8 @@ export default function App({ user, firebaseHelpers = {} }) {
             onRetry={() => { setShowPaywall(false); setTimeout(() => setShowPaywall(true), 100); }}
             onPurchase={purchasePackage}
             onRestore={restorePurchases}
+            needsAccount={!uid}
+            onCreateAccount={() => { setShowPaywall(false); exitGuestMode(); }}
             onClose={() => setShowPaywall(false)}
           />
         )}

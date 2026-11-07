@@ -85,6 +85,8 @@ export function useSubscription(userId) {
   async function purchasePackage(product) {
     const productId = typeof product === "string" ? product : product?.productId;
     if (!productId) return { ok: false, reason: "failed", message: "No product selected." };
+    // Pro includes AI features that need a signed-in account, so guests can't subscribe.
+    if (!userId) return { ok: false, reason: "account", message: "Create a free account to subscribe." };
     try {
       const { success } = await StoreKitIAP.purchaseProduct({ productId });
       if (success) {
@@ -125,7 +127,8 @@ export function useSubscription(userId) {
   function signOut() { setIsPro(false); }
 
   return {
-    isPro: BYPASS_PAYWALL || granted || isPro,
+    // Pro needs an account (AI features run server-side per user); a guest sees the paywall.
+    isPro: BYPASS_PAYWALL || (!!userId && (granted || isPro)),
     loading: BYPASS_PAYWALL ? false : loading,
     packages: BYPASS_PAYWALL ? [] : packages,
     offeringsError,

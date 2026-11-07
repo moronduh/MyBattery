@@ -4,7 +4,7 @@ import Icon from "./Icon.jsx";
 export default function TutorialModal({ onClose }) {
   const [step, setStep] = useState(0);
 
-  const chip = (label, color="var(--sage-dark)", bg="rgba(90,122,90,0.1)") => (
+  const chip = (label, color="var(--teal-dark)", bg="rgba(28,117,98,0.1)") => (
     <span style={{ fontSize:11, padding:"3px 10px", borderRadius:20, border:`1.5px solid ${color}`, color, background:bg, fontFamily:"'DM Sans',sans-serif" }}>{label}</span>
   );
 
@@ -12,8 +12,8 @@ export default function TutorialModal({ onClose }) {
     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
       {items.map(r => (
         <div key={r.label} style={{ display:"flex", alignItems:"center", gap:12, background:"var(--card)", borderRadius:10, padding:"10px 12px", border:"1px solid var(--warm)" }}>
-          <div style={{ width:34, height:34, borderRadius:"50%", background:r.bg ?? "rgba(90,122,90,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            <Icon name={r.icon} size={16} style={{color:r.color ?? "var(--sage-dark)"}} />
+          <div style={{ width:28, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <Icon name={r.icon} size={18} style={{color:r.color ?? "var(--teal-dark)"}} />
           </div>
           <div>
             <div style={{ fontSize:12, fontWeight:500, color:"var(--ink)" }}>{r.label}</div>
@@ -32,16 +32,16 @@ export default function TutorialModal({ onClose }) {
       visual: (
         <div>
           <div style={{ background:"var(--card)", borderRadius:12, padding:"16px 18px", marginBottom:10, border:"1px solid var(--warm)" }}>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"var(--ink-mute)", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>How's your energy today?</div>
+            <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"var(--ink-mute)", marginBottom:10 }}>How's your energy today?</div>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:10 }}>
               <div>
-                <div style={{ fontFamily:"'Playfair Display',serif", fontSize:36, lineHeight:1, color:"var(--sage-dark)" }}>64%</div>
+                <div style={{ fontFamily:"'Playfair Display',serif", fontSize:36, lineHeight:1, color:"var(--teal-dark)" }}>64%</div>
                 <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"var(--ink-mute)", marginTop:4 }}>steady</div>
               </div>
-              <Icon name="bolt" size={26} style={{color:"var(--sage-dark)"}} />
+              <Icon name="bolt" size={26} style={{color:"var(--teal-dark)"}} />
             </div>
             <div style={{ height:10, borderRadius:6, background:"var(--warm)", overflow:"hidden", marginBottom:4 }}>
-              <div style={{ width:"64%", height:"100%", borderRadius:6, background:"var(--sage-dark)" }} />
+              <div style={{ width:"64%", height:"100%", borderRadius:6, background:"var(--teal-dark)" }} />
             </div>
             <div style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:"var(--ink-mute)", textAlign:"center", marginTop:4 }}>← drag to set →</div>
           </div>
@@ -58,22 +58,22 @@ export default function TutorialModal({ onClose }) {
       visual: (
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:0, marginBottom:12 }}>
-            <div style={{ flex:1, height:1, background:"var(--sage-light)" }} />
+            <div style={{ flex:1, height:1, background:"var(--teal-light)" }} />
             <div style={{ display:"flex", gap:18, padding:"0 12px" }}>
-              {["MUST","SHOULD","COULD"].map((label, i) => (
-                <span key={label} style={{ fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:2, textTransform:"uppercase", color: i===0 ? "var(--ink)" : "var(--ink-mute)", paddingBottom:3, borderBottom: i===0 ? "1.5px solid var(--ink)" : "1.5px solid transparent" }}>{label}</span>
+              {["Must","Should","Could"].map((label, i) => (
+                <span key={label} style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:500, color: i===0 ? "var(--ink)" : "var(--ink-mute)", paddingBottom:3, borderBottom: i===0 ? "1.5px solid var(--ink)" : "1.5px solid transparent" }}>{label}</span>
               ))}
             </div>
-            <div style={{ flex:1, height:1, background:"var(--sage-light)" }} />
+            <div style={{ flex:1, height:1, background:"var(--teal-light)" }} />
           </div>
-          <div style={{ background:"var(--card)", border:"1.5px solid var(--sage-light)", borderRadius:16, padding:"14px 16px", marginBottom:10 }}>
+          <div style={{ background:"var(--card)", border:"1.5px solid var(--teal-light)", borderRadius:16, padding:"14px 16px", marginBottom:10 }}>
             <div style={{ fontSize:13, fontWeight:700, color:"var(--ink)", textAlign:"center", marginBottom:10 }}>Must Do</div>
             {[
               { name:"Write quarterly report", impact:-20, dur:"2h" },
               { name:"Send project update",     impact:-8,  dur:"20m" },
             ].map(t => (
               <div key={t.name} style={{ background:"var(--cream)", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:10, marginBottom:6, border:"1px solid var(--warm)" }}>
-                <div style={{ width:15, height:15, borderRadius:"50%", border:"2px solid var(--sage-light)", flexShrink:0 }} />
+                <div style={{ width:15, height:15, borderRadius:"50%", border:"2px solid var(--teal-light)", flexShrink:0 }} />
                 <div style={{ flex:1, fontSize:12, color:"var(--ink)" }}>{t.name}</div>
                 <span style={{ fontSize:10, padding:"2px 7px", borderRadius:20, background:"rgba(196,114,106,0.1)", color:"var(--error)", display:"inline-flex", alignItems:"center", gap:3 }}>
                   <Icon name="battery" size={9} />{t.impact}
@@ -107,8 +107,8 @@ export default function TutorialModal({ onClose }) {
       title: "Help is always one tap away.",
       desc: "The SOS button (top right) opens free, confidential crisis lines — and links to therapist finders and self-checks when you need something less urgent. The + button lets you add a task, brain dump, log energy, or talk things through with the AI assistant.",
       visual: rows([
-        { icon:"shield", label:"SOS",        sub:"Crisis lines · therapist finder · self-checks", color:"var(--error)", bg:"rgba(196,114,106,0.08)" },
-        { icon:"timer",  label:"stuck?",     sub:"Name the block · pick one action · sprint",   color:"var(--earth-dark)", bg:"rgba(196,168,130,0.08)" },
+        { icon:"shield", label:"SOS",        sub:"Crisis lines · therapist finder · self-checks", color:"var(--error)" },
+        { icon:"timer",  label:"stuck?",     sub:"Name the block · pick one action · sprint", color:"var(--ink-mute)" },
         { icon:"sparkle",label:"+ button",   sub:"Add task · brain dump · log energy · AI" },
       ]),
     },

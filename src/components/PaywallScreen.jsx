@@ -12,19 +12,21 @@ const PRO_FEATURES = [
   { icon: "✦", label: "Calendar Export", desc: "Download your schedule as a .ics file" },
 ];
 
-export default function PaywallScreen({ packages = [], offeringsError, onRetry, onPurchase, onRestore, onClose }) {
+export default function PaywallScreen({ packages = [], offeringsError, onRetry, onPurchase, onRestore, onClose, needsAccount = false, onCreateAccount }) {
   const monthlyPkg = packages.find(p => p.period === "month" || p.productId?.includes("monthly"));
   const annualPkg  = packages.find(p => p.period === "year"  || p.productId?.includes("yearly") || p.productId?.includes("annual"));
 
   const [selectedPkg, setSelectedPkg] = useState(() => annualPkg ?? packages[0] ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms,   setShowTerms]   = useState(false);
 
   const isNative = Capacitor.isNativePlatform();
 
   async function handlePurchase() {
+    if (needsAccount) { onCreateAccount?.(); return; }
     if (!selectedPkg || !onPurchase) return;
     setLoading(true);
     setError("");
@@ -48,8 +50,13 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
   async function handleRestore() {
     setLoading(true);
     setError("");
+    setNotice("");
     try {
       const success = await onRestore?.();
+      if (success && needsAccount) {
+        setNotice("We found your subscription. Sign in or create a free account to use Pro.");
+        return;
+      }
       if (success) { onClose(); return; }
       setError("No active subscription found for this Apple ID.");
     } catch {
@@ -113,9 +120,16 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
             </div>
 
             {error && <div className="paywall-error">{error}</div>}
+            {notice && <div className="paywall-legal" style={{ marginBottom: 10, textAlign: "center" }}>{notice}</div>}
+
+            {needsAccount && (
+              <div className="paywall-legal" style={{ marginBottom: 10, textAlign: "center" }}>
+                Pro's AI features run on your account, so you'll need a free account to subscribe. It only takes a moment.
+              </div>
+            )}
 
             <button className="paywall-cta" onClick={handlePurchase} disabled={loading || !selectedPkg}>
-              {loading ? "Processing…" : "Start 14-day free trial"}
+              {loading ? "Processing…" : needsAccount ? "Create a free account to subscribe" : "Start 14-day free trial"}
             </button>
 
             <div className="paywall-legal">

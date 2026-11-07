@@ -34,6 +34,17 @@ function cleanDetail(s) {
   return String(s ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_DETAIL);
 }
 
+// Strips markdown the chat UI can't render: "* " / "- " bullets become "• ", emphasis and heading markers go.
+function cleanReply(s) {
+  return String(s ?? "")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^([ \t]*)[*\-+][ \t]+/gm, "$1• ")
+    .replace(/(\*\*|__)(.+?)\1/g, "$2")
+    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, "$1$2")
+    .replace(/`([^`\n]+)`/g, "$1")
+    .trim();
+}
+
 // Pulls the <tasks>{...}</tasks> block out of a model reply.
 // Returns { reply, tasks, parent } — reply never contains the block, tasks is [] when absent or invalid.
 function extractTasks(text) {
@@ -41,7 +52,7 @@ function extractTasks(text) {
   const re = /<tasks>([\s\S]*?)<\/tasks>/i;
   const m = raw.match(re);
   // Also drop a dangling/unclosed tag so it never shows up in the chat bubble.
-  const reply = raw.replace(re, "").replace(/<tasks>[\s\S]*$/i, "").trim();
+  const reply = cleanReply(raw.replace(re, "").replace(/<tasks>[\s\S]*$/i, ""));
   if (!m) return { reply, tasks: [], parent: null };
 
   let parsed;
@@ -81,7 +92,7 @@ ${taskList}
 ${STYLE_GUIDANCE[s]}
 
 Guiding principles:
-• Keep replies concise and actionable (2–4 sentences unless breaking down tasks). Plain text only — no headings or tables.
+• Keep replies concise and actionable (2–4 sentences unless breaking down tasks). Plain text only: never use markdown (no asterisks, bold, italics, headings, or tables). For a short list, put each item on its own line starting with \"• \".
 • Always consider the user's energy level — never suggest pushing through exhaustion.
 • When battery is below 40%, suggest lighter tasks, breaks, or rest.
 • When asked to break down a task, give 3–5 small, energy-sized subtasks.
@@ -127,4 +138,4 @@ function parseBrainDump(text) {
   return out;
 }
 
-module.exports = { normalizeStyle, extractTasks, buildSystemPrompt, BRAIN_DUMP_PROMPT, parseBrainDump, cleanTitle };
+module.exports = { normalizeStyle, extractTasks, cleanReply, buildSystemPrompt, BRAIN_DUMP_PROMPT, parseBrainDump, cleanTitle };

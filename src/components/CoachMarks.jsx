@@ -98,7 +98,7 @@ export default function CoachMarks({ onDone }) {
 
   const arrowOffset = Math.max(12, Math.min(TOOLTIP_W - 24, tooltipCenterX - ttLeft - 6));
 
-  const dim = "rgba(28,26,20,0.58)";
+  const dim = "rgba(10,18,16,0.6)";
   // Unique mask ID per step prevents stale mask references during transitions
   const maskId = `coach-mask-${step}`;
 
@@ -130,7 +130,7 @@ export default function CoachMarks({ onDone }) {
         position:"fixed", top:spotTop, left:spotLeft,
         width:spotW, height:spotH,
         borderRadius:spotRadius,
-        boxShadow:"0 0 0 2.5px #5a7a5a, 0 0 0 5px rgba(90,122,90,0.18)",
+        boxShadow:"0 0 0 2.5px var(--teal-dark), 0 0 0 5px rgba(28,117,98,0.18)",
         overflow:"hidden",
         pointerEvents:"none",
       }} />
@@ -138,39 +138,39 @@ export default function CoachMarks({ onDone }) {
       {/* Tooltip */}
       <div style={{
         position:"fixed", top:ttTop, left:ttLeft, width:TOOLTIP_W,
-        background:"white", borderRadius:13, padding:"16px 18px",
+        background:"var(--surface)", borderRadius:13, padding:"16px 18px",
         filter:"drop-shadow(0 8px 28px rgba(0,0,0,0.18)) drop-shadow(0 2px 6px rgba(0,0,0,0.10))",
         pointerEvents:"all", zIndex:9001,
       }}>
         {useBelow && (
           <div style={{
             position:"absolute", top:-8, left:arrowOffset,
-            width:14, height:9, background:"white",
+            width:14, height:9, background:"var(--surface)",
             clipPath:"polygon(50% 0%, 0% 100%, 100% 100%)",
           }} />
         )}
         {!useBelow && (
           <div style={{
             position:"absolute", bottom:-8, left:arrowOffset,
-            width:14, height:9, background:"white",
+            width:14, height:9, background:"var(--surface)",
             clipPath:"polygon(0% 0%, 100% 0%, 50% 100%)",
           }} />
         )}
 
-        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:1.3, textTransform:"uppercase", color:"#5a7a5a", marginBottom:6 }}>
+        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"var(--teal-dark)", marginBottom:6 }}>
           {step + 1} of {STEPS.length}
         </div>
-        <div style={{ fontFamily:"'Playfair Display',serif", fontSize:15, color:"#2a2a1e", marginBottom:7, lineHeight:1.3 }}>
+        <div style={{ fontFamily:"'Playfair Display',serif", fontSize:15, color:"var(--ink)", marginBottom:7, lineHeight:1.3 }}>
           {STEPS[step].title}
         </div>
-        <div style={{ fontSize:12.5, color:"#6a6a5a", lineHeight:1.65, marginBottom:14, fontFamily:"'DM Sans',sans-serif" }}>
+        <div style={{ fontSize:12.5, color:"var(--ink-soft)", lineHeight:1.65, marginBottom:14, fontFamily:"'DM Sans',sans-serif" }}>
           {STEPS[step].desc}
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <button onClick={finish} style={{ fontSize:11, color:"#9a9a8a", background:"none", border:"none", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", padding:0 }}>
+          <button onClick={finish} style={{ fontSize:12, color:"var(--ink-mute)", background:"none", border:"none", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", padding:0 }}>
             Skip tour
           </button>
-          <button onClick={advance} style={{ fontSize:12, padding:"7px 18px", borderRadius:20, border:"none", background:"#5a7a5a", color:"white", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:500, letterSpacing:0.2 }}>
+          <button className="coach-next" onClick={advance} style={{ fontSize:12, padding:"7px 18px", borderRadius:"var(--radius)", border:"none", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:500, letterSpacing:0.2 }}>
             {isLast ? "Got it" : "Next →"}
           </button>
         </div>

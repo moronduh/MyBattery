@@ -136,7 +136,7 @@ const styles = {
   },
   pill: {
     display:         "inline-block",
-    background:      "var(--teal-pale, rgba(107,142,90,0.12))",
+    background:      "var(--teal-pale)",
     color:           "var(--teal-dark, #4a7a5a)",
     fontFamily:      "'DM Mono', monospace",
     fontSize:        10,

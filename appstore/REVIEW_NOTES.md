@@ -8,10 +8,10 @@
 MyBattery is an energy-aware task planner. Users set a daily "battery" level and the app adapts their task load.
 
 HOW TO TEST WITHOUT AN ACCOUNT
-Tap "Try without an account" on the sign-in screen to use the full app (tasks, battery, calendar, wellness tools). Guest data stays on the device.
+Tap "Try without an account" on the sign-in screen to use the free parts of the app (tasks, battery, calendar, wellness tools). Guest data stays on the device. Subscribing to Pro requires a free account, because Pro's AI features run on the user's account; in guest mode the paywall's button reads "Create a free account to subscribe".
 
 DEMO ACCOUNT (for AI features, sync, account deletion)
-Credentials are in the "Sign-in required" fields above. This account has MyBattery Pro enabled so every Pro feature (AI Coach, AI task breakdown, smart scheduling, analytics) can be tried without a purchase. To see the purchase flow itself, use guest mode ("Try without an account") — guests are not Pro, so Settings → "Unlock Pro" shows the real paywall and App Store purchase sheet.
+Credentials are in the "Sign-in required" fields above. This account has MyBattery Pro enabled so every Pro feature (AI Coach, AI task breakdown, smart scheduling, analytics) can be tried without a purchase. To see the purchase flow itself, sign up a new free account in the app (email + password, no verification step), then open Settings → "Unlock Pro" — a new account is not Pro, so it shows the real paywall and App Store purchase sheet (sandbox).
 Sign-in is email + password only. There is no third-party / social login in the iOS app, so Sign in with Apple is not required (Guideline 4.8).
 
 SUBSCRIPTION (Guideline 3.1)
@@ -42,14 +42,14 @@ Calendar/Reminders: optional, requested only when the user turns on calendar syn
 - [x] Paid Apps Agreement + tax/banking active.
 - [x] Test purchase with a sandbox Apple ID (real prices loaded on device, bypass is OFF).
 - [x] App Privacy questionnaire (done earlier) — re-check it matches `ios/App/App/PrivacyInfo.xcprivacy`: Email, User ID, Device ID (push token), Health (mood/energy/PHQ-9/GAD-7), Other User Content (tasks/journal/AI text), Customer Support (feedback). None used for tracking.
-- [x] Deploy the updated website (done 2026-10-20) so https://mindfulstillflow.web.app/privacy matches the in-app policy (analytics line removed, AI consent sentence added).
+- [x] Deploy the updated website (done 2026-10-20) so https://mybatteryapp.com/privacy matches the in-app policy (analytics line removed, AI consent sentence added).
 - [x] Privacy Policy URL, Support URL, and info@mybatteryapp.com all load/receive mail.
 - [ ] Add the subscription terms block from LISTING.md to the App Description.
 - [ ] Create the demo account (email + password sign-up in the app), grant it Pro via `proGrants`, put its credentials in App Store Connect, and confirm it can sign in and delete itself.
 
 ## Final submission steps (in order)
 1. [ ] Create the demo account in the app, grant it Pro (`proGrants/{uid}` → `pro: true`), and confirm it signs in.
-2. [ ] App Store Connect → the version → select build **202610203** (wait until it finishes processing).
+2. [ ] App Store Connect → the version → select build **202610204** (wait until it finishes processing).
 3. [ ] "In-App Purchases and Subscriptions" on the version: both subscriptions attached.
 4. [ ] App Review Information → Sign-in required: demo email + password.
 5. [ ] App Review Information → Notes: paste the "Notes" block above.

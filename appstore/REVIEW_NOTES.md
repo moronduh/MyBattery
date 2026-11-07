@@ -49,7 +49,7 @@ Calendar/Reminders: optional, requested only when the user turns on calendar syn
 
 ## Final submission steps (in order)
 1. [ ] Create the demo account in the app, grant it Pro (`proGrants/{uid}` → `pro: true`), and confirm it signs in.
-2. [ ] App Store Connect → the version → select build **202610204** (wait until it finishes processing).
+2. [ ] App Store Connect → the version → select build **202611071** (wait until it finishes processing).
 3. [ ] "In-App Purchases and Subscriptions" on the version: both subscriptions attached.
 4. [ ] App Review Information → Sign-in required: demo email + password.
 5. [ ] App Review Information → Notes: paste the "Notes" block above.

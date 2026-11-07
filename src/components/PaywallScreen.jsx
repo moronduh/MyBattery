@@ -29,9 +29,15 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
     setLoading(true);
     setError("");
     try {
-      const success = await onPurchase(selectedPkg);
-      if (success) { onClose(); return; }
-      setError("Purchase could not be completed. Please try again.");
+      const res = await onPurchase(selectedPkg);
+      if (res?.ok) { onClose(); return; }
+      if (res?.reason === "cancelled") return;
+      if (res?.reason === "pending") {
+        setError("Your purchase is waiting for approval. Pro will unlock as soon as it's approved.");
+        return;
+      }
+      const detail = res?.message ? ` (${res.message.replace(/^Purchase failed:\s*/, "").slice(0, 140)})` : "";
+      setError(`Purchase could not be completed${detail}. Please try again.`);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

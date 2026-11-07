@@ -80,20 +80,29 @@ export function useSubscription(userId) {
     return () => window.removeEventListener("focus", onFocus);
   }, []);
 
+  // Returns { ok: true } on success, otherwise { ok: false, reason, message } so the paywall can say
+  // why. reason: "cancelled" | "pending" | "failed".
   async function purchasePackage(product) {
     const productId = typeof product === "string" ? product : product?.productId;
-    if (!productId) return false;
+    if (!productId) return { ok: false, reason: "failed", message: "No product selected." };
     try {
       const { success } = await StoreKitIAP.purchaseProduct({ productId });
       if (success) {
         setIsPro(true);
-        return true;
+        return { ok: true };
       }
-      return false;
+      return { ok: false, reason: "failed", message: "The App Store did not confirm the purchase." };
     } catch (e) {
-      if (e?.message === "cancelled") return false;
+      const message = String(e?.message ?? e ?? "");
+      if (message === "cancelled") return { ok: false, reason: "cancelled" };
+      if (message === "pending") return { ok: false, reason: "pending", message };
       console.error("[IAP] purchase failed:", e);
-      return false;
+      // The purchase may have gone through even though the call reported an error: re-check.
+      try {
+        const { activeSubscriptions } = await StoreKitIAP.getActiveSubscriptions();
+        if (isActiveProduct(activeSubscriptions)) { setIsPro(true); return { ok: true }; }
+      } catch { /* fall through */ }
+      return { ok: false, reason: "failed", message };
     }
   }
 

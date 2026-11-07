@@ -13,6 +13,20 @@ public class StoreKitIAPPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "restorePurchases", returnType: CAPPluginReturnPromise),
     ]
 
+    private var updatesTask: Task<Void, Never>?
+
+    // Finish transactions that complete outside purchaseProduct (Ask to Buy approvals, interrupted
+    // purchases, renewals) so they never stay unfinished.
+    public override func load() {
+        updatesTask = Task.detached {
+            for await update in Transaction.updates {
+                if case .verified(let tx) = update { await tx.finish() }
+            }
+        }
+    }
+
+    deinit { updatesTask?.cancel() }
+
     @objc func getProducts(_ call: CAPPluginCall) {
         guard let ids = call.getArray("productIds") as? [String], !ids.isEmpty else {
             call.reject("productIds required")
@@ -46,6 +60,31 @@ public class StoreKitIAPPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    // Products are cached so a purchase doesn't depend on a second network round trip.
+    private var productCache: [String: Product] = [:]
+
+    private func product(for id: String) async throws -> Product? {
+        if let cached = productCache[id] { return cached }
+        let fetched = try await Product.products(for: [id])
+        if let p = fetched.first { productCache[id] = p }
+        return fetched.first
+    }
+
+    @MainActor
+    private func foregroundScene() -> UIWindowScene? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first
+    }
+
+    private func isEntitled(_ productId: String) async -> Bool {
+        for await result in Transaction.currentEntitlements {
+            if case .verified(let tx) = result, tx.productID == productId, tx.revocationDate == nil {
+                return true
+            }
+        }
+        return false
+    }
+
     @objc func purchaseProduct(_ call: CAPPluginCall) {
         guard let productId = call.getString("productId") else {
             call.reject("productId required")
@@ -53,19 +92,30 @@ public class StoreKitIAPPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         Task {
             do {
-                let products = try await Product.products(for: [productId])
-                guard let p = products.first else {
+                guard let p = try await product(for: productId) else {
                     call.reject("Product not found: \(productId)")
                     return
                 }
-                let result = try await p.purchase()
+
+                // The app runs on the UIScene lifecycle, so tell StoreKit which scene should show the
+                // purchase sheet (required on iOS 17+/iPad; a bare purchase() can fail to present).
+                let result: Product.PurchaseResult
+                if #available(iOS 17.0, *), let scene = await foregroundScene() {
+                    result = try await p.purchase(confirmIn: scene)
+                } else {
+                    result = try await p.purchase()
+                }
+
                 switch result {
                 case .success(let verification):
                     switch verification {
                     case .verified(let tx):
                         await tx.finish()
                         call.resolve(["success": true, "productId": tx.productID])
-                    case .unverified(_, let err):
+                    case .unverified(let tx, let err):
+                        // Apple charged the purchase but local JWS verification failed (can happen in the
+                        // sandbox). Finish the transaction so it doesn't loop, and report it clearly.
+                        await tx.finish()
                         call.reject("Unverified: \(err.localizedDescription)")
                     }
                 case .userCancelled:
@@ -76,7 +126,13 @@ public class StoreKitIAPPlugin: CAPPlugin, CAPBridgedPlugin {
                     call.reject("unknown")
                 }
             } catch {
-                call.reject("Purchase failed: \(error.localizedDescription)")
+                // If the purchase actually went through but something threw afterwards, don't tell the
+                // user it failed.
+                if await isEntitled(productId) {
+                    call.resolve(["success": true, "productId": productId])
+                } else {
+                    call.reject("Purchase failed: \(error.localizedDescription)")
+                }
             }
         }
     }

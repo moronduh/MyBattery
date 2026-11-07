@@ -9,6 +9,7 @@ const { getAuth }                       = require("firebase-admin/auth");
 const { QUIET_LINK, QUIET_NOTIFICATION, toMillis, shouldSendQuietCheckin } = require("./quietCheckin");
 
 const geminiApiKey     = defineSecret("GEMINI_API_KEY");
+const { extractTasks, buildSystemPrompt, BRAIN_DUMP_PROMPT, parseBrainDump } = require("./coachPrompt");
 // Waitlist email notifications — set these secrets before deploying:
 //   firebase functions:secrets:set GMAIL_USER        (e.g. yourname@gmail.com)
 //   firebase functions:secrets:set GMAIL_APP_PASSWORD (Google account → Security → App passwords)
@@ -58,16 +59,20 @@ async function checkRateLimit(uid, limit) {
 }
 
 // ─── aiCoach ──────────────────────────────────────────────────────────────────
-// Callable: { message, context: { battery, tasks, energyMap, date } }
-// Returns: { reply }
+// Callable: { message, context: { battery, tasks, energyMap, date, style }, history, mode? }
+//   style: "gentle" | "default" | "stern" (the user's tone setting)
+//   mode:  omitted = coach chat; "braindump" = turn free text into a task list
+// Returns: { reply, tasks[{title,detail?}], parent } for chat, { tasks: string[] } for brain dump
 exports.aiCoach = onCall({ secrets: [geminiApiKey], cors: true }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Authentication required.");
 
   const { GoogleGenerativeAI } = require("@google/generative-ai");
-  const { message, context = {}, history = [] } = request.data || {};
+  const { message, context = {}, history = [], mode } = request.data || {};
+  const isBrainDump = mode === "braindump";
+  const maxLen = isBrainDump ? 4000 : 2000;
   if (!message) throw new HttpsError("invalid-argument", "No message provided.");
-  if (typeof message !== "string" || message.length > 2000)
-    throw new HttpsError("invalid-argument", "Message must be a string under 2000 characters.");
+  if (typeof message !== "string" || message.length > maxLen)
+    throw new HttpsError("invalid-argument", `Message must be a string under ${maxLen} characters.`);
   if (!Array.isArray(history) || history.length > 20)
     throw new HttpsError("invalid-argument", "History must be an array of at most 20 turns.");
 
@@ -77,6 +82,15 @@ exports.aiCoach = onCall({ secrets: [geminiApiKey], cors: true }, async (request
   const genAI = new GoogleGenerativeAI(geminiApiKey.value());
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+  if (isBrainDump) {
+    const out = await model.generateContent({
+      systemInstruction: { parts: [{ text: BRAIN_DUMP_PROMPT }] },
+      contents: [{ role: "user", parts: [{ text: message }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.2 },
+    });
+    return { tasks: parseBrainDump(out.response.text()) };
+  }
+
   const rawTasks = Array.isArray(context.tasks) ? context.tasks : [];
   const safeTasks = rawTasks
     .filter(t => t && typeof t.name === "string" && t.name.trim().length > 0 && t.name.length <= 200)
@@ -85,26 +99,14 @@ exports.aiCoach = onCall({ secrets: [geminiApiKey], cors: true }, async (request
     ? safeTasks.map(t => `${t.done === true ? "✓" : "○"} ${t.name.trim().slice(0, 200)}${typeof t.priority === "string" ? ` [${t.priority.slice(0, 20)}]` : ""}`).join("\n")
     : "No tasks listed.";
 
-  const systemPrompt = `You are an energy-aware productivity coach inside MyBattery, a mindful productivity app.
-
-Current context:
-- Battery level: ${context.battery ?? "unknown"}%
-- Date: ${context.date ?? new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-- Tasks:
-${taskList}
-
-Guiding principles:
-• Keep replies warm, concise, and actionable (2–4 sentences unless breaking down tasks).
-• Always consider the user's energy level — never suggest pushing through exhaustion.
-• When battery is below 40%, suggest lighter tasks, breaks, or rest.
-• When asked to break down a task, give 3–5 small, energy-sized subtasks.
-• Be encouraging but honest. Avoid toxic positivity.
-Task suggestions (the app turns numbered lists into tasks the user can add, so follow this format exactly):
-• Use a numbered list ONLY for real tasks the user could add to their to-do list. Use bullets (•) for advice, tips, or anything that is not a task.
-• Write each task as: 1. **Short title** — optional one-line detail
-• Titles are 2–5 words, in sentence case, starting with a verb or a clean noun phrase: "Study for exam", "Fix kitchen sink", "Email landlord", "Outline essay".
-• Titles never echo the user's request ("help me study for my test" → "Study for exam"), and never contain "Step 1", quotes, emojis, trailing punctuation, or durations. Put timing or effort in the detail after the dash.
-• Keep the title in bold and put nothing else inside the bold text.`;
+  const systemPrompt = buildSystemPrompt({
+    battery: context.battery,
+    date: typeof context.date === "string" && context.date.length <= 60
+      ? context.date
+      : new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+    taskList,
+    style: context.style,
+  });
 
   // Build contents array with history
   const contents = [];
@@ -120,7 +122,8 @@ Task suggestions (the app turns numbered lists into tasks the user can add, so f
   });
 
   const result = await chat.sendMessage(message);
-  return { reply: result.response.text() };
+  const { reply, tasks, parent } = extractTasks(result.response.text());
+  return { reply, tasks, parent };
 });
 
 // ─── generateSchedule ────────────────────────────────────────────────────────

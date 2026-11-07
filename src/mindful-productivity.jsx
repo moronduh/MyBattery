@@ -9196,7 +9196,7 @@ function parseTasksFromReply(text) {
   return null;
 }
 
-function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTasks, callScheduleGenerator, userProfile }) {
+function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTasks, callScheduleGenerator, userProfile, gentleMode = false, sternMode = false }) {
   const [messages, setMessages] = useState([
     { role: "assistant", text: "Hey! I'm your energy coach 🌿 I know your current battery level and tasks. What can I help you with?" }
   ]);
@@ -9229,11 +9229,17 @@ function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTa
         tasks: tasks.slice(0, 20).map(t => ({ name: t.name, done: t.done || false, priority: t.priority || null })),
         energyMap,
         date: new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+        style: sternMode ? "stern" : gentleMode ? "gentle" : "default",
       };
       const result = await callAI({ message: trimmed, context: ctx, history: nextHistory.slice(-10) });
       const reply = result?.reply || "Sorry, I couldn't connect. Try again in a moment.";
-      const suggested = parseTasksFromReply(reply);
-      const asstMsg = { role: "assistant", text: reply, suggestedTasks: suggested, tasksAdded: false };
+      // Prefer the server's structured tasks; fall back to scraping a numbered list.
+      const structured = Array.isArray(result?.tasks) && result.tasks.length >= 2
+        ? result.tasks.filter(t => t?.title).map(t => ({ title: String(t.title), detail: t.detail ? String(t.detail) : "" }))
+        : null;
+      const scraped = structured ? null : parseTasksFromReply(reply)?.map(title => ({ title, detail: "" }));
+      const suggested = structured ?? scraped ?? null;
+      const asstMsg = { role: "assistant", text: reply, suggestedTasks: suggested, parentName: structured ? (result.parent || null) : null, skipped: [], tasksAdded: false };
       setMessages(prev => [...prev, asstMsg]);
       setHistory([...nextHistory, { role: "assistant", text: reply }]);
     } catch {
@@ -9243,12 +9249,21 @@ function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTa
     }
   }
 
-  function handleAddTasks(msgIdx, taskList) {
-    // Try to find the user message just before this AI response to use as parent task name
-    const prevUserMsg = messages.slice(0, msgIdx).reverse().find(m => m.role === "user");
-    const parentName = prevUserMsg?.text?.length < 80 ? prevUserMsg.text : null;
-    onAddTasks?.(taskList, parentName);
-    setMessages(prev => prev.map((m, i) => i === msgIdx ? { ...m, tasksAdded: true } : m));
+  function toggleSuggested(msgIdx, ti) {
+    setMessages(prev => prev.map((m, i) => {
+      if (i !== msgIdx) return m;
+      const skipped = m.skipped.includes(ti) ? m.skipped.filter(x => x !== ti) : [...m.skipped, ti];
+      return { ...m, skipped };
+    }));
+  }
+
+  function handleAddTasks(msgIdx) {
+    const m = messages[msgIdx];
+    const picked = m.suggestedTasks.filter((_, ti) => !m.skipped.includes(ti)).map(t => t.title);
+    if (!picked.length) return;
+    // parentName comes from the model's own goal title — never the user's raw message.
+    onAddTasks?.(picked, picked.length >= 2 ? m.parentName : null);
+    setMessages(prev => prev.map((x, i) => i === msgIdx ? { ...x, tasksAdded: true, addedCount: picked.length } : x));
   }
 
   function dismissTasks(msgIdx) {
@@ -9298,16 +9313,27 @@ function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTa
                     <div className="ai-add-tasks-card">
                       <div className="ai-add-tasks-label">Want to add these to your tasks?</div>
                       <div className="ai-add-tasks-list">
-                        {m.suggestedTasks.map((t, ti) => (
-                          <div key={ti} className="ai-add-tasks-item">
-                            <span className="ai-add-tasks-dot" />
-                            <span>{t}</span>
-                          </div>
-                        ))}
+                        {m.suggestedTasks.map((t, ti) => {
+                          const off = m.skipped.includes(ti);
+                          return (
+                            <button
+                              key={ti}
+                              type="button"
+                              className="ai-add-tasks-item"
+                              role="checkbox"
+                              aria-checked={!off}
+                              onClick={() => toggleSuggested(i, ti)}
+                              style={{ background:"none", border:"none", padding:0, textAlign:"left", cursor:"pointer", opacity: off ? 0.45 : 1, textDecoration: off ? "line-through" : "none" }}
+                            >
+                              <span className="ai-add-tasks-dot" style={off ? { background:"var(--ink-mute)" } : undefined} />
+                              <span>{t.title}{t.detail ? <span style={{ color:"var(--ink-mute)" }}> — {t.detail}</span> : null}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                       <div className="ai-add-tasks-actions">
-                        <button className="ai-add-tasks-yes" onClick={() => handleAddTasks(i, m.suggestedTasks)}>
-                          <Icon name="check-circle" size={13} style={{ marginRight:5 }} />Yes, add them
+                        <button className="ai-add-tasks-yes" disabled={m.skipped.length >= m.suggestedTasks.length} onClick={() => handleAddTasks(i)}>
+                          <Icon name="check-circle" size={13} style={{ marginRight:5 }} />{m.skipped.length ? `Add ${m.suggestedTasks.length - m.skipped.length}` : "Yes, add them"}
                         </button>
                         <button className="ai-add-tasks-no" onClick={() => dismissTasks(i)}>No thanks</button>
                       </div>
@@ -9316,7 +9342,7 @@ function AICoachPanel({ battery, tasks = [], energyMap, callAI, onClose, onAddTa
                   {m.role === "assistant" && m.suggestedTasks && m.tasksAdded === true && (
                     <div className="ai-add-tasks-done">
                       <Icon name="check-circle" size={13} style={{ marginRight:5, color:"var(--teal-dark)" }} />
-                      Added {m.suggestedTasks.length} tasks to your list
+                      Added {m.addedCount ?? m.suggestedTasks.length} tasks to your list
                     </div>
                   )}
                 </div>
@@ -9798,21 +9824,20 @@ function BrainDumpModal({ onClose, callAI, onAddTasks }) {
   useBodyScrollLock();
   const [text, setText]       = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
 
   async function handleAI() {
     if (!text.trim() || !callAI) return;
     setLoading(true);
+    setError("");
     try {
-      const result = await callAI({
-        message: `The user did a brain dump of everything on their mind. Parse it into a clean list of actionable tasks. Return ONLY a valid JSON array of short task name strings (no explanations, no markdown). Each task should be under 60 characters. Brain dump: "${text.trim()}"`,
-        context: {},
-      });
-      const match = (result?.reply || "").match(/\[[\s\S]*\]/);
-      if (match) {
-        const tasks = JSON.parse(match[0]);
-        if (Array.isArray(tasks) && tasks.length) { onAddTasks(tasks.map(String)); return; }
-      }
-    } catch {}
+      const result = await callAI({ mode: "braindump", message: text.trim().slice(0, 4000), context: {} });
+      const tasks = Array.isArray(result?.tasks) ? result.tasks.map(String).filter(Boolean) : [];
+      if (tasks.length) { onAddTasks(tasks); return; }
+      setError("I couldn't find any tasks in that. Try adding a few specifics, or use Save to keep it as written.");
+    } catch (e) {
+      setError(String(e?.message || "").startsWith("AI features need") ? e.message : "Couldn't reach the AI right now. Save keeps your list as written.");
+    }
     setLoading(false);
   }
 
@@ -9835,9 +9860,10 @@ function BrainDumpModal({ onClose, callAI, onAddTasks }) {
           className="bdump-textarea"
           placeholder="Write everything on your mind — tasks, worries, ideas, reminders... anything."
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={e => { setText(e.target.value); if (error) setError(""); }}
           autoFocus
         />
+        {error && <div role="alert" style={{ fontSize:13, color:"var(--ink-soft)", margin:"8px 2px 0", lineHeight:1.4 }}>{error}</div>}
         <div className="bdump-actions">
           <button className="bdump-btn-save" onClick={handleSave} disabled={!text.trim()}>
             Save as tasks
@@ -12741,6 +12767,8 @@ export default function App({ user, firebaseHelpers = {} }) {
             userProfile={userProfile}
             callAI={callAI}
             callScheduleGenerator={callScheduleGenerator}
+            gentleMode={gentleMode}
+            sternMode={sternMode}
             onClose={() => setShowAICoach(false)}
             onAddTasks={(taskList, parentName, rawTaskObjs) => {
               let newTasks;

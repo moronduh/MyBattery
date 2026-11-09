@@ -2272,6 +2272,17 @@ const styles = `
                 radial-gradient(120% 65% at 100% 100%, var(--wash-b) 0%, transparent 80%),
                 radial-gradient(90% 45% at 100% 38%, var(--wash-c) 0%, transparent 75%); }
   .app:not([data-view="shutdown"]) { background: transparent; }
+  /* Speckled graphite: fine grain + sparse flecks, layered over the wash */
+  .app { --speck-fine:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.14  0 0 0 0 0.17  0 0 0 0 0.17  0 0 0 0.22 -0.065'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+         --speck-fleck:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='1' seed='19' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.13  0 0 0 0 0.13  4 0 0 0 -3.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"); }
+  [data-theme="dark"] .app { --speck-fine:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.82  0 0 0 0 0.88  0 0 0 0 0.86  0 0 0 0.16 -0.055'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+         --speck-fleck:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='1' seed='19' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.86  0 0 0 0 0.92  0 0 0 0 0.90  3.5 0 0 0 -2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"); }
+  .app:not([data-view="shutdown"])::before {
+    background: var(--speck-fleck) 0 0 / 260px 260px,
+                var(--speck-fine) 0 0 / 180px 180px,
+                radial-gradient(140% 70% at 15% 0%, var(--wash-a) 0%, transparent 80%),
+                radial-gradient(120% 65% at 100% 100%, var(--wash-b) 0%, transparent 80%),
+                radial-gradient(90% 45% at 100% 38%, var(--wash-c) 0%, transparent 75%); }
   body { background: var(--cream); }
   /* Add-task sheet: stronger option buttons, fields and active states */
   .atm-priority-btn { border-width:2px; }

@@ -2283,6 +2283,7 @@ const styles = `
                 radial-gradient(140% 70% at 15% 0%, var(--wash-a) 0%, transparent 80%),
                 radial-gradient(120% 65% at 100% 100%, var(--wash-b) 0%, transparent 80%),
                 radial-gradient(90% 45% at 100% 38%, var(--wash-c) 0%, transparent 75%); }
+  .readiness-actions { background:transparent; }
   body { background: var(--cream); }
   /* Add-task sheet: stronger option buttons, fields and active states */
   .atm-priority-btn { border-width:2px; }
@@ -2351,6 +2352,9 @@ const styles = `
   .app .week-strip-wrap { position:static; background:transparent; -webkit-backdrop-filter:none; backdrop-filter:none; -webkit-mask-image:none; mask-image:none; }
   .app:not([data-view="shutdown"]) .nav,
   .app:not([data-view="shutdown"]) .bottom-nav { background: color-mix(in srgb, var(--cream) 62%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  /* Softer bars: more of the gradient shows through, hairline fades */
+  .app:not([data-view="shutdown"]) .nav,
+  .app:not([data-view="shutdown"]) .bottom-nav { background: color-mix(in srgb, var(--cream) 14%, transparent); -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2); border-color: color-mix(in srgb, var(--line) 55%, transparent); }
 
   /* ─── PREMIUM FINISH ─────────────────────────────────────────────────────
      Material quality, not decoration: gradient-filled primary actions with a lit top edge,

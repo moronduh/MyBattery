@@ -1,15 +1,16 @@
 import { useState } from "react";
+import Icon from "./Icon.jsx";
 import { Capacitor } from "@capacitor/core";
 import { PrivacyPolicyModal, TermsModal } from "./LegalModal.jsx";
 
 const PRO_FEATURES = [
-  { icon: "✦", label: "AI Coach", desc: "Unlimited multi-turn chat with your energy coach" },
-  { icon: "✦", label: "AI Task Breakdown", desc: "Instantly split any task into bite-sized steps" },
-  { icon: "✦", label: "Smart Scheduling", desc: "AI plans your day around your energy map" },
-  { icon: "✦", label: "Full Journal History", desc: "Every entry, forever — not just the last 30 days" },
-  { icon: "✦", label: "Analytics & Patterns", desc: "Weekly energy charts and burnout pattern tracking" },
-  { icon: "✦", label: "Recurring Events", desc: "Book repeating activities in your calendar" },
-  { icon: "✦", label: "Calendar Export", desc: "Download your schedule as a .ics file" },
+  { icon: "sparkle", label: "AI Coach", desc: "Unlimited multi-turn chat with your energy coach" },
+  { icon: "layout", label: "AI Task Breakdown", desc: "Instantly split any task into bite-sized steps" },
+  { icon: "bolt", label: "Smart Scheduling", desc: "AI plans your day around your energy map" },
+  { icon: "book", label: "Full Journal History", desc: "Every entry, forever — not just the last 30 days" },
+  { icon: "chart", label: "Analytics & Patterns", desc: "Weekly energy charts and burnout pattern tracking" },
+  { icon: "history", label: "Recurring Events", desc: "Book repeating activities in your calendar" },
+  { icon: "calendar", label: "Calendar Export", desc: "Download your schedule as a .ics file" },
 ];
 
 export default function PaywallScreen({ packages = [], offeringsError, onRetry, onPurchase, onRestore, onClose, needsAccount = false, onCreateAccount }) {
@@ -80,10 +81,10 @@ export default function PaywallScreen({ packages = [], offeringsError, onRetry, 
         <div className="paywall-features">
           {PRO_FEATURES.map(f => (
             <div key={f.label} className="paywall-feature-row">
-              <span className="paywall-feature-icon">✦</span>
-              <div>
+              <span className="paywall-feature-icon"><Icon name={f.icon} size={16} /></span>
+              <div className="paywall-feature-text">
                 <span className="paywall-feature-label">{f.label}</span>
-                <span className="paywall-feature-desc"> — {f.desc}</span>
+                <span className="paywall-feature-desc">{f.desc}</span>
               </div>
             </div>
           ))}
